@@ -1,48 +1,19 @@
-#!/usr/bin/python3.7
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
-Script to run a PageRank based optimization
+Created on Mon Jul  1 14:07:37 2019
 
-Created on Wed Jun 19 18:40:27 2019
-@author: Mario Coppola
+@author: mario
 """
-
-## Libraries
 import numpy as np
-import sys
 np.set_printoptions(suppress=True) #prevent numpy exponential notation on print, default False
-import matplotlib as plot
-from pybrain.optimization import GA
-
-cpp_run = True
-nn = 2
-graph = True
-import_mat_data = True
-M = 8
-folder = "";
-
-if cpp_run:
-    graph = False
-    nn = sys.argv[1]
-    folder = '../pagerank_learning/';
-
-if import_mat_data:
-    alpha = np.loadtxt(folder+"inputs/alpha.in")
-    H = np.asmatrix(np.reshape(np.loadtxt(folder+"inputs/H_"+str(nn)+".in"),(M,M)))
-    E = np.asmatrix(np.reshape(np.loadtxt(folder+"inputs/E_"+str(nn)+".in"),(M,M)))
-else:
-    # Test
-    alpha = np.matlib.eye(M,M) * 0.5
-    H = np.matlib.ones((M,M)) * 0.2
-    E = np.matlib.ones((M,M)) * 0.2
 
 def normalize_rows(mat):
     row_sums = np.squeeze(np.asarray(mat.sum(axis=1)))
     mat_norm = mat / row_sums[:, np.newaxis]
     return mat_norm
 
-def pagerank(G, tol=1e-5):
+def pagerank(G, tol=1e-8):
     # Iterative procedure
     n = G.shape[0] # Size of G
     pr = 1 / n * np.ones((1, n)) # Initialize Pagerank vector
@@ -51,7 +22,6 @@ def pagerank(G, tol=1e-5):
         pr_previous = pr
         pr = np.matmul(pr,G) # Pagerank formula
         residual = np.linalg.norm(np.subtract(pr,pr_previous))
-#        print(residual)
     return np.squeeze(np.asarray(pr))
 
 def fitness_function(pr):
@@ -96,12 +66,3 @@ l = initialize_evolution_parameters(l)
 
 ## Learn
 l.learn()
-
-## Evaluate output
-if graph:
-    print(l.bestEvaluable)
-    fitness_history = extract_history(l)
-    plot.pyplot.plot(fitness_history)
-
-## Store
-np.savetxt(folder+'outputs/weights_'+str(nn)+'.out', l.bestEvaluable, delimiter=',', fmt='%2.3f')
