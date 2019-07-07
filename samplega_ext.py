@@ -18,7 +18,7 @@ np.set_printoptions(suppress=True) #prevent numpy exponential notation on print,
 #import scipy as sp
 #import random
 import networkx as nx
-from pybrain.optimization import GA
+from pybrain.optimization import GAz
 
 G_active = nx.complete_graph(8)
 G_passive = nx.complete_graph(8)
