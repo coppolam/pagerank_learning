@@ -15,7 +15,7 @@ np.set_printoptions(suppress=True) #prevent numpy exponential notation on print,
 import matplotlib as plot
 from pybrain.optimization import GA
 
-cpp_run = True
+cpp_run = False
 nn = 1
 graph = True
 import_mat_data = True

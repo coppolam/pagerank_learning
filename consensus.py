@@ -14,6 +14,7 @@ np.set_printoptions(suppress=True) #prevent numpy exponential notation on print,
 import matplotlib as plot
 from pybrain.optimization import GA
 import fitness_function as opt
+import graph as graphtools
 
 # TODO: Make a params file for all the graph ect things
 graph = True

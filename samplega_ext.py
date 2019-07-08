@@ -18,10 +18,13 @@ np.set_printoptions(suppress=True) #prevent numpy exponential notation on print,
 #import scipy as sp
 #import random
 import networkx as nx
-from pybrain.optimization import GAz
+from pybrain.optimization import GA
+import graph as gt
 
 G_active = nx.complete_graph(8)
 G_passive = nx.complete_graph(8)
+#
+
 H = nx.adjacency_matrix(G_active)
 E = nx.adjacency_matrix(G_passive)
 H = H.astype(np.double)
@@ -43,16 +46,9 @@ def pagerank(x):
     return x
 
 def objF(x):
-    
     e = (0, 2, 1, 4, 5, 4, 3, 6, 3)
-    t = (2, 3, 4, 2, 1, 2, 4, 4, 6)
-    elist = list(zip(e,t,x))
-    
-    G_active = nx.DiGraph()
-    G_active.add_weighted_edges_from(elist)
-    
-    G = nx.DiGraph()
-    G.add_weighted_edges_from(elist)
+    t = (2, 3, 5, 2, 1, 2, 4, 1, 6)
+    G = gt.make_graph(e,t,x)
     
     pr = nx.pagerank(G,weight='weight',alpha=0.1)
     pr_values = list(pr.values())

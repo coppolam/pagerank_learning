@@ -30,20 +30,23 @@ def alpha():
     return alpha
 
 # TODO: Make
-def GSactive():
+def GSactive(Q,states):
+    nstates = 
+    for x in range(0,nstates):
+        
+        for j in range(1,bw):
+        
+        
     # something something
     return Ga
 
 # TODO: Make
-def GSpassive():
+def GSpassive(states):
     # something something
     return Gp
 
-def objF(x):
-#    aM = np.asmatrix(np.diag(alpha,8)) 
-    Ga = GSactive(x)
-    Gp = GSpassive(x)
-    # TODO: proper method
+def GoogleMatrix(alpha, H, E):
+    alpha_mat = alpha   #    aM = np.asmatrix(np.diag(alpha,8)) 
     H = nx.adjacency_matrix(Ga) # make sure this has weights
     E = nx.adjacency_matrix(Gp) # make sure this has weights
     Em = aux.normalize_rows(E) # Normalize environment matrix E
@@ -57,8 +60,14 @@ def objF(x):
     S = aux.normalize_rows(Hm + D) # Normalize policy matrix S = H + D
     
     G = np.matmul(aM, S) + np.matmul(np.subtract(np.eye(aM.shape[0]), aM), Em)
+    return G
+
+def objF(x):
+    Ga = GSactive(Q,states)
+    Gp = GSpassive(x)
+    # TODO: proper method
     
-    pr = pagerank(G) # Evaluate pagerank vector 
+    pr = pagerank(GoogleMatrix(alpha, H, E)) # Evaluate Pagerank vector 
     fitness = fitness_function(pr) # Get fitness
 #    print(fitness) # DEBUG
     return fitness
