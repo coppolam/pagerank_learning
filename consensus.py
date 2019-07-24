@@ -15,16 +15,46 @@ import matplotlib as plot
 from pybrain.optimization import GA
 import fitness_function as opt
 import graph as graphtools
+import scipy as sp
+import itertools as tools
+list(tools.permutations([1, 2, 3]))
 
-# TODO: Make a params file for all the graph ect things
 graph = True
-M = 8
-folder = '../pagerank_learning/';
 
-# Test
-E = np.matlib.eye(M)
-aM = np.matlib.eye(M,M) * 0.5 # Alpha vector in matrix format
-H = np.matlib.ones((M,M)) * 0.2
+# import consensus_task as task
+# TODO: Put all function in a "consensus class" such that all you need to do is import a different thing and everything changes
+# This would be nicer because it would allow to keep one general main file where you just need to switch out the import
+# This would also include the parameters that are needed
+#parameters
+max_neighbors = 8
+n_choices = 2
+folder = '../pagerank_learning/'
+
+def make_states(n_choices,max_neighbors):
+    max_neighbors = 8
+    n_choices = 2
+    ext_states = np.array(list(tools.product(range(0,max_neighbors+1),repeat=n_choices)))
+    ext_states = ext_states[np.where(sp.sum(ext_states,1)<=max_neighbors)[0]]
+    int_states = np.array(sp.repeat([1,2],np.size(ext_states,0)))
+    edge_list = np.array(list(zip(np.array(int_states),ext_states)))
+    return states
+
+def init_Q(states):
+    n_states = np.size(states,0)
+    n_choices = np.size(states,1) - 1
+    Q = np.ones(n_states,n_choices)/n_choices;
+    return Qa.
+
+def get_Q_idx(Q,states):
+    # TODO: Make
+    return Qidx
+
+
+
+# Global variables. Is it possible to move these to a dedicated subfile?
+states = make_states(n_choices, max_neighbors)
+Q = init_Q(states)
+Qidx = get_Q_idx(Q, states)
 
 ## Learning parameters
 x0 = np.ones(M)/2 # Initialize to ones
