@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
@@ -14,9 +14,9 @@ Created on Wed Jun 19 18:40:27 2019
 ## Libraries
 import numpy as np
 np.set_printoptions(suppress=True) #prevent numpy exponential notation on print, default False
-#import matplotlib as plot
-#import scipy as sp
-#import random
+import matplotlib.pyplot as plt
+import scipy as sp
+import random
 import networkx as nx
 from pybrain.optimization import GA
 import graph as gt
@@ -89,5 +89,6 @@ l.learn()
 print(l.bestEvaluable)
 
 # Plot (if in Anaconda)
-#plot.pyplot.plot(fitness_history)
-#np.save('test')
+plt.plot([1,2,3])
+# np.save('test')
+plt.show()

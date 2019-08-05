@@ -2,3 +2,4 @@ inputs/
 outputs/
 data/
 __pycache__/
+*.pyc
