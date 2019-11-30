@@ -6,9 +6,6 @@ Created on Sun Jul  7 15:03:19 2019
 @author: mario
 """
 import numpy as np
-import auxiliary as aux
-import networkx as nx
-import graph as gt
 
 #a = np.array([[4, 6],[2, 6],[5, 2]])
 #b = np.array([[1, 7],[1, 8],[2, 6],[2, 1],[2, 4],[4, 6],[4, 7],[5, 9],[5, 2],[5, 1]])

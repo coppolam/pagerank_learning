@@ -56,13 +56,3 @@ def initialize_evolution_parameters(l):
     l.populationSize = 10 # Population
     l.maxLearningSteps = 100 # Generations
     return l
-
-## Learning parameters
-x0 = np.ones(M)/2 # Initialize to ones
-GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
-GA.elitism = True # Use elite mem
-l = GA(objF, x0) # Set up GA (alternative subclass)
-l = initialize_evolution_parameters(l)
-
-## Learn
-l.learn()

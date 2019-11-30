@@ -6,7 +6,9 @@ Created on Sun Jul  7 14:52:26 2019
 @author: mario
 """
 import numpy as np
+import random
 
+# Normalize the rows of a numpy matrix array
 def normalize_rows(mat):
     row_sums = np.squeeze(np.asarray(mat.sum(axis=1)))
     mat_norm = mat / row_sums[:, np.newaxis]
@@ -27,4 +29,8 @@ def asvoid(arr):
 
 def in1d_index(a, b):
     voida, voidb = map(asvoid, (a, b))
-    return np.where(np.in1d(voidb, voida))[0]    
+    return np.where(np.in1d(voidb, voida))[0]
+
+def set_runtime_ID():
+    r = random.randrange(1000)
+    return r
