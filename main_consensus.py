@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun 19 18:40:27 2019
@@ -11,14 +11,15 @@ import numpy as np
 import itertools as tools
 import scipy as sp
 from pybrain.optimization import GA
+import matplotlib.pyplot as plot
 
 # Own libraries
 import auxiliary as aux
 import graph as gt
+import networkx as nx
 
 # Top level settings
 np.set_printoptions(suppress=True) # Prevent numpy exponential notation on print, default False
-
 
 # Parameters of the evolution
 evo = {
@@ -50,7 +51,7 @@ def make_states(n_choices,max_neighbors):
 
     # Combine into a single array of states
     ext_states = np.tile(ext_states, (n_choices, 1)) # Tile the external states
-    states = np.append(int_states[:, np.newaxis],ext_states,axis=1) # Concatenate into final ste vector
+    states = np.append(int_states[:, np.newaxis],ext_states,axis=1) # Concatenate into final state vector
     neighbors = sp.sum(ext_states,1) # Extract vector with number of neighbors
 
     return states, neighbors
@@ -65,12 +66,32 @@ def find_desired_states_idx(states):
     desired_states_idx
     return desired_states_idx
 
+def ismember(A, B):
+    return [ np.sum(a == B) for a in A ]
 
 def init_policy(states,desired_states_idx):
     P0 = np.full((np.size(states, 0), np.size(states, 1) - 1), 1.0 / (np.size(states, 1) - 1))
-    P0 = np.delete(P0,desired_states_idx,axis=0) # Remove pairs with more than max_neighbors neighbors
-
+    P0[desired_states_idx] = 0
+    # P0 = np.delete(P0,desired_states_idx,axis=0) # Remove pairs with more than max_neighbors neighbors
     return P0
+
+def GS_active(Q, states):
+    n_states = np.size(states, 0)
+    n_choices = np.size(Q, 1)
+    s = [] # Starting nodes
+    t = [] # End nodes
+    w = [] # Weights
+    for i in range(0, n_states): # For each state, we will extract the possible edges and weights
+        s_i = states[i, :] # Selected state
+        indexes = [] # Indexes
+        for j in range(0, n_choices):
+            indexes.extend(np.where((states == np.append(j,s_i[range(1,n_choices+1)])).all(axis=1))[0])
+        s.extend(int(i) * np.ones((n_choices,),dtype=int))
+        t.extend(indexes)
+        w.extend(Q[i, :])
+
+    Ga = gt.make_digraph(s, t, w) # Make the digraph
+    return Ga, s
 
 # Define the fitness function to optimize for
 def fitness_function(pr):
@@ -108,9 +129,9 @@ def initialize_evolution_parameters(l,evo):
 
 # Initialize ID
 def initialize(*args, **kwargs):
-    print "----- Starting optimization -----"
+    print("----- Starting optimization -----")
     runtime_ID = aux.set_runtime_ID()
-    print "Runtime ID:",runtime_ID
+    print("Runtime ID:",runtime_ID)
     return runtime_ID
 
 ############### MAIN ###############
@@ -119,16 +140,25 @@ runtime_ID = initialize() # Start up code and give a random runtime ID
 states, neighbors = make_states(task['m'],task['max_neighbors'])
 desired_states_idx = find_desired_states_idx(states)
 Q0 = init_policy(states,desired_states_idx)
-
-M = 8
-## Learning parameters
-x0 = np.ones(M)/2 # Initialize to ones
-GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
-GA.elitism = True # Use elite mem
-GA.mutationProb = evo['mutation_rate']
-GA.verbose = True
-GA.mutationStdDev = 0.2
-learner = GA(objF, x0) # Set up GA (alternative subclass)
-learner, GA = initialize_evolution_parameters(learner,evo)
+GS,s = GS_active(Q0, states)
 
 
+
+# from networkx.drawing.nx_agraph import to_agraph
+# A = to_agraph(GS)
+# A.layout('dot')
+# A.draw()
+# nx.draw_planar()
+# plot.show()
+# M = 8
+# ## Learning parameters
+# x0 = np.ones(M)/2 # Initialize to ones
+# GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
+# GA.elitism = True # Use elite mem
+# GA.mutationProb = evo['mutation_rate']
+# GA.verbose = True
+# GA.mutationStdDev = 0.2
+# learner = GA(objF, x0) # Set up GA (alternative subclass)
+# learner, GA = initialize_evolution_parameters(learner,evo)
+#
+#

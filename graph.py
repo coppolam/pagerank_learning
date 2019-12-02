@@ -24,7 +24,7 @@ def make_digraph(s,t,w=None):
     else:
         edge_list = list(zip(s,t,w))
         
-    G = nx.DiGraph()
+    G = nx.MultiDiGraph()
     G.add_weighted_edges_from(edge_list)
     return G
 
