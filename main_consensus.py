@@ -6,11 +6,19 @@ Created on Wed Jun 19 18:40:27 2019
 @author: Mario Coppola
 """
 
-import graph
+# Standard libraries
 import numpy as np
-np.set_printoptions(suppress=True) #prevent numpy exponential notation on print, default False
+import itertools as tools
+import scipy as sp
+from pybrain.optimization import GA
+
+# Own libraries
 import auxiliary as aux
 import graph as gt
+
+# Top level settings
+np.set_printoptions(suppress=True) # Prevent numpy exponential notation on print, default False
+
 
 # Parameters of the evolution
 evo = {
@@ -29,6 +37,40 @@ task = {
 }
 
 folder = '../pagerank_learning/'
+
+# Make a vector of states
+def make_states(n_choices,max_neighbors):
+    # Construct neighbor pairings list
+    ext_states = np.array(list(tools.product(range(0,max_neighbors+1),repeat=n_choices))) # Make list of neighbor combinations
+    ext_states = ext_states[np.where(sp.sum(ext_states,1)<=max_neighbors)[0]] # Remove pairs with more than max_neighbors neighbors
+    ext_states = ext_states[np.where(sp.sum(ext_states,1)>0)[0]] # Remove pairs with 0 neighbors
+
+    # Construct list of own states
+    int_states = np.array(np.repeat(np.arange(n_choices),np.size(ext_states,0)))
+
+    # Combine into a single array of states
+    ext_states = np.tile(ext_states, (n_choices, 1)) # Tile the external states
+    states = np.append(int_states[:, np.newaxis],ext_states,axis=1) # Concatenate into final ste vector
+    neighbors = sp.sum(ext_states,1) # Extract vector with number of neighbors
+
+    return states, neighbors
+
+# Find the idx of the desired states
+def find_desired_states_idx(states):
+    desired_states_idx = []
+    for x in np.arange(1,np.size(states,1)):
+        neighbors_in_agreement_idx = np.where(states[:, np.setdiff1d(np.arange(1, np.size(states, 1)), x)] == 0)[0] # States with all neighbors in agreement for choice x
+        current_opinion_idx = np.where(states[:, 0] == x-1 ) # States where you are of choice x
+        desired_states_idx.extend(np.intersect1d(neighbors_in_agreement_idx,current_opinion_idx))
+    desired_states_idx
+    return desired_states_idx
+
+
+def init_policy(states,desired_states_idx):
+    P0 = np.full((np.size(states, 0), np.size(states, 1) - 1), 1.0 / (np.size(states, 1) - 1))
+    P0 = np.delete(P0,desired_states_idx,axis=0) # Remove pairs with more than max_neighbors neighbors
+
+    return P0
 
 # Define the fitness function to optimize for
 def fitness_function(pr):
@@ -55,15 +97,38 @@ def extract_history(l):
        fitness_history.append(max(l._allGenerations[x][1]))
     return fitness_history
 
-def initialize_evolution_parameters(l):
+def initialize_evolution_parameters(l,evo):
     l.verbose = False # Verbose, defined on top
     l.maximize = True # Maximize the fitness function
     if graph:
         l.storeAllPopulations = True # Keep history
-    l.populationSize = 10 # Population
-    l.maxLearningSteps = 100 # Generations
+    l.populationSize = evo.population_size # Population
+    l.maxLearningSteps = evo.generations_max # Generations
     return l
 
-print "----- Starting optimization -----"
-runtime_ID = aux.set_runtime_ID()
-print "Runtime ID:",runtime_ID
+# Initialize ID
+def initialize(*args, **kwargs):
+    print "----- Starting optimization -----"
+    runtime_ID = aux.set_runtime_ID()
+    print "Runtime ID:",runtime_ID
+    return runtime_ID
+
+############### MAIN ###############
+runtime_ID = initialize() # Start up code and give a random runtime ID
+
+states, neighbors = make_states(task['m'],task['max_neighbors'])
+desired_states_idx = find_desired_states_idx(states)
+Q0 = init_policy(states,desired_states_idx)
+
+M = 8
+## Learning parameters
+x0 = np.ones(M)/2 # Initialize to ones
+GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
+GA.elitism = True # Use elite mem
+GA.mutationProb = evo['mutation_rate']
+GA.verbose = True
+GA.mutationStdDev = 0.2
+learner = GA(objF, x0) # Set up GA (alternative subclass)
+learner, GA = initialize_evolution_parameters(learner,evo)
+
+
