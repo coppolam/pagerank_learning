@@ -26,7 +26,7 @@ def print_graph(G,name):
 # Make a digraph together with edge weights, if given
 def make_digraph(s,t,w=None):
 
-    G = nx.MultiDiGraph()
+    G = nx.OrderedMultiDiGraph()
     if w is None:
         edge_list = list(zip(s,t))
         G.add_edges_from(edge_list)

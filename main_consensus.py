@@ -39,6 +39,18 @@ task = {
 
 folder = '../pagerank_learning/'
 
+# Evaluate pagerank vector
+def pagerank(G, tol=1e-8):
+    # Iterative procedure
+    n = G.shape[0] # Size of G
+    pr = 1 / n * np.ones((1, n)) # Initialize Pagerank vector
+    residual = 1 # Residual (initialize high, doesn't really matter)
+    while residual >= tol:
+        pr_previous = pr
+        pr = np.matmul(pr,G) # Pagerank formula
+        residual = np.linalg.norm(np.subtract(pr,pr_previous))
+    return np.squeeze(np.asarray(pr))
+
 # Make a vector of states
 def make_states(n_choices,max_neighbors):
     # Construct neighbor pairings list
@@ -116,9 +128,13 @@ def GS_passive(states, neighbors):
     G = gt.make_digraph(s, t) # Make the digraph. All weights the same in this case.
     return G
 
-def normalize_rows(x: np.ndarray):
+def normalize_rows(x: np.ndarray,rows_of_interest=None):
+    if rows_of_interest is None:
+        rows_of_interest = range(np.size(x,0))
+
     row_sums = x.sum(axis=1)
-    new_matrix = x / row_sums[:, np.newaxis]
+    new_matrix = x
+    new_matrix[rows_of_interest][:] = x[rows_of_interest][:] / row_sums[rows_of_interest, np.newaxis]
     return new_matrix
 
 # Define the fitness function to optimize for
@@ -128,38 +144,36 @@ def fitness_function(pr):
 
 def objF(x):
     # Generate policy
-    Q =
+    Q = Q0
+    active_rows = np.setdiff1d(range(0, np.size(Q0,0)), desired_states_idx)
+    Q[active_rows][:] = np.reshape(x, (np.size(Q0, 0) - np.size(desired_states_idx), np.size(Q0, 1)))
 
     # Generate alpha vector
-    alpha_vector = Q
+    alpha_vector = np.divide(np.sum(Q,axis = 1),neighbors+1)
+    alpha_mat = np.diag(alpha_vector)
 
     # Generate the graphs
     GSA = GS_active(Q, states)
     GSP = GS_passive(states, neighbors)
 
-    # Adjacency Matrices
-    H = nx.adjacency_matrix(GSA, weight='weight')
-    E = nx.adjacency_matrix(GSP)
+    # Print the graphs (mainly for debugging purposes)
+    gt.print_graph(GSA, 'GS_active_debug.png')
+    gt.print_graph(GSP, 'GS_passive_debug.png')
 
-    H = normalize_rows(H.toarray())
-    E = normalize_rows(E.toarray())
+    # Adjacency Matrices, ensuring that the order is correct!
+    H = nx.adjacency_matrix(GSA,nodelist=range(np.size(neighbors)), weight='weight').toarray()
+    E = nx.adjacency_matrix(GSP,nodelist=range(np.size(neighbors)), weight='weight').toarray()
+
+    H = normalize_rows(H,active_rows)
+    E = normalize_rows(E)
     D = np.zeros([np.size(E,0),np.size(E,1)])
     D[desired_states_idx,:] = E[desired_states_idx,:]
 
-    # Get Google Matrix
-    alpha_mat = np.diag(alpha_vector)
-    G = alpha_mat * (H + D) + (1- alpha_mat) * E
+    # Get Google Matrix  --->  G = alpha_mat * (H + D) + (1- alpha_mat) * E
+    S = np.add(H,D)
+    GoogleMatrix = np.add(np.matmul(alpha_mat,S),np.matmul(np.eye(np.size(alpha_mat,0)) - alpha_mat,E))
 
-    # alpha_mat = np.asmatrix(np.diag(alpha)) # Alpha vector in matrix format
-    # Hm = np.asmatrix(np.asarray(H) * x[:, np.newaxis]) # Multiply probability of transition with probability of policy
-    # z = np.where(x <= 0.00001)[0] # Find transitions with no action
-    # D = np.matlib.zeros((M,M)) # Blank slate for matrix D
-    # D[z,:] = E[z,:] # Account for blocked states in matrix D
-    # S = aux.normalize_rows(Hm + D) # Normalize policy matrix S = H + D
-    # Em = aux.normalize_rows(E) # Normalize environment matrix E
-    # G = np.matmul(aM, S) + np.matmul(np.subtract(np.eye(aM.shape[0]), aM), Em)
-
-    pr = gt.pagerank(G) # Evaluate PageRank vector
+    pr = pagerank(GoogleMatrix) # Evaluate PageRank vector
     fitness = fitness_function(pr) # Evaluate the fitness
     return fitness
 
@@ -192,6 +206,7 @@ runtime_ID = initialize() # Start up code and give a random runtime ID
 states, neighbors = make_states(task['m'],task['max_neighbors'])
 desired_states_idx = find_desired_states_idx(states)
 Q0 = init_policy(states,desired_states_idx)
+Q_idx = np.where(Q0.flatten()!=0)
 
 # Generate the graphs
 GSA = GS_active(Q0, states)
@@ -201,15 +216,16 @@ GSP = GS_passive(states, neighbors)
 gt.print_graph(GSA,'GS_active.png')
 gt.print_graph(GSP,'GS_passive.png')
 
-M = 8
-## Learning parameters
-x0 = np.ones(M)/2 # Initialize to ones
-GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
+# Learning parameters
+GA.xBound = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
 GA.elitism = True # Use elite mem
 GA.mutationProb = evo['mutation_rate']
 GA.verbose = True
 GA.mutationStdDev = 0.2
-l = GA(objF, x0) # Set up GA (alternative subclass)
+
+x_init = np.ones(np.size(Q_idx))/task['m'] # Initialize to ones
+l = GA(objF, x_init) # Set up GA (alternative subclass)
 l = initialize_evolution_parameters(l,evo)
 
+# Learn
 l.learn()
