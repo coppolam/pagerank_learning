@@ -91,24 +91,76 @@ def GS_active(Q, states):
         w.extend(Q[i, :])
 
     Ga = gt.make_digraph(s, t, w) # Make the digraph
-    return Ga, s
+    return Ga
+
+def GS_passive(states, neighbors):
+    n_states = np.size(states, 0)
+    s = [] # Starting nodes
+    t = [] # End nodes
+    for i in range(0, n_states): # For each state, we will extract the possible edges and weights
+        s_i = states[i, :] # Selected state
+        n_eq_idx = np.where(neighbors == neighbors[i])[0] # Indexes of states with the same number of neighbors
+
+        # Extract indexes where there is only at most one neighbour changing states at the same time
+        idx = np.where( np.amax(np.abs(np.subtract(states[n_eq_idx, 1:np.size(states, 1)], s_i[1:np.size(states, 1)])),axis=1) == True)
+        n_eq_idx = n_eq_idx[idx]
+
+        # Exclude your own state from there
+        current_opinion_idx = np.where(states[:, 0] == s_i[0])
+        idx_final = np.intersect1d(n_eq_idx,current_opinion_idx)
+
+        # Create edges between starting nodes and end nodes
+        s.extend(int(i) * np.ones((np.size(idx_final),),dtype=int))
+        t.extend(idx_final)
+
+    G = gt.make_digraph(s, t) # Make the digraph. All weights the same in this case.
+    return G
+
+def normalize_rows(x: np.ndarray):
+    row_sums = x.sum(axis=1)
+    new_matrix = x / row_sums[:, np.newaxis]
+    return new_matrix
 
 # Define the fitness function to optimize for
 def fitness_function(pr):
-    f = np.mean(pr[2:])/np.mean(pr)
+    f = np.mean(pr[desired_states_idx])/np.mean(pr)
     return f
 
 def objF(x):
-    aM = np.asmatrix(np.diag(alpha)) # Alpha vector in matrix format
-    Hm = np.asmatrix(np.asarray(H) * x[:, np.newaxis]) # Multiply probability of transition with probability of policy
-    z = np.where(x <= 0.00001)[0] # Find transitions with no action
-    D = np.matlib.zeros((M,M)) # Blank slate for matrix D
-    D[z,:] = E[z,:] # Account for blocked states in matrix D
-    S = aux.normalize_rows(Hm + D) # Normalize policy matrix S = H + D
-    Em = aux.normalize_rows(E) # Normalize environment matrix E
-    G = np.matmul(aM, S) + np.matmul(np.subtract(np.eye(aM.shape[0]), aM), Em)
-    pr = gt.pagerank(G) # Evaluate pagerank vector
-    fitness = fitness_function(pr) # Get fitness
+    # Generate policy
+    Q =
+
+    # Generate alpha vector
+    alpha_vector = Q
+
+    # Generate the graphs
+    GSA = GS_active(Q, states)
+    GSP = GS_passive(states, neighbors)
+
+    # Adjacency Matrices
+    H = nx.adjacency_matrix(GSA, weight='weight')
+    E = nx.adjacency_matrix(GSP)
+
+    H = normalize_rows(H.toarray())
+    E = normalize_rows(E.toarray())
+    D = np.zeros([np.size(E,0),np.size(E,1)])
+    D[desired_states_idx,:] = E[desired_states_idx,:]
+
+    # Get Google Matrix
+    alpha_mat = np.diag(alpha_vector)
+    G = alpha_mat * (H + D) + (1- alpha_mat) * E
+
+    # alpha_mat = np.asmatrix(np.diag(alpha)) # Alpha vector in matrix format
+    # Hm = np.asmatrix(np.asarray(H) * x[:, np.newaxis]) # Multiply probability of transition with probability of policy
+    # z = np.where(x <= 0.00001)[0] # Find transitions with no action
+    # D = np.matlib.zeros((M,M)) # Blank slate for matrix D
+    # D[z,:] = E[z,:] # Account for blocked states in matrix D
+    # S = aux.normalize_rows(Hm + D) # Normalize policy matrix S = H + D
+    # Em = aux.normalize_rows(E) # Normalize environment matrix E
+    # G = np.matmul(aM, S) + np.matmul(np.subtract(np.eye(aM.shape[0]), aM), Em)
+
+    pr = gt.pagerank(G) # Evaluate PageRank vector
+    fitness = fitness_function(pr) # Evaluate the fitness
     return fitness
 
 def extract_history(l):
@@ -121,10 +173,9 @@ def extract_history(l):
 def initialize_evolution_parameters(l,evo):
     l.verbose = False # Verbose, defined on top
     l.maximize = True # Maximize the fitness function
-    if graph:
-        l.storeAllPopulations = True # Keep history
-    l.populationSize = evo.population_size # Population
-    l.maxLearningSteps = evo.generations_max # Generations
+    l.storeAllPopulations = True # Keep history
+    l.populationSize = evo['population_size'] # Population
+    l.maxLearningSteps = evo['generations_max'] # Generations
     return l
 
 # Initialize ID
@@ -137,28 +188,28 @@ def initialize(*args, **kwargs):
 ############### MAIN ###############
 runtime_ID = initialize() # Start up code and give a random runtime ID
 
+# Initialize the state space, indicate the desired states, and the basic policy
 states, neighbors = make_states(task['m'],task['max_neighbors'])
 desired_states_idx = find_desired_states_idx(states)
 Q0 = init_policy(states,desired_states_idx)
-GS,s = GS_active(Q0, states)
 
+# Generate the graphs
+GSA = GS_active(Q0, states)
+GSP = GS_passive(states, neighbors)
 
+# Print the graphs (mainly for debugging purposes)
+gt.print_graph(GSA,'GS_active.png')
+gt.print_graph(GSP,'GS_passive.png')
 
-# from networkx.drawing.nx_agraph import to_agraph
-# A = to_agraph(GS)
-# A.layout('dot')
-# A.draw()
-# nx.draw_planar()
-# plot.show()
-# M = 8
-# ## Learning parameters
-# x0 = np.ones(M)/2 # Initialize to ones
-# GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
-# GA.elitism = True # Use elite mem
-# GA.mutationProb = evo['mutation_rate']
-# GA.verbose = True
-# GA.mutationStdDev = 0.2
-# learner = GA(objF, x0) # Set up GA (alternative subclass)
-# learner, GA = initialize_evolution_parameters(learner,evo)
-#
-#
+M = 8
+## Learning parameters
+x0 = np.ones(M)/2 # Initialize to ones
+GA.xBound = list(zip(list(np.zeros(M)),list(np.ones(M)))) # Set limits
+GA.elitism = True # Use elite mem
+GA.mutationProb = evo['mutation_rate']
+GA.verbose = True
+GA.mutationStdDev = 0.2
+l = GA(objF, x0) # Set up GA (alternative subclass)
+l = initialize_evolution_parameters(l,evo)
+
+l.learn()
