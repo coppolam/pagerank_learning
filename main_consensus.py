@@ -10,7 +10,6 @@ Created on Wed Jun 19 18:40:27 2019
 import numpy as np
 import itertools as tools
 import scipy as sp
-from pybrain.optimization import GA as optimizer
 
 # Own libraries
 import graph as gt
@@ -19,16 +18,6 @@ import random
 
 # Top level settings
 np.set_printoptions(suppress=True) # Prevent numpy exponential notation on print, default False
-
-# Parameters of the evolution
-evo = {
-    'generations_max': 1000,
-    'mutation_rate': 0.1, # % Mutation rate
-    'elite': 0.3, # % Percentage of population that is elite
-    'parents': 0.4, # % Percentage of population that reproduces
-    'mutate': 0.3, # % Percentage of population that mutates
-    'population_size': 200  # Population size in the evolutionary task
-}
 
 # Parameters of the consensus task
 task = {
@@ -139,7 +128,6 @@ def fitness_function(pr):
 
 # Objective function
 def objF(x):
-    print(x)
     # Generate the policy as per the iteration x
     Q = Q0 # Copy Q from template Q0
     Q[active_rows,:] = np.reshape(x, (np.size(Q0, 0) - np.size(desired_states_idx), np.size(Q0, 1)))
@@ -158,7 +146,7 @@ def objF(x):
     pr = pagerank(GoogleMatrix) # Evaluate PageRank vector
     fitness = fitness_function(pr) # Evaluate the fitness
 
-    return fitness
+    return 1/fitness # Using 1/f because we minimize instead of maximizing
 
 def extract_history(l):
     # Extract fitness history
@@ -166,15 +154,6 @@ def extract_history(l):
     for x in range(0, l.numLearningSteps):
        fitness_history.append(max(l._allGenerations[x][1]))
     return fitness_history
-
-def initialize_evolution_parameters(l,evo):
-    l.verbose = False # Verbose, defined on top
-    l.maximize = True # Maximize the fitness function
-    l.storeAllPopulations = True # Keep history
-    # l.populationSize = evo['population_size'] # Population
-    l.maxLearningSteps = evo['generations_max'] # Generations
-    # l.
-    return l
 
 # Initialize ID
 def initialize(*args, **kwargs):
@@ -193,14 +172,15 @@ Q0 = init_policy(states,desired_states_idx)
 Q_idx = np.where(Q0.flatten()!=0)
 
 # Generate the passive graph
-GSP = GS_passive(states, neighbors)
+GSa = GS_active(Q0, states)
+GSp = GS_passive(states, neighbors)
 
 # Generate alpha vector
 alpha_vector = np.divide(np.sum(Q0, axis=1), neighbors + 1)
 alpha_mat = np.diag(alpha_vector)
 
 # E and D matrices (constant)
-E = nx.adjacency_matrix(GSP, nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
+E = nx.adjacency_matrix(GSp, nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
 D = np.zeros([np.size(E, 0), np.size(E, 1)])
 D[desired_states_idx, :] = E[desired_states_idx, :]
 E = normalize_rows(E)
@@ -208,20 +188,17 @@ E = normalize_rows(E)
 active_rows = np.setdiff1d(range(0, np.size(Q0, 0)), desired_states_idx)
 
 # Print the graphs (mainly for debugging purposes)
-# gt.print_graph(GSA,'GS_active.png')
-# gt.print_graph(GSP,'GS_passive.png')
+gt.print_graph(GSa,'GS_active.png')
+gt.print_graph(GSp,'GS_passive.png')
 
 # Learning parameters
-optimizer.xBound = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
-optimizer.elitism = True # Use elite mem
-optimizer.mutationProb = evo['mutation_rate']
-optimizer.verbose = True
-optimizer.mutationStdDev = 0.2
-# optimizer.boundaries = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
-
+bounds = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
+from scipy.optimize import differential_evolution
 x_init = np.ones(np.size(Q_idx))/task['m'] # Initialize to ones
-l = optimizer(objF, x_init) # Set up GA (alternative subclass)
-l = initialize_evolution_parameters(l,evo)
+l = sp.optimize.minimize(objF, x_init, args=(), bounds=bounds) # disp=True,popsize=10) # Set up GA (alternative subclass)
 
-# Learn
-l.learn()
+# Final policy
+Q = Q0 # Copy Q from template Q0
+Q[active_rows,:] = np.reshape(l.x, (np.size(Q0, 0) - np.size(desired_states_idx), np.size(Q0, 1)))
+
+print(Q)
