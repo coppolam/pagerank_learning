@@ -9,8 +9,6 @@ Created on Wed Jun 19 18:40:27 2019
 """
 
 ## Libraries
-import numpy as np
-import sys
 np.set_printoptions(suppress=True) #prevent numpy exponential notation on print, default False
 import matplotlib as plot
 from pybrain.optimization import GA

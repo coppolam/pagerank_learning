@@ -10,12 +10,12 @@ Created on Wed Jun 19 18:40:27 2019
 import numpy as np
 import itertools as tools
 import scipy as sp
-from pybrain.optimization import GA
+from pybrain.optimization import GA as optimizer
 
 # Own libraries
-import auxiliary as aux
 import graph as gt
 import networkx as nx
+import random
 
 # Top level settings
 np.set_printoptions(suppress=True) # Prevent numpy exponential notation on print, default False
@@ -27,7 +27,7 @@ evo = {
     'elite': 0.3, # % Percentage of population that is elite
     'parents': 0.4, # % Percentage of population that reproduces
     'mutate': 0.3, # % Percentage of population that mutates
-    'population_size': 3  # Population size in the evolutionary task
+    'population_size': 200  # Population size in the evolutionary task
 }
 
 # Parameters of the consensus task
@@ -35,8 +35,6 @@ task = {
     'max_neighbors': 8, # Maximum neighbors that the agent can see
     'm': 2 # Number of choices
 }
-
-folder = '../pagerank_learning/'
 
 # Evaluate pagerank vector
 def pagerank(G, tol=1e-8):
@@ -77,18 +75,18 @@ def find_desired_states_idx(states):
     desired_states_idx
     return desired_states_idx
 
-def ismember(A, B):
-    return [ np.sum(a == B) for a in A ]
-
-def init_policy(states,desired_states_idx):
+# Initialize the policy (state action matrix)
+def init_policy(states, desired_states_idx):
+    # Generate a state-action matrix with all equal probabilities
     P0 = np.full((np.size(states, 0), np.size(states, 1) - 1), 1.0 / (np.size(states, 1) - 1))
+    # Set action probabilities of desired states to 0
     P0[desired_states_idx] = 0
-    # P0 = np.delete(P0,desired_states_idx,axis=0) # Remove pairs with more than max_neighbors neighbors
     return P0
 
+# Make the active graph GSa. This function needs to be customized for a given task.
 def GS_active(Q, states):
-    n_states = np.size(states, 0)
-    n_choices = np.size(Q, 1)
+    n_states = np.size(states, 0) # number of states
+    n_choices = np.size(Q, 1) # number of choices
     s = [] # Starting nodes
     t = [] # End nodes
     w = [] # Weights
@@ -97,13 +95,14 @@ def GS_active(Q, states):
         indexes = [] # Indexes
         for j in range(0, n_choices):
             indexes.extend(np.where((states == np.append(j,s_i[range(1,n_choices+1)])).all(axis=1))[0])
-        s.extend(int(i) * np.ones((n_choices,),dtype=int))
-        t.extend(indexes)
-        w.extend(Q[i, :])
+        s.extend(int(i) * np.ones((n_choices,),dtype=int)) # Starting nodes
+        t.extend(indexes) # End nodes
+        w.extend(Q[i, :]) # Weight (equal to the action probability)
 
     Ga = gt.make_digraph(s, t, w) # Make the digraph
     return Ga
 
+# Make the passive graph GSp. This function needs to be customized for a given task.
 def GS_passive(states, neighbors):
     n_states = np.size(states, 0)
     s = [] # Starting nodes
@@ -121,13 +120,14 @@ def GS_passive(states, neighbors):
         idx_final = np.intersect1d(n_eq_idx,current_opinion_idx)
 
         # Create edges between starting nodes and end nodes
-        s.extend(int(i) * np.ones((np.size(idx_final),),dtype=int))
-        t.extend(idx_final)
+        s.extend(int(i) * np.ones((np.size(idx_final),),dtype=int)) # Starting nodes
+        t.extend(idx_final) # Ending nodes
 
     G = gt.make_digraph(s, t) # Make the digraph. All weights the same in this case.
     return G
 
-def normalize_rows(x: np.ndarray):
+# Normalize the rows of an array
+def normalize_rows(x):
     row_sums = x.sum(axis=1)
     new_matrix = x / row_sums[:, np.newaxis]
     return new_matrix
@@ -137,33 +137,24 @@ def fitness_function(pr):
     f = np.mean(pr[desired_states_idx])/np.mean(pr)
     return f
 
+# Objective function
 def objF(x):
-    
-    # Generate policy
-    Q = Q0
-    active_rows = np.setdiff1d(range(0, np.size(Q0,0)), desired_states_idx)
+    print(x)
+    # Generate the policy as per the iteration x
+    Q = Q0 # Copy Q from template Q0
     Q[active_rows,:] = np.reshape(x, (np.size(Q0, 0) - np.size(desired_states_idx), np.size(Q0, 1)))
+    Q[active_rows,:] = normalize_rows(Q[active_rows,:])
 
-    # Generate alpha vector
-    alpha_vector = np.divide( np.sum(Q,axis = 1), neighbors + 1 )
-    alpha_mat = np.diag(alpha_vector)
+    # Generate the active graph Gsa and its adjacency matrix H
+    GSa = GS_active(Q, states)
+    H = nx.adjacency_matrix(GSa,nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
 
-    # Generate the graphs
-    GSA = GS_active(Q, states)
-    GSP = GS_passive(states, neighbors)
-
-    # Adjacency Matrices, ensuring that the order is correct!
-    H = nx.adjacency_matrix(GSA,nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
-    E = nx.adjacency_matrix(GSP,nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
-    D = np.zeros([np.size(E,0),np.size(E,1)])
-    D[desired_states_idx,:] = E[desired_states_idx,:]
-
-    # Get Google Matrix  --->  G = alpha_mat * (H + D) + (1- alpha_mat) * E
-    S = np.add(H,D)
-    S = normalize_rows(S)
-    E = normalize_rows(E)
+    # Get Google Matrix using the equation: G = alpha_mat * (H + D) + (1- alpha_mat) * E
+    S = np.add(H,D) # S = H + D
+    S = normalize_rows(S) # Normalize S = H + D
     GoogleMatrix = np.add(np.matmul(alpha_mat,S),np.matmul(np.eye(np.size(alpha_mat,0)) - alpha_mat,E))
 
+    # Evaluate fitness
     pr = pagerank(GoogleMatrix) # Evaluate PageRank vector
     fitness = fitness_function(pr) # Evaluate the fitness
 
@@ -180,14 +171,15 @@ def initialize_evolution_parameters(l,evo):
     l.verbose = False # Verbose, defined on top
     l.maximize = True # Maximize the fitness function
     l.storeAllPopulations = True # Keep history
-    l.populationSize = evo['population_size'] # Population
+    # l.populationSize = evo['population_size'] # Population
     l.maxLearningSteps = evo['generations_max'] # Generations
+    # l.
     return l
 
 # Initialize ID
 def initialize(*args, **kwargs):
     print("----- Starting optimization -----")
-    runtime_ID = aux.set_runtime_ID()
+    runtime_ID = random.randrange(1000)
     print("Runtime ID:",runtime_ID)
     return runtime_ID
 
@@ -200,23 +192,35 @@ desired_states_idx = find_desired_states_idx(states)
 Q0 = init_policy(states,desired_states_idx)
 Q_idx = np.where(Q0.flatten()!=0)
 
-# Generate the graphs
-GSA = GS_active(Q0, states)
+# Generate the passive graph
 GSP = GS_passive(states, neighbors)
 
+# Generate alpha vector
+alpha_vector = np.divide(np.sum(Q0, axis=1), neighbors + 1)
+alpha_mat = np.diag(alpha_vector)
+
+# E and D matrices (constant)
+E = nx.adjacency_matrix(GSP, nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
+D = np.zeros([np.size(E, 0), np.size(E, 1)])
+D[desired_states_idx, :] = E[desired_states_idx, :]
+E = normalize_rows(E)
+
+active_rows = np.setdiff1d(range(0, np.size(Q0, 0)), desired_states_idx)
+
 # Print the graphs (mainly for debugging purposes)
-gt.print_graph(GSA,'GS_active.png')
-gt.print_graph(GSP,'GS_passive.png')
+# gt.print_graph(GSA,'GS_active.png')
+# gt.print_graph(GSP,'GS_passive.png')
 
 # Learning parameters
-GA.xBound = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
-# GA.elitism = True # Use elite mem
-# GA.mutationProb = evo['mutation_rate']
-# GA.verbose = True
-# GA.mutationStdDev = 0.2
+optimizer.xBound = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
+optimizer.elitism = True # Use elite mem
+optimizer.mutationProb = evo['mutation_rate']
+optimizer.verbose = True
+optimizer.mutationStdDev = 0.2
+# optimizer.boundaries = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
 
 x_init = np.ones(np.size(Q_idx))/task['m'] # Initialize to ones
-l = GA(objF, x_init) # Set up GA (alternative subclass)
+l = optimizer(objF, x_init) # Set up GA (alternative subclass)
 l = initialize_evolution_parameters(l,evo)
 
 # Learn
