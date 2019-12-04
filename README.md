@@ -14,6 +14,8 @@ The code was made for *Python 3.7*.
 Please ensure that the networkx library is installed in order to handle graphs.
 Currently the optimization uses a relatively simple scipy implementation for demo purposes. This can be replaced by other optimizers too.
 
+Run `main_consensus.py`.
+
 # Troubleshooting notes
  * Make sure python 3.7 (specifically 3.7.5)
  * Make sure Networkx version is 2.4 (or later, albeit untested)
