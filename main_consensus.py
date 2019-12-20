@@ -10,7 +10,7 @@ Created on Wed Jun 19 18:40:27 2019
 import numpy as np
 import itertools as tools
 import scipy as sp
-
+import deap
 # Own libraries
 import graph as gt
 import networkx as nx
@@ -22,7 +22,7 @@ np.set_printoptions(suppress=True) # Prevent numpy exponential notation on print
 # Parameters of the consensus task
 task = {
     'max_neighbors': 8, # Maximum neighbors that the agent can see
-    'm': 2 # Number of choices
+    'm': 3 # Number of choices
 }
 
 # Evaluate pagerank vector
@@ -145,15 +145,8 @@ def objF(x):
     # Evaluate fitness
     pr = pagerank(GoogleMatrix) # Evaluate PageRank vector
     fitness = fitness_function(pr) # Evaluate the fitness
-
+    print(fitness)
     return 1/fitness # Using 1/f because we minimize instead of maximizing
-
-def extract_history(l):
-    # Extract fitness history
-    fitness_history = []
-    for x in range(0, l.numLearningSteps):
-       fitness_history.append(max(l._allGenerations[x][1]))
-    return fitness_history
 
 # Initialize ID
 def initialize(*args, **kwargs):
@@ -190,12 +183,12 @@ active_rows = np.setdiff1d(range(0, np.size(Q0, 0)), desired_states_idx)
 # Print the graphs (mainly for debugging purposes)
 gt.print_graph(GSa,'GS_active.png')
 gt.print_graph(GSp,'GS_passive.png')
+x0 = np.ones(np.size(Q_idx))/task['m'] # Initialize to ones
 
 # Learning parameters
 bounds = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
 from scipy.optimize import differential_evolution
-x_init = np.ones(np.size(Q_idx))/task['m'] # Initialize to ones
-l = sp.optimize.minimize(objF, x_init, args=(), bounds=bounds) # disp=True,popsize=10) # Set up GA (alternative subclass)
+l = sp.optimize.minimize(objF, x0, args=(), bounds=bounds, tol=1e-3) # disp=True,popsize=10) # Set up GA (alternative subclass)
 
 # Final policy
 Q = Q0 # Copy Q from template Q0
