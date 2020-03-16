@@ -1,15 +1,3 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jun 19 18:40:27 2019
-
-@author: Mario Coppola
-"""
-
-## Input
-# data_write_folder = 'data/gridmaze/evolutions/'  # Where the final data will be stored
-# save_data = 0
-
 ## Libraries
 import numpy as np
 np.set_printoptions(suppress=True)  # Prevent numpy exponential notation on print, default False
