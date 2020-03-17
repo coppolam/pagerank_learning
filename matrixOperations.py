@@ -24,10 +24,6 @@ def update_H(H, A ,E , pol_sim, pol):
 	b = A * pol_sim[:, np.newaxis]
 	Hnew = np.divide(H, b, out=np.zeros_like(H), where=b!=0);
 	Hnew = Hnew * ( A * pol[:, np.newaxis]);
-	
-	# Add static rows from E ("D" matrix)
-	static_rows = np.where(~Hnew.any(axis=1))[0]
-	Hnew[static_rows,:] = E[static_rows,:]
 	return Hnew
 
 def make_binary(mat):
