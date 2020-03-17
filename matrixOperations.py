@@ -9,7 +9,8 @@ def normalize_rows(mat):
 
 def pagerank(G, tol=1e-8):
 	# Iterative procedure
-	n = G.shape[0] # Size of G
+	G = normalize_rows(G)
+	n = G.shape[0]
 	pr = 1 / n * np.ones((1, n)) # Initialize Pagerank vector
 	residual = 1 # Residual (initialize high, doesn't really matter)
 	while residual >= tol:
@@ -23,7 +24,6 @@ def update_H(H, A ,E , pol_sim, pol):
 	b = A * pol_sim[:, np.newaxis]
 	Hnew = np.divide(H, b, out=np.zeros_like(H), where=b!=0);
 	Hnew = Hnew * ( A * pol[:, np.newaxis]);
-	# Hnew = normalize_rows(Hnew)
 	
 	# Add static rows from E ("D" matrix)
 	static_rows = np.where(~Hnew.any(axis=1))[0]

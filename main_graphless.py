@@ -11,41 +11,37 @@ pol_sim = np.array([0.5,0.5,0.5,0.5,0.5,0.5,0.5])
 pol_test = np.array([0,0,0,0,0,0,0])
 des = np.array([2,3,4,5,6])
 
-verbose = 1
+verbose = 2
 
 def fitness(pr,des):
 	return np.mean(pr[:,des])/np.mean(pr)
 
 def objective_function(pol,alpha,H,E,A):
-	# pol = np.around(pol)
 	Hnew = matOp.update_H(H, A, E, pol_sim, pol)
-	ad = np.diag(alpha)
-	ad1 = np.diag(1-alpha)
-	G = ad.dot(Hnew) + ad1.dot(E)
-	# G = alpha * Hnew + (1-alpha) * E
-	G = matOp.normalize_rows(G)
-	gr = nx.from_numpy_matrix(Hnew)
-	
-	if not nx.is_connected(gr):
-		f = 0
-	else:
-		pr = matOp.pagerank(G)
-		a = np.isinf(pr)
-		f = fitness(pr,des)
+	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E)
+	pr = matOp.pagerank(G)
+	f = fitness(pr,des)
 	if verbose > 1:
-		print("Fitness \tf = " + str(round(f,5))+ "\t1/(1+f) = " + str(round(1/(1+f),5)))
+		print(str(round(pol[0],4)) + 
+			" Fitness \tf = " + str(round(f,5)) + 
+			"\t1/(1+f) = " + str(round(1/(f+1),5)))
 	return 1 / (f+1) # Trick it into maximizing
 
 def optimize(alpha,H, E, A):
 	s = "randtobest1bin"
 	# s = "best2bin"
+	# s = "best2exp"
+
+	# Answers are bound between 0 and 1
 	bounds = list(zip(np.zeros(np.size(pol_sim)),np.ones(np.size(pol_sim)))) # Bind values
+	
+	# Optimize
 	result = spopt.differential_evolution(objective_function,
                                        bounds=bounds, 
                                        args=(alpha,H,E,A),
 									   strategy=s,
-									   popsize=30,
-									   maxiter=2000)
+									   popsize=15,
+									   maxiter=1000)
 	
 	if verbose > 0:
 		print("\n*****Result******")
@@ -78,22 +74,18 @@ def main():
 		print("***********************************")
 		i = i + 1
 		
-		# Read output
+		# Read output of simulation
 		H, A, E = fh.read_matrices("../swarmulator/mat/")
 		np.set_printoptions(suppress=True)
-		print(H)
-		print(E)
+		r = np.sum(H, axis=1) / np.sum(E, axis=1)
+		r = np.nan_to_num(r) # Just in case
+		alpha = r / (1 + r)
 		
-		alpha = np.sum(H,axis=1)/np.sum(E,axis=1)
-		alpha = np.nan_to_num(alpha)
-		# alpha = 0.5
-		# print(alpha)
-		alpha = alpha / (1+alpha)
-		print(alpha)
-		# H = matOp.normalize_rows(H);
-		# E = matOp.normalize_rows(E);
-		# print(H)
-		# E = matOp.normalize_rows(matOp.make_binary(E))
+		if verbose > 1:
+			print(H)
+			print(E)
+			print(alpha)
+
 		policy, fitness = optimize(alpha,H,E,A)
 
 if __name__ == '__main__':
