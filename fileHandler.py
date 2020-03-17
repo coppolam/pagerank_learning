@@ -3,7 +3,7 @@ import numpy as np
 def load_matrix(file):
     try:
         matrix = np.loadtxt(open(file, "rb"), delimiter=", \t", skiprows=1)
-        print(matrix)
+        # print(matrix)
         return matrix
     except:
         raise ValueError("Matrix " + file + " could not be loaded! Exiting.")

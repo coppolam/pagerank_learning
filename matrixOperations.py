@@ -22,8 +22,8 @@ def update_H(H, A ,E , pol_sim, pol):
 	# Update H based on actions
 	b = A * pol_sim[:, np.newaxis]
 	Hnew = np.divide(H, b, out=np.zeros_like(H), where=b!=0);
-	Hnew = Hnew*(A*pol[:, np.newaxis]);
-	Hnew = normalize_rows(Hnew)
+	Hnew = Hnew * ( A * pol[:, np.newaxis]);
+	# Hnew = normalize_rows(Hnew)
 	
 	# Add static rows from E ("D" matrix)
 	static_rows = np.where(~Hnew.any(axis=1))[0]
