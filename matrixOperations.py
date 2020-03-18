@@ -1,9 +1,14 @@
 import numpy as np
 
-def normalize_rows(mat):
-	row_sums = np.sum(mat, axis=1)
-	mat = np.divide(mat,row_sums[:,np.newaxis], 
-		out=np.zeros_like(mat), where=row_sums[:,np.newaxis]!=0)
+def round_to_multiple(a, mult):
+    return np.around(a / mult) * mult
+
+def normalize_rows(mat,axis=1):
+	row_sums = np.sum(mat, axis=axis)
+	if not np.isscalar(row_sums):
+		mat = np.divide(mat,row_sums[:,np.newaxis], out=np.zeros_like(mat), where=row_sums[:,np.newaxis]!=0)
+	else:
+		mat = np.divide(mat,row_sums)
 	return mat
 
 def pagerank(G, tol=1e-8):
