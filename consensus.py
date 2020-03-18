@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 import scipy.optimize as spopt
 import itertools
 import simulator_backend as sb
-
-np.random.seed(2)
+import sys
+np.random.seed(3)
 n_min, n_max = 10, 20
-verbose = 1
-estimator = estimator()
+verbose = 2
 m = sb.m
 
 def episode(perms, policy):
@@ -21,11 +20,12 @@ def episode(perms, policy):
 	choices = np.random.randint(0, m, n)
 	happy = False
 	steps = 0
+	sb.e.set_size(np.size(perms))
 
 	### Run the simulation until agreement system
 	while not happy:
 		choices = sb.take_action(perms, pattern, choices, policy)
-		if np.unique(choices.astype("int")).size is 1:
+		if np.unique(choices.astype("int")).size is 1: # or steps > 10000:
 			happy = True
 			if verbose > 0:
 				print("Done! Result = ["+str(choices)+"]")
@@ -65,8 +65,12 @@ def main():
 	# result = spopt.differential_evolution(objective_function, bounds, args=(perms,))
 	f = simulate(policy, perms)
 	
+	np.set_printoptions(threshold=sys.maxsize)
 	if verbose > 0:
 		print("Fitness = " + str(f))
+		print(sb.e.H)
+		print(sb.e.A)
+		print(sb.e.E)
 
 if __name__ == '__main__':
 	main()
