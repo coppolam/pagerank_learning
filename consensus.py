@@ -6,10 +6,10 @@ import scipy.optimize as spopt
 import itertools
 
 
-np.random.seed(1)
+np.random.seed(2)
 n_min, n_max = 10, 20
 m = 2
-r = 2
+r = 1.8
 
 def get_neighbors(selected_robot, pattern):
 	p = pattern[selected_robot] - pattern
@@ -21,8 +21,21 @@ def get_observation(selected_robot, pattern, choices):
 	neighbors = get_neighbors(selected_robot, pattern)
 	return choices[neighbors], neighbors
 
-def generate_random_pattern(n):
-	pattern = np.random.randint(-2,2,size=(n,2)) # TODO: Fix
+def generate_random_connected_pattern(n):
+	i = 1
+	pattern = np.array([[0,0]]) # First robot
+	while i < n:
+		# Get the new position
+		p = np.random.randint(0,i) # Attach to another neighbor
+		new_position = pattern[p,:] + np.random.randint(-1,1+1,size=(1,2))[0]
+		
+		# Check if the position is occupied (you are the only allowd to occupy it!)
+		if np.size(np.where((pattern == new_position).all(axis=1))) < 1:
+			# Add it to the pattern
+			pattern = np.vstack((pattern, new_position))
+			pattern = np.around(pattern, 0)
+			i += 1	
+
 	return pattern
 
 def take_action(perms, pattern, choices, policy):
@@ -41,7 +54,8 @@ def take_action(perms, pattern, choices, policy):
 def episode(perms,policy):
 	# Initialize
 	n = np.asscalar(np.random.randint(n_min, n_max, 1))
-	pattern = generate_random_pattern(n)
+	pattern = generate_random_connected_pattern(n)
+	print(n)
 	# plt.plot(pattern.T[0],pattern.T[1], 'ro'), plt.show()
 	choices = np.random.randint(0, m, n)
 	happy = False
@@ -53,6 +67,7 @@ def episode(perms,policy):
 		if np.unique(choices.astype("int")).size is 1:
 			happy = True
 			print("Done! Result = ["+str(choices)+"]")
+		print(choices)
 		steps += 1
 
 	return steps
