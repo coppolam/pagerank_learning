@@ -26,8 +26,8 @@ def episode(perms, policy):
 	### Run the simulation until agreement system
 	while not happy:
 		choices = sb.take_action(perms, pattern, choices, policy)
-		# if np.unique(choices.astype("int")).size is 1: 
-		if steps > 300:
+		if np.unique(choices.astype("int")).size is 1: 
+		# if steps > 300:
 			happy = True
 			if verbose > 0:
 				print("Done! Result = ["+str(choices)+"]")
@@ -86,4 +86,4 @@ def run(runs):
 		filename = str(i)
 		np.savez(folder+"/"+filename,sb.e.H,sb.e.A,sb.e.E,f)
 	
-	return f, policy, des, sb.e.H, sb.e.A, sb.e.E
+	return f, policy, perms, des, sb.e.H, sb.e.A, sb.e.E

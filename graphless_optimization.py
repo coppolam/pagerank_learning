@@ -58,15 +58,8 @@ def optimize(pol_sim, des, alpha, H, A, E):
 	
 	return result
  
-# def launch_simulator(i):
-# 	subprocess.call("cd ../swarmulator/mat/ && mkdir hist" + str(i) + " && mv *.csv hist" + str(i) + "/", shell=True)
-# 	subprocess.call("cd ../swarmulator && ./swarmulator 20", shell=True)
-	
 def main(pol_sim, des, H, A, E):
-	# i = 0
-	# while i < runs:
-	# launch_simulator(i)
-	
+
 	# Read output of simulation
 	# H, A, E = fh.read_matrices("../swarmulator/mat/")
 	r = np.sum(H, axis=1) / np.sum(E, axis=1)
@@ -79,8 +72,6 @@ def main(pol_sim, des, H, A, E):
 		print("\n*****Result******")
 		print("Fitness: " + str(result.fun))
 		print("Policy: " + str(result.x))
-
-	# i = i + 1
 
 	return result
 
