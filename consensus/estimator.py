@@ -17,4 +17,4 @@ class estimator:
 		self.A[k0,k1] = action
 
 	def updateE(self,k0,k1):
-		self.E[k0,k1] += self.inc 
+		self.E[k0,k1] += self.inc

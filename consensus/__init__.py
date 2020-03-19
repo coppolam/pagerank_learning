@@ -1,13 +1,14 @@
 import numpy as np
+import itertools
+import sys, time
 import matrixOperations as matop
 import matplotlib.pyplot as plt
 import scipy.optimize as spopt
-import itertools
 import simulator_backend as sb
-import sys
+
 np.random.seed(3)
 n_min, n_max = 10, 20
-verbose = 2
+verbose = 0
 m = sb.m
 
 def episode(perms, policy):
@@ -25,7 +26,8 @@ def episode(perms, policy):
 	### Run the simulation until agreement system
 	while not happy:
 		choices = sb.take_action(perms, pattern, choices, policy)
-		if np.unique(choices.astype("int")).size is 1: # or steps > 10000:
+		# if np.unique(choices.astype("int")).size is 1: 
+		if steps > 10000:
 			happy = True
 			if verbose > 0:
 				print("Done! Result = ["+str(choices)+"]")
@@ -63,14 +65,19 @@ def main():
 	
 	# bounds = list(zip(np.zeros(np.size(policy)),np.ones(np.size(policy)))) # Bing policy between 0 and 1
 	# result = spopt.differential_evolution(objective_function, bounds, args=(perms,))
-	f = simulate(policy, perms)
+	for i in range(0,10):
+		f = simulate(policy, perms)
 	
-	np.set_printoptions(threshold=sys.maxsize)
 	if verbose > 0:
+		np.set_printoptions(threshold=sys.maxsize) # Show full matrices
 		print("Fitness = " + str(f))
 		print(sb.e.H)
 		print(sb.e.A)
 		print(sb.e.E)
+
+	sID = np.asscalar(np.random.randint(0, 10000, 1))
+	filename = "sim_" + time.strftime("%Y_%m_%d_%T")
+	np.savez(filename,sb.e.H,sb.e.A,sb.e.E,f)
 
 if __name__ == '__main__':
 	main()
