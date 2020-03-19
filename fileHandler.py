@@ -7,9 +7,6 @@ def load_matrix(file):
     except:
         raise ValueError("Matrix " + file + " could not be loaded! Exiting.")
 
-def read_matrices(folder):
-    file_format = ".csv"
-    H = load_matrix(folder + "H" + file_format)
-    A = load_matrix(folder + "A" + file_format)
-    E = load_matrix(folder + "E" + file_format)
-    return H, A, E
+def read_matrix(folder, name, file_format=".csv"):
+    mat = load_matrix(folder + name + file_format)
+    return mat

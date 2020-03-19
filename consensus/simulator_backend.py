@@ -1,6 +1,6 @@
-import matrixOperations as matop
 import numpy as np
-import estimator as est
+from consensus import estimator as est
+from tools import matrixOperations as matop
 
 m = 2
 r = 1.8

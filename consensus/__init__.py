@@ -1,10 +1,9 @@
+import itertools, sys, time
 import numpy as np
-import itertools
-import sys, time
-import matrixOperations as matop
-import matplotlib.pyplot as plt
 import scipy.optimize as spopt
-import simulator_backend as sb
+# import matplotlib.pyplot as plt
+from consensus import simulator_backend as sb
+from tools import matrixOperations as matop
 
 np.random.seed(3)
 n_min, n_max = 10, 20
@@ -79,5 +78,5 @@ def main():
 	filename = "sim_" + time.strftime("%Y_%m_%d_%T")
 	np.savez(filename,sb.e.H,sb.e.A,sb.e.E,f)
 
-if __name__ == '__main__':
-	main()
+# if __name__ == '__main__':
+# 	main()
