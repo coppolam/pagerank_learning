@@ -1,9 +1,14 @@
+#!/usr/bin/env python3
+"""
+Backend engine for the consensus simulator
+@author: Mario Coppola, 2020
+"""
 import numpy as np
 from consensus import estimator as est
 from tools import matrixOperations as matop
 
-m = 2
 r = 1.8
+m = 2
 e = est.estimator(0.1)
 
 def get_observation(selected_robot, pattern, choices):

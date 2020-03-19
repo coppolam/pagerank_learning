@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Mon Jul  8 11:48:31 2019
-
 Collection of graph tools based on the networkx package to simplify certain operations
-
-@author: mario
+@author: Mario Coppola, 2020
 """
-
 from networkx.drawing.nx_agraph import to_agraph
 import networkx as nx
 
@@ -27,4 +22,3 @@ def make_digraph(s,t,w=None):
         edge_list = list(zip(s,t,w))
         G.add_weighted_edges_from(edge_list)
     return G
-

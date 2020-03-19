@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Collection of functions to handle files, load them, save them, ect
+@author: Mario Coppola, 2020
+"""
 import numpy as np
 
 def load_matrix(file):

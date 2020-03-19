@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+General method to estimate the H, A, and E matrices throughout a simulation
+@author: Mario Coppola, 2020
+"""
 import numpy as np
 
 class estimator:

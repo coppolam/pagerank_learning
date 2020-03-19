@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Collection of tools for "less standard" math operations
+@author: Mario Coppola, 2020
+"""
 import numpy as np
 
 def round_to_multiple(a, mult):
@@ -24,10 +29,3 @@ def pagerank(G, tol=1e-8):
 		residual = np.linalg.norm(np.subtract(pr,pr_previous))
 	
 	return normalize_rows(np.asarray(pr))
-
-def update_H(H, A ,E , pol_sim, pol):
-	# Update H based on actions
-	b = A * pol_sim[:, np.newaxis]
-	Hnew = np.divide(H, b, out=np.zeros_like(H), where=b!=0);
-	Hnew = Hnew * ( A * pol[:, np.newaxis]);
-	return Hnew

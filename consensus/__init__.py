@@ -1,13 +1,14 @@
-import itertools, sys, time
-import numpy as np
-import scipy.optimize as spopt
 # import matplotlib.pyplot as plt
 from consensus import simulator_backend as sb
 from tools import matrixOperations as matop
 
+import itertools, sys, time, os
+import numpy as np
+import scipy.optimize as spopt
+
+verbose = 0
 np.random.seed(3)
 n_min, n_max = 10, 20
-verbose = 0
 m = sb.m
 
 def episode(perms, policy):
@@ -20,13 +21,13 @@ def episode(perms, policy):
 	choices = np.random.randint(0, m, n)
 	happy = False
 	steps = 0
-	sb.e.set_size(np.size(perms))
+	sb.e.set_size(np.size(perms,0))
 
 	### Run the simulation until agreement system
 	while not happy:
 		choices = sb.take_action(perms, pattern, choices, policy)
 		# if np.unique(choices.astype("int")).size is 1: 
-		if steps > 10000:
+		if steps > 300:
 			happy = True
 			if verbose > 0:
 				print("Done! Result = ["+str(choices)+"]")
@@ -57,26 +58,32 @@ def simulate(policy, perms):
 	f = fitness(steps)
 	return f
 
-def main():
+def run(runs):
 	a = np.arange(0, 1.01, 0.2)
 	perms = local_state(a)
 	policy = np.ones([np.size(perms)//m,m])/m
-	
+	des = np.array([5, 20])
 	# bounds = list(zip(np.zeros(np.size(policy)),np.ones(np.size(policy)))) # Bing policy between 0 and 1
 	# result = spopt.differential_evolution(objective_function, bounds, args=(perms,))
-	for i in range(0,10):
+	try:
+		os.mkdir("data")
+	except:
+		print("Directory `data` exists")
+
+	folder = "data/sim_" + time.strftime("%Y_%m_%d_%T")
+	os.mkdir(folder)
+
+	for i in range(0,runs):
 		f = simulate(policy, perms)
+
+		if verbose > 0:
+			np.set_printoptions(threshold=sys.maxsize) # Show full matrices
+			print("Fitness = " + str(f))
+			print(sb.e.H)
+			print(sb.e.A)
+			print(sb.e.E)
+
+		filename = str(i)
+		np.savez(folder+"/"+filename,sb.e.H,sb.e.A,sb.e.E,f)
 	
-	if verbose > 0:
-		np.set_printoptions(threshold=sys.maxsize) # Show full matrices
-		print("Fitness = " + str(f))
-		print(sb.e.H)
-		print(sb.e.A)
-		print(sb.e.E)
-
-	sID = np.asscalar(np.random.randint(0, 10000, 1))
-	filename = "sim_" + time.strftime("%Y_%m_%d_%T")
-	np.savez(filename,sb.e.H,sb.e.A,sb.e.E,f)
-
-# if __name__ == '__main__':
-# 	main()
+	return f, policy, des, sb.e.H, sb.e.A, sb.e.E
