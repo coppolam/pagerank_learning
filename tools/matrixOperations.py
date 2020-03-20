@@ -5,8 +5,12 @@ Collection of tools for "less standard" math operations
 """
 import numpy as np
 
-def round_to_multiple(a, mult):
-    return np.around(a / mult) * mult
+def round_to_multiple(a, mult, floor=True):
+	if floor:
+		a = np.floor(a / mult)
+	else:
+		a = np.round(a / mult)
+	return a * mult
 
 def normalize_rows(mat,axis=1):
 	row_sums = np.sum(mat, axis=axis)

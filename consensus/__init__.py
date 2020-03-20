@@ -6,7 +6,7 @@ import itertools, sys, time, os
 import numpy as np
 import scipy.optimize as spopt
 
-verbose = 1
+verbose = 2
 np.random.seed(3)
 n_min, n_max = 10, 20
 m = sb.m
@@ -25,13 +25,13 @@ def episode(perms, policy):
 	### Run the simulation until agreement system
 	while not happy:
 		choices = sb.take_action(perms, pattern, choices, policy)
-		if np.unique(choices.astype("int")).size is 1: 
-		# if steps > 300:
+		# if np.unique(choices.astype("int")).size is 1: 
+		if steps > 10000:
 			happy = True
 			if verbose > 0:
 				print("Done! Result = ["+str(choices)+"]")
 		if verbose > 1:
-			print(choices)
+			print(steps, choices)
 		steps += 1
 
 	return steps
@@ -58,10 +58,10 @@ def simulate(policy, perms):
 	return f
 
 def run(runs):
-	a = np.arange(0, 1.01, 0.2)
+	a = np.arange(0, 1.01, sb.discretization)
 	perms = local_state(a)
 	policy = np.ones([np.size(perms)//m,m])/m
-	des = np.array([5, 20])
+	des = np.array([5, 20, 55])
 	# bounds = list(zip(np.zeros(np.size(policy)),np.ones(np.size(policy)))) # Bing policy between 0 and 1
 	# result = spopt.differential_evolution(objective_function, bounds, args=(perms,))
 	try:

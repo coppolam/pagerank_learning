@@ -8,8 +8,9 @@ from consensus import estimator as est
 from tools import matrixOperations as matop
 
 r = 1.8
-m = 2
+m = 3
 e = est.estimator(0.1)
+discretization = 0.2
 
 def get_observation(selected_robot, pattern, choices):
 	neighbors = get_neighbors(selected_robot, pattern)
@@ -18,7 +19,7 @@ def get_observation(selected_robot, pattern, choices):
 def get_neighbors(selected_robot, pattern):
 	p = pattern[selected_robot] - pattern
 	d = np.sqrt(p[:,0]**2 + p[:,1]**2)
-	np.delete(d,selected_robot) # Remove yourself!
+	# np.delete(d,selected_robot) # Remove yourself!
 	return np.where(d < r)
 
 def generate_random_connected_pattern(n):
@@ -41,7 +42,7 @@ def generate_random_connected_pattern(n):
 
 def get_observation_idx(sensor, perms):
 	observation = matop.normalize_rows(np.bincount(sensor),axis=0)
-	observation = matop.round_to_multiple(observation, 0.2)
+	observation = matop.round_to_multiple(observation, discretization)
 	observation = np.pad(observation,(0,m-np.size(observation)))
 	observation = np.around(observation,1)
 	observation_idx = np.where((perms == observation).all(axis=1))	

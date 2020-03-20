@@ -70,7 +70,7 @@ def main(pol_sim, des, H, A, E):
 	if verbose > 0:
 		print("\n*****Result******")
 		print("Fitness: " + str(result.fun))
-		print("Policy: " + str(result.x))
+		# print("Policy: " + str(result.x))
 
 	return result
 
