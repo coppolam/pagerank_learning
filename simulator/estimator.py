@@ -6,7 +6,7 @@ General method to estimate the H, A, and E matrices throughout a simulation
 import numpy as np
 
 class estimator:
-	def __init__(self,increment):
+	def __init__(self, increment):
 		self.H = None
 		self.A = None
 		self.E = None
@@ -21,5 +21,5 @@ class estimator:
 		self.H[k0,k1] += self.inc
 		self.A[k0,k1] = action
 
-	def updateE(self,k0,k1):
+	def updateE(self,k0, k1):
 		self.E[k0,k1] += self.inc
