@@ -2,7 +2,7 @@ import consensus
 import graphless_optimization
 import numpy as np
 
-f, policy, perms, des, H, A, E = consensus.run(1)
+f, policy, perms, des, H, A, E = consensus.run(10)
 print(f)
 print(H)
 print(A)

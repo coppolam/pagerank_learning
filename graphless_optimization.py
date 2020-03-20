@@ -59,7 +59,6 @@ def optimize(pol_sim, des, alpha, H, A, E):
 	return result
  
 def main(pol_sim, des, H, A, E):
-
 	# Read output of simulation
 	# H, A, E = fh.read_matrices("../swarmulator/mat/")
 	r = np.sum(H, axis=1) / np.sum(E, axis=1)

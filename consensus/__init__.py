@@ -6,7 +6,7 @@ import itertools, sys, time, os
 import numpy as np
 import scipy.optimize as spopt
 
-verbose = 0
+verbose = 1
 np.random.seed(3)
 n_min, n_max = 10, 20
 m = sb.m
@@ -21,8 +21,7 @@ def episode(perms, policy):
 	choices = np.random.randint(0, m, n)
 	happy = False
 	steps = 0
-	sb.e.set_size(np.size(perms,0))
-
+	
 	### Run the simulation until agreement system
 	while not happy:
 		choices = sb.take_action(perms, pattern, choices, policy)
@@ -73,7 +72,10 @@ def run(runs):
 	folder = "data/sim_" + time.strftime("%Y_%m_%d_%T")
 	os.mkdir(folder)
 
-	for i in range(0,runs):
+	sb.e.set_size(np.size(perms,0))
+	i = 0
+	while i < runs:
+		i += 1
 		f = simulate(policy, perms)
 
 		if verbose > 0:

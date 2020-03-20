@@ -23,10 +23,11 @@ def get_neighbors(selected_robot, pattern):
 
 def generate_random_connected_pattern(n):
 	i = 1
-	pattern = np.array([[0,0]]) # First robot
+	pattern = np.array([[0, 0]]) # First robot
+	
 	while i < n:
 		# Get the new position
-		p = np.random.randint(0,i) # Attach to another neighbor
+		p = np.random.randint(0, i) # Attach to another neighbor
 		new_position = pattern[p,:] + np.random.randint(-1,1+1,size=(1,2))[0]
 		
 		# Check if the position is occupied (you are the only allowd to occupy it!)
@@ -35,6 +36,7 @@ def generate_random_connected_pattern(n):
 			pattern = np.vstack((pattern, new_position))
 			pattern = np.around(pattern, 0)
 			i += 1
+
 	return pattern
 
 def get_observation_idx(sensor, perms):
@@ -50,6 +52,7 @@ def take_action(perms, pattern, choices, policy):
 	sensor, neighbors = get_observation(selected_robot, pattern, choices)
 	observation_idx = get_observation_idx(sensor, perms)
 	choices_old = np.copy(choices)
+
 	# If in an active state, take an action
 	if np.unique(sensor.astype("int")).size is not 1:
 		action = np.random.choice(np.arange(0,m), p=policy[np.asscalar(observation_idx[0])])
