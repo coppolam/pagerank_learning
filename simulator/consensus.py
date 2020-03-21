@@ -37,12 +37,13 @@ class consensus_simulator:
 		steps = 0
 		while not happy:
 			c = self._take_action()
-			print(steps, self.choices)
+			# print(steps, self.choices)
 			if np.unique(c.astype("int")).size is 1: 
 			# if steps > 10000:
 				happy = True
-				# print("Done! Result = ["+str(choices)+"]")
-			steps += 1
+				print("Done! Steps = ["+str(steps)+"]")
+			else:
+				steps += 1
 		return steps
 	
 	## Private methods

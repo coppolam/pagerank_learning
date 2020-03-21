@@ -33,3 +33,7 @@ def pagerank(G, tol=1e-8):
 		residual = np.linalg.norm(np.subtract(pr,pr_previous))
 	
 	return normalize_rows(np.asarray(pr))
+
+def pretty_print(mat):
+	for x in mat:
+		print(*x, sep=" ")

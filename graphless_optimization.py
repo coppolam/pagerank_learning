@@ -21,6 +21,7 @@ def update_H(H, A ,E , pol_sim, pol):
 	# Iterate over new actions (columns of pol)
 	cols = np.size(pol_sim,1)
 	pol = np.reshape(pol,(np.size(pol)//cols,cols))# Resize pol
+	pol = matop.normalize_rows(pol)
 	b1 = np.zeros([np.size(A,0),np.size(A,1)])
 	i = 0
 	for p in pol.T:
@@ -63,6 +64,19 @@ def optimize(pol_sim, des, alpha, H, A, E):
 def main(pol_sim, des, H, A, E):
 	# Read output of simulation
 	# H, A, E = fh.read_matrices("../swarmulator/mat/")
+
+	# Find unknown states
+	temp = H + E
+	empty_cols = np.where(~temp.any(axis=0))[0]
+	empty_rows = np.where(~temp.any(axis=1))[0]
+	empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
+	# Although this ok in principle, it would be better to do it
+	# at simulation time, rather than to make a big H and then
+	# proceed to cut it.
+	# H = np.delete(H, empty_states, empty_states)
+	# A = np.delete(A, empty_states, empty_states)
+	# E = np.delete(E, empty_states, empty_states)
+	
 	with np.errstate(divide='ignore',invalid='ignore'):
 		r = np.sum(H, axis=1) / np.sum(E, axis=1)
 	r = np.nan_to_num(r) # Just in case
@@ -73,8 +87,8 @@ def main(pol_sim, des, H, A, E):
 	cols = np.size(pol_sim,1)
 	policy = result.x
 	policy = np.reshape(policy,(np.size(policy)//cols,cols)) # Resize pol
-
-	return result, policy
+	policy = matop.normalize_rows(policy)
+	return result, policy, empty_states
 
 if __name__ == '__main__':
 	main()
