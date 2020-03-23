@@ -4,7 +4,7 @@ Example for python interface with swarmulator
 @author: Mario Coppola, 2020
 """
 
-import swarmulator
+from swarmulator import swarmulator
 
 path = "../swarmulator"
 robots = 20
