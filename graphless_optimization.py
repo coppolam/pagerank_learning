@@ -21,7 +21,8 @@ def update_H(H, A ,E , pol_sim, pol):
 	# Iterate over new actions (columns of pol)
 	cols = np.size(pol_sim,1)
 	pol = np.reshape(pol,(np.size(pol)//cols,cols))# Resize pol
-	pol = matop.normalize_rows(pol)
+	if cols > 1:
+		pol = matop.normalize_rows(pol)
 	b1 = np.zeros([np.size(A,0),np.size(A,1)])
 	i = 0
 	for p in pol.T:
@@ -29,9 +30,12 @@ def update_H(H, A ,E , pol_sim, pol):
 		Atemp = np.zeros([np.size(A,0),np.size(A,1)])
 		Atemp[np.where(A==int(i))] = 1
 		b1 += Atemp * p[:, np.newaxis]
-	
+
+	# b0 = (A * pol_sim[:, np.newaxis])
+	# b1 = (A * pol[:, np.newaxis])
 	Hnew = np.divide(H, b0, out=np.zeros_like(H), where=b0!=0);
 	Hnew = Hnew * b1;
+
 	return Hnew
 
 def fitness(pr,des):
@@ -84,10 +88,12 @@ def main(pol_sim, des, H, A, E):
 	
 	result = optimize(pol_sim, des, alpha, H, A.astype("int"), E)
 
-	cols = np.size(pol_sim,1)
 	policy = result.x
-	policy = np.reshape(policy,(np.size(policy)//cols,cols)) # Resize pol
-	policy = matop.normalize_rows(policy)
+	if pol_sim.ndim > 1:
+		cols = np.size(pol_sim,1)
+		policy = np.reshape(policy,(np.size(policy)//cols,cols)) # Resize pol
+		policy = matop.normalize_rows(policy)
+
 	return result, policy, empty_states
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ folder = fh.make_folder("data")
 
 ###### Simulate ######
 n = 10
-runs = 1
+runs = 10
 sim = sim.consensus_simulator(n=n,m=2,d=0.2)
 for i in range(0,runs):
     print('{:=^40}'.format(' Simulator run '))
