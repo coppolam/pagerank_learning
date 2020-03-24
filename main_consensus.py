@@ -20,7 +20,10 @@ for i in range(0,runs):
     fh.save_data(folder + "sim" + str(i), sim.e.H, sim.e.A, sim.e.E, steps)
 
 ###### Optimize ######
-result, policy, empty_states = opt.main(sim.policy, sim.e.des, sim.e.H, sim.e.A, sim.e.E)
+des_idx = np.unique(sim.e.des)
+des = np.zeros([1,np.size(sim.policy,0)])[0]
+des[des_idx] = 1
+result, policy, empty_states = opt.main(sim.policy, des, sim.e.H, sim.e.A, sim.e.E)
 fh.save_data(folder + "optimization", sim.perms, sim.e.des, result, policy)
 
 print('{:=^40}'.format(' Optimization '))

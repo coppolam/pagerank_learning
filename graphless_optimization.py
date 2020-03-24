@@ -39,7 +39,8 @@ def update_H(H, A ,E , pol_sim, pol):
 	return Hnew
 
 def fitness(pr,des):
-	return np.mean(pr[:,des])/np.mean(pr)
+	# return np.mean(pr[:,des])/np.mean(pr)
+	return np.average(pr,axis=1,weights=des)/np.mean(pr)
 
 def objective_function(pol, pol_sim, des, alpha, H, A, E):
 	Hnew = update_H(H, A, E, pol_sim, pol)
@@ -89,9 +90,9 @@ def main(pol_sim, des, H, A, E):
 	result = optimize(pol_sim, des, alpha, H, A.astype("int"), E)
 
 	policy = result.x
-	if pol_sim.ndim > 1:
-		cols = np.size(pol_sim,1)
-		policy = np.reshape(policy,(np.size(policy)//cols,cols)) # Resize pol
+	cols = np.size(pol_sim,1)
+	policy = np.reshape(policy,(np.size(policy)//cols,cols)) # Resize pol
+	if cols > 1:
 		policy = matop.normalize_rows(policy)
 
 	return result, policy, empty_states
