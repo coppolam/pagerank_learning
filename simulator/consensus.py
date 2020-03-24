@@ -6,11 +6,11 @@ Backend engine for the consensus simulator
 import itertools
 import numpy as np
 from tools import matrixOperations as matop
-from simulator import tools
-from simulator import estimator
+from simulator import tools, estimator
 
 class consensus_simulator:
 	def __init__(self, n=10, m=2, d=0.2):
+		self.n = n # Robots
 		self.r = 1.8 # Sensing distance 
 		self.m = m # Choices 
 		self.discretization = d # Local state space discretization
@@ -93,4 +93,12 @@ class consensus_simulator:
 			observation_idx_new = self._get_observation_idx(sensor_new)
 			self.e.updateE(observation_idx, observation_idx_new)
 
+		s = np.zeros([1,self.n])[0]
+		for robot in range(0,self.n):
+			sensor, neighbors = self._get_observation(robot, self.choices)
+			s[robot] = np.asscalar(self._get_observation_idx(sensor)[0])
+		
+		s = s.astype("int")
+		fitness = np.max(np.bincount(s))/self.n
+		self.e.updateF(fitness, s)
 		return self.choices
