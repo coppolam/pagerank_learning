@@ -9,7 +9,7 @@ from tools import fileHandler as fh
 from tools import matrixOperations as matop
 import scipy.optimize as spopt
 np.set_printoptions(suppress=True) # Avoid scientific notation
-		
+
 verbose = 1 # 0 barely, 1 = some, 2 = a lot
 
 def update_H(H, A ,E , pol0, pol):
@@ -27,7 +27,7 @@ def update_H(H, A ,E , pol0, pol):
 	# Iterate over new actions (columns of pol)
 	cols = pol0.shape[1]
 	pol = np.reshape(pol,(pol.size//cols,cols))# Resize pol
-	if cols > 1:
+	if cols > 1: 
 		pol = matop.normalize_rows(pol)
 	b1 = np.zeros(A.shape)
 	i = 0
@@ -43,8 +43,7 @@ def update_H(H, A ,E , pol0, pol):
 	return Hnew
 
 def fitness(pr,des):
-	# return np.mean(pr[:,des])/np.mean(pr)
-	return np.average(pr,axis=1,weights=des)/np.mean(pr)
+    return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
 	Hnew = update_H(H, A, E, pol0, pol)
@@ -58,23 +57,19 @@ def objective_function(pol, pol0, des, alpha, H, A, E):
 	return 100 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
-	# Bound probabilistic policy to being between 0 and 1
-	ll = 0.
-	up = 1.
-	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
+	# Bound probabilistic policy
+	ll = 0. # Lower limit
+	up = 1. # Upper limit
 	
 	# Optimize
+	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
 	result = spopt.minimize(objective_function, pol0,
                                        bounds=bounds, 
                                        args=(pol0, des, alpha, H, A, E))
-	# result = spopt.differential_evolution(objective_function, bounds, args=(perms,))
 	
 	return result
  
 def main(pol0, des, H, A, E):
-	# Read output of simulation
-	# H, A, E = fh.read_matrices("../swarmulator/mat/")
-
 	# Find unknown states
 	temp = H + E
 	empty_cols = np.where(~temp.any(axis=0))[0]
@@ -88,7 +83,7 @@ def main(pol0, des, H, A, E):
 	# E = np.delete(E, empty_states, empty_states)
 	
 	with np.errstate(divide='ignore',invalid='ignore'):
-		r = np.sum(H, axis=1) / np.sum(E, axis=1)
+		r = H.sum(axis=1) / E.sum(axis=1)
 	r = np.nan_to_num(r) # Just in case
 	alpha = r / (1 + r)
 	
@@ -97,8 +92,8 @@ def main(pol0, des, H, A, E):
 	policy = result.x
 	cols = pol0.shape[1]
 	policy = np.reshape(policy,(policy.size//cols,cols)) # Resize pol
-	if cols > 1:
-		policy = matop.normalize_rows(policy)
+	# if cols > 1:
+	# 	policy = matop.normalize_rows(policy)
 
 	return result, policy, empty_states
 

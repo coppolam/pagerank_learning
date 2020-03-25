@@ -130,7 +130,7 @@ def fitness_function(pr):
 def objF(x):
     # Generate the policy as per the iteration x
     Q = Q0 # Copy Q from template Q0
-    Q[active_rows,:] = np.reshape(x, (np.size(Q0, 0) - np.size(desired_states_idx), np.size(Q0, 1)))
+    Q[active_rows,:] = np.reshape(x, Q0.shape[0] - desired_states_idx.size, Q0.shape[1])
     Q[active_rows,:] = normalize_rows(Q[active_rows,:])
 
     # Generate the active graph Gsa and its adjacency matrix H
