@@ -45,7 +45,7 @@ def make_states(n_choices,max_neighbors):
     ext_states = ext_states[np.where(sp.sum(ext_states,1)>0)[0]] # Remove pairs with 0 neighbors
 
     # Construct list of own states
-    int_states = np.array(np.repeat(np.arange(n_choices),np.size(ext_states,0)))
+    int_states = np.array(np.repeat(np.arange(n_choices),ext_states.shape[0]))
 
     # Combine into a single array of states
     ext_states = np.tile(ext_states, (n_choices, 1)) # Tile the external states
@@ -57,7 +57,7 @@ def make_states(n_choices,max_neighbors):
 # Find the idx of the desired states
 def find_desired_states_idx(states):
     desired_states_idx = []
-    for x in np.arange(1,np.size(states,1)):
+    for x in np.arange(1,states.shape[1]):
         neighbors_in_agreement_idx = np.where(states[:, np.setdiff1d(np.arange(1, np.size(states, 1)), x)] == 0)[0] # States with all neighbors in agreement for choice x
         current_opinion_idx = np.where(states[:, 0] == x-1 ) # States where you are of choice x
         desired_states_idx.extend(np.intersect1d(neighbors_in_agreement_idx,current_opinion_idx))
@@ -173,25 +173,25 @@ alpha_vector = np.divide(np.sum(Q0, axis=1), neighbors + 1)
 alpha_mat = np.diag(alpha_vector)
 
 # E and D matrices (constant)
-E = nx.adjacency_matrix(GSp, nodelist=range(np.size(neighbors)), weight='weight').toarray().astype(float)
-D = np.zeros([np.size(E, 0), np.size(E, 1)])
+E = nx.adjacency_matrix(GSp, nodelist=range(neighbors.size), weight='weight').toarray().astype(float)
+D = np.zeros(E.shape)
 D[desired_states_idx, :] = E[desired_states_idx, :]
 E = normalize_rows(E)
 
-active_rows = np.setdiff1d(range(0, np.size(Q0, 0)), desired_states_idx)
+active_rows = np.setdiff1d(range(0, Q0.shape[0]), desired_states_idx)
 
 # Print the graphs (mainly for debugging purposes)
 gt.print_graph(GSa,'GS_active.png')
 gt.print_graph(GSp,'GS_passive.png')
-x0 = np.ones(np.size(Q_idx))/task['m'] # Initialize to ones
+x0 = np.ones(Q_idx.size)/task['m'] # Initialize to ones
 
 # Learning parameters
-bounds = list(zip(list(np.zeros(np.size(Q_idx))),list(np.ones(np.size(Q_idx))))) # Set limits
+bounds = list(zip(list(np.zeros(Q_idx.size)),list(np.ones(Q_idx.size)))) # Set limits
 from scipy.optimize import differential_evolution
 l = sp.optimize.minimize(objF, x0, args=(), bounds=bounds, tol=1e-3) # disp=True,popsize=10) # Set up GA (alternative subclass)
 
 # Final policy
 Q = Q0 # Copy Q from template Q0
-Q[active_rows,:] = np.reshape(l.x, (np.size(Q0, 0) - np.size(desired_states_idx), np.size(Q0, 1)))
+Q[active_rows,:] = np.reshape(l.x, Q0.shape[0] - desired_states_idx.size, Q0.shape[1])
 
 print(Q)

@@ -18,14 +18,14 @@ class consensus_simulator:
 		a = np.arange(0, 1.01, self.discretization)
 		self.perms = self._local_state(a, m)
 		# Initialize policy
-		policy = np.ones([np.size(self.perms)//m,m])/m
-		policy = np.reshape(policy, (np.size(policy) // m, m))
-		self.policy = matop.normalize_rows(policy)
+		self.policy = np.ones(self.perms.shape)/m
+		# policy = np.reshape(policy, policy.size // m, m)
+		# self.policy = matop.normalize_rows(policy)
 		self.reset(n)
 
 		# Estimator
 		self.e = estimator.estimator(0.1)
-		self.e.set_size(np.size(self.perms,0))
+		self.e.set_size(self.perms.shape[0])
 		
 	def reset(self, n):
 		self.pattern = tools.generate_random_connected_pattern(n)
