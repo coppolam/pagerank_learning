@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Example for python interface with swarmulator
+Example python interface with swarmulator
 @author: Mario Coppola, 2020
 """
 
-from swarmulator import swarmulator
+from simulator import swarmulator
 
-path = "../swarmulator"
-robots = 20
-s = swarmulator.swarmulator(path) # Init
-s.make(clean=False,animation=True) # Build (if already built, you can skip this)
-f = s.run(robots) # Run it, and receive the fitness.
+path = "../swarmulator" # Path to swarmulator main folder
+robots = 20 # Number of robots
+s = swarmulator.swarmulator(path) # Initialize
+s.make(clean=False,animation=True) # (Re)-build (if swarmulator already built, you can skip this)
+f = s.run(robots) # Run it, and receive the fitness as a FIFO pipe message
 
-print("Fitness received from Swarmulator pipe: " + str(f))
-print("Done")
+print("Fitness received from swarmulator pipe: " + str(f))
+print("\t...done!")
