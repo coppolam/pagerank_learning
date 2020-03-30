@@ -5,6 +5,7 @@ Example python interface with swarmulator
 """
 
 from simulator import swarmulator
+from tools import room_generator
 
 path = "../swarmulator" # Path to swarmulator main folder
 robots = 20 # Number of robots

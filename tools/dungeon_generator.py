@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # coding: utf-8
 
 # generator-1.py, a simple python dungeon generator by
@@ -14,6 +14,8 @@
 
 # The room list is in [x1, y1, width, height] format
 # The corridor list is in [(x1, y1), (x2, y2), ?(x3, y3)] format where (x3, y3) only exist if a hallway has an 'L' bend. 
+
+# Run and then move "rooms.txt" to the swarmulator environment
 
 from __future__ import print_function
 import random
@@ -38,7 +40,7 @@ def groupSequence(l):
 	
 
 class Generator():
-	def __init__(self, width=64, height=64, max_rooms=15, min_room_xy=15,
+	def __init__(self, width=64, height=64, max_rooms=15, min_room_xy=2,
 					max_room_xy=15, rooms_overlap=False, random_connections=1,
 					random_spurs=3, tiles=CHARACTER_TILES):
 
@@ -315,37 +317,61 @@ class Generator():
 					tmp_tiles.append(1)
 			self.tiles_level.append(tmp_tiles)
 	
-		# print('Room List: ', self.room_list)
-		# print('\nCorridor List: ', self.corridor_list)
+		print('Room List: ', self.room_list)
+		print('\nCorridor List: ', self.corridor_list)
 	
-		# [print(row) for row in self.tiles_level]
-		# print(self.tiles_level)
+		[print(row) for row in self.tiles_level]
+		print(self.tiles_level)
 		
 		self.tiles_level = np.asarray(self.tiles_level)
 
-		c = 3
+		c = 2
+		w_h = []
 		# Horizontal walls
 		for idx,row in enumerate(self.tiles_level):
 			# print("***")
 			data = np.where(row == 1)[0]
 			if data.size > 0:
-				# print(data)
-				a = list(groupSequence(list(data)))
-				for item in a:
-					self.wall_coordinates.append([min(item)*c,idx*c,max(item)*c,idx*c])
+					# print(data)
+					a = list(groupSequence(list(data)))
+					for item in a:
+						# if len(item) > 2:
+						w_h.append([min(item)*c,-idx*c,max(item)*c,-idx*c])
 		# print(self.wall_coordinates)
+		w_h = np.asarray(w_h)
 
 		# Vertical walls
+		w_v = []
 		for idx,row in enumerate(self.tiles_level.T):
 			# print("***")
 			data = np.where(row == 1)[0]
 			if data.size > 0:
-				# print(data)
-				a = list(groupSequence(list(data)))
-				for item in a:
-					self.wall_coordinates.append([idx*c,min(item)*c,idx*c,max(item)*c])
+					# print(data)
+					a = list(groupSequence(list(data)))
+					for item in a:
+						# if len(item) >= 2:
+						w_v.append([idx*c,-min(item)*c,idx*c,-max(item)*c])
 		# print(self.wall_coordinates)
+		w_v = np.asarray(w_v)
+		w = np.vstack((w_h,w_v))
+		w[:,[0,2]] = w[:,[0,2]] - w[:,[0,2]].mean() # Center horizontally
+		w[:,[1,3]] = w[:,[1,3]] - w[:,[1,3]].mean() # Center vertically
+
+
+		# Center vertically
+		self.wall_coordinates = w.tolist()
 		
+		# w_h[:,[0,2]] = w_h[:,[0,2]] - w_h[:,[0,2]].mean()
+		# w_v[:,[0,2]] = w_v[:,[0,2]] - w_v[:,[0,2]].mean()
+
+		# w_h[:,[0,2]] = w_h[:,[0,2]] - w_h[:,[0,2]].mean()
+		# w_h[:,[1,3]] = w_h[:,[1,3]] - w_h[:,[1,3]].mean()
+		# w_h[:,[1,3]] = w_h[:,[1,3]] - w_v[:,[0,2]].mean()
+
+		# w_v[:,[0,2]] = w_v[:,[0,2]] - w_v[:,[0,2]].mean()
+		# w_v[:,[1,3]] = w_v[:,[1,3]] - w_v[:,[1,3]].mean()
+
+		print(self.wall_coordinates)
 		# # Extrct vertical walls
 		# print("*****************************")
 		# for row in self.tiles_level.T:
@@ -361,7 +387,8 @@ class Generator():
 		# 	# 		print(map(itemgetter(1), g))
 
 if __name__ == '__main__':
-	gen = Generator(max_rooms=10)
+	gen = Generator(max_rooms=5, width=30, height=30, min_room_xy=2,
+					max_room_xy=10, rooms_overlap=True)
 	gen.gen_level()
 	gen.gen_tiles_level()
 	# np.savetxt("test",gen.wall_coordinates,fmt='%.1f')
