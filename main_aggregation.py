@@ -28,7 +28,7 @@ H = fh.read_matrix(data_folder,"H")
 A = fh.read_matrix(data_folder,"A")
 E = fh.read_matrix(data_folder,"E")
 des = fh.read_matrix(data_folder,"des")
-policy = 0.5 * np.ones([A.shape[1],1])
+policy = np.ones([A.shape[1],int(A.max())]) / A.max()
 result, policy, empty_states = opt.main(policy, des, H, A, E)
 fh.save_data(folder + "optimization", des, result, policy)
 

@@ -317,11 +317,11 @@ class Generator():
 					tmp_tiles.append(1)
 			self.tiles_level.append(tmp_tiles)
 	
-		print('Room List: ', self.room_list)
-		print('\nCorridor List: ', self.corridor_list)
+		# print('Room List: ', self.room_list)
+		# print('\nCorridor List: ', self.corridor_list)
 	
-		[print(row) for row in self.tiles_level]
-		print(self.tiles_level)
+		# [print(row) for row in self.tiles_level]
+		# print(self.tiles_level)
 		
 		self.tiles_level = np.asarray(self.tiles_level)
 
@@ -371,7 +371,7 @@ class Generator():
 		# w_v[:,[0,2]] = w_v[:,[0,2]] - w_v[:,[0,2]].mean()
 		# w_v[:,[1,3]] = w_v[:,[1,3]] - w_v[:,[1,3]].mean()
 
-		print(self.wall_coordinates)
+		# print(self.wall_coordinates)
 		# # Extrct vertical walls
 		# print("*****************************")
 		# for row in self.tiles_level.T:

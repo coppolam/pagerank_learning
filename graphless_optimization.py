@@ -10,7 +10,7 @@ from tools import matrixOperations as matop
 import scipy.optimize as spopt
 np.set_printoptions(suppress=True) # Avoid scientific notation
 
-verbose = 1 # 0 barely, 1 = some, 2 = a lot
+verbose = 2 # 0 barely, 1 = some, 2 = a lot
 
 def update_H(H, A ,E , pol0, pol):
     # Update H based on actions
@@ -46,14 +46,15 @@ def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
+	print("step")
 	Hnew = update_H(H, A, E, pol0, pol)
 	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E)
 	pr = matop.pagerank(G)
 	f = fitness(pr, des)
+	print(pol[0])
 	if verbose > 1:
-		print(str(round(pol[0],5)) + 
-			" Fitness \tf = " + str(round(f,5)) + 
-			"\t1/(1+f) = " + str(round(1/(f + 1),5)))
+		print(" Fitness \tf = " + str(np.round(f,5)) + 
+			"\t1/(1+f) = " + str(np.round(1/(f + 1),5)))
 	return 100 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
@@ -63,7 +64,7 @@ def optimize(pol0, des, alpha, H, A, E):
 	
 	# Optimize
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
-	result = spopt.minimize(objective_function, pol0,
+	result = spopt.differential_evolution(objective_function, #pol0,
                                        bounds=bounds, 
                                        args=(pol0, des, alpha, H, A, E))
 	
