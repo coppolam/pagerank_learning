@@ -46,12 +46,10 @@ def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
-	# print("step")
 	Hnew = update_H(H, A, E, pol0, pol)
 	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E)
 	pr = matop.pagerank(G)
 	f = fitness(pr, des)
-	# print(pol[0])
 	if verbose > 1:
 		print(" Fitness \tf = " + str(np.round(f,5)) + 
 			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
