@@ -64,10 +64,11 @@ def optimize(pol0, des, alpha, H, A, E):
 	pol0 = np.ones(pol0.shape)
 	# Optimize
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
-	result = spopt.minimize(objective_function, pol0, #    constraints=bounds, 
-                                       args=(pol0, des, alpha, H, A, E)) #,method='COBYLA',
-									#    options={'disp':True})#, polish=False,popsize=1)
-	
+	result = spopt.minimize(objective_function, pol0, # constraints=bounds,
+										# bounds=bounds, 
+		                                args=(pol0, des, alpha, H, A, E), method='COBYLA')
+										# options={'disp':True})#, polish=False,popsize=1)
+
 	return result
  
 def main(pol0, des, H, A, E):
@@ -97,6 +98,3 @@ def main(pol0, des, H, A, E):
 		policy = matop.normalize_rows(policy)
 
 	return result, policy, empty_states
-
-if __name__ == '__main__':
-	main()

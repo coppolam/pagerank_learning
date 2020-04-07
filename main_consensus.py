@@ -4,12 +4,12 @@ Simulate the consensus and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-# import matplotlib.pyplot as plt
 from simulator import consensus as sim
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 import graphless_optimization as opt
 import numpy as np
+import matplotlib.pyplot as plt
 np.random.seed(3)
 folder = fh.make_folder("data")
 
@@ -40,16 +40,21 @@ print("Desired states found:", str(des_idx))
 print("Unknown states:" + str(empty_states))
 
 ###### Validate ######
-runs = 100
+runs = 500
+steps = []
+steps_n = []
 for i in range(0,runs):
     print('{:=^40}'.format(' Simulator run '))
     sim.reset(n)
-    # sim.e.set_size(sim.e.H.size[1]) # Uncomment to reset estimator between trials
-    steps[i] = sim.run()
+    steps = np.append(steps,sim.run())
 
-runs = 100
 for i in range(0,runs):
     print('{:=^40}'.format(' Simulator run '))
     sim.reset(n)
-    # sim.e.set_size(sim.e.H.size[1]) # Uncomment to reset estimator between trials
-    steps_n[i] = sim.run(policy=policy)
+    steps_n = np.append(steps_n,sim.run(policy=policy))
+
+_ = plt.hist(list(steps), alpha=0.5, bins='auto', label='original')  # arguments are passed to np.histogram
+_ = plt.hist(list(steps_n), alpha=0.5, bins='auto', label='new')  # arguments are passed to np.histogram
+plt.title("Results")
+plt.legend(loc='upper right')
+plt.show()
