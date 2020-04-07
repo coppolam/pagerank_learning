@@ -7,7 +7,7 @@ class swarmulator:
 	
 	def make(self, animation=False, logger=False, verbose=False, speed=True, clean=False):
 		ani = " ANIMATION=ON" if animation else ""
-		log = " LOGGER=ON" if logger else ""
+		log = " LOG=ON" if logger else ""
 		vrb = " VERBOSE=ON" if verbose else ""
 		spd = " -j" if speed else ""
 		if clean:

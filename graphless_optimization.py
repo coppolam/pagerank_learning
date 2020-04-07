@@ -46,15 +46,15 @@ def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
-	print("step")
+	# print("step")
 	Hnew = update_H(H, A, E, pol0, pol)
 	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E)
 	pr = matop.pagerank(G)
 	f = fitness(pr, des)
-	print(pol[0])
+	# print(pol[0])
 	if verbose > 1:
 		print(" Fitness \tf = " + str(np.round(f,5)) + 
-			"\t1/(1+f) = " + str(np.round(1/(f + 1),5)))
+			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
 	return 100 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
@@ -62,11 +62,13 @@ def optimize(pol0, des, alpha, H, A, E):
 	ll = 0. # Lower limit
 	up = 1. # Upper limit
 	
+	# pol0 = np.random.rand(pol0.shape[0],pol0.shape[1])
+	pol0 = np.ones(pol0.shape)
 	# Optimize
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
-	result = spopt.differential_evolution(objective_function, #pol0,
-                                       bounds=bounds, 
-                                       args=(pol0, des, alpha, H, A, E))
+	result = spopt.minimize(objective_function, pol0, #    constraints=bounds, 
+                                       args=(pol0, des, alpha, H, A, E)) #,method='COBYLA',
+									#    options={'disp':True})#, polish=False,popsize=1)
 	
 	return result
  
@@ -93,8 +95,8 @@ def main(pol0, des, H, A, E):
 	policy = result.x
 	cols = pol0.shape[1]
 	policy = np.reshape(policy,(policy.size//cols,cols)) # Resize pol
-	# if cols > 1:
-	# 	policy = matop.normalize_rows(policy)
+	if cols > 1:
+		policy = matop.normalize_rows(policy)
 
 	return result, policy, empty_states
 

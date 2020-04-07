@@ -38,3 +38,18 @@ print("[ states | policy ]")
 matop.pretty_print(np.concatenate((sim.perms,policy),axis=1))
 print("Desired states found:", str(des_idx))
 print("Unknown states:" + str(empty_states))
+
+###### Validate ######
+runs = 100
+for i in range(0,runs):
+    print('{:=^40}'.format(' Simulator run '))
+    sim.reset(n)
+    # sim.e.set_size(sim.e.H.size[1]) # Uncomment to reset estimator between trials
+    steps[i] = sim.run()
+
+runs = 100
+for i in range(0,runs):
+    print('{:=^40}'.format(' Simulator run '))
+    sim.reset(n)
+    # sim.e.set_size(sim.e.H.size[1]) # Uncomment to reset estimator between trials
+    steps_n[i] = sim.run(policy=policy)

@@ -9,7 +9,7 @@ from tools import matrixOperations as matop
 from simulator import tools, estimator
 
 class consensus_simulator:
-	def __init__(self, n=10, m=2, d=0.2):
+	def __init__(self, n=10, m=2, d=0.2,policy=None):
 		self.n = n # Robots
 		self.m = m # Choices 
 		self.r = 1.8 # Sensing distance 
@@ -20,7 +20,7 @@ class consensus_simulator:
 		self.perms = self._local_state(a, m)
 		
 		# Initialize policy
-		self.policy = np.ones(self.perms.shape)/m
+		self.policy = policy if policy is not None else np.ones(self.perms.shape)/m
 		self.reset(n)
 
 		# Estimator
