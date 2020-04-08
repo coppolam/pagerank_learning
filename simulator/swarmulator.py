@@ -13,7 +13,7 @@ class swarmulator:
 		if clean:
 			subprocess.call("cd " + self.path + " && make clean ", shell=True)
 		subprocess.call("cd " + self.path + " && make" + spd + ani + log + vrb, shell=True)
-
+		print("# Done")
 	def launch(self, n, i):
 		subprocess.call("cd " + self.path + " && ./swarmulator " + str(n), shell=True)
 		
@@ -26,3 +26,8 @@ class swarmulator:
 		t.start()
 		f = self.get_fitness()
 		return f
+
+	def runtime_setting(self, setting, value):
+		s = "xmlstarlet edit -L -u \"/parameters/" + setting + "\" -v \""+ value + "\" " + self.path + "/conf/parameters.xml"
+		subprocess.call(s, shell=True)
+		print("Runtime setting \"" + setting + "\" set to \"" + value + "\"")
