@@ -62,7 +62,7 @@ def optimize(pol0, des, alpha, H, A, E):
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
 	result = spopt.minimize(objective_function, pol0, # constraints=bounds,
 										bounds=bounds, 
-		                                args=(pol0, des, alpha, H, A, E))#, method='COBYLA')
+		                                args=(pol0, des, alpha, H, A, E))
 										# options={'disp':True})#, polish=False,popsize=1)
 
 	return result
