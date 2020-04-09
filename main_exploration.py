@@ -38,7 +38,7 @@ sim.runtime_setting("policy","./conf/state_action_matrices/exploration_policy_ra
 
 if rerun:
 	sim.runtime_setting("policy","./conf/state_action_matrices/exploration_policy_random.txt")
-	sim.make(clean=True,animation=True,logger=False) # Build (if already built, you can skip this)
+	sim.make(clean=True,animation=False,logger=True) # Build (if already built, you can skip this)
 	f = sim.run(n) # Run it, and receive the fitness.
 
 ###### Optimize ######
