@@ -33,7 +33,7 @@ sim.runtime_setting("time_limit", "2000")
 sim.runtime_setting("environment", "square")
 
 if rerun:
-	sim.make(clean=True,animation=True,logger=True) # Build (if already built, you can skip this)
+	sim.make(clean=True,animation=False,logger=True) # Build (if already built, you can skip this)
 	sim.runtime_setting("policy", "") # Use random policy
 	f = sim.run(n) # Run it, and receive the fitness.
 
