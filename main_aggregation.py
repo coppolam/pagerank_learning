@@ -73,9 +73,9 @@ for i in range(0,runs):
 	fitness_n = np.append(fitness_n,sim.run(n))
 
 fh.save_data(save_id+"_validation", f=fitness, f_opt=fitness_n)
-_ = plt.hist(list(fitness), alpha=0.5, bins='auto', label='original')  # arguments are passed to np.histogram
-_ = plt.hist(list(fitness_n), alpha=0.5, bins='auto', label='new')  # arguments are passed to np.histogram
-plt.title("Results")
-plt.legend(loc='upper right')
-plt.show()
+#_ = plt.hist(list(fitness), alpha=0.5, bins='auto', label='original')  # arguments are passed to np.histogram
+#_ = plt.hist(list(fitness_n), alpha=0.5, bins='auto', label='new')  # arguments are passed to np.histogram
+#plt.title("Results")
+#plt.legend(loc='upper right')
+#plt.show()
 
