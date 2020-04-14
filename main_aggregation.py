@@ -35,7 +35,7 @@ H = fh.read_matrix(data_folder,"H")
 A = fh.read_matrix(data_folder,"A")
 E = fh.read_matrix(data_folder,"E")
 des = fh.read_matrix(data_folder,"des")
-policy = np.ones([A.shape[1],int(A.max())]) / A.max()
+policy = np.ones([A.shape[1],int(A.max())]) / 2
 result, policy, empty_states = opt.main(policy, des, H, A, E)
 np.savez(save_id+"_optimization", des=des, policy=policy, H=H, A=A, E=E)
 
