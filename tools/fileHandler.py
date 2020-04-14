@@ -7,25 +7,32 @@ import numpy as np
 import os, time
 
 def load_matrix(file):
-    try:
-        matrix = np.loadtxt(open(file, "rb"), delimiter=", \t", skiprows=1)
-        return matrix
-    except:
-        raise ValueError("Matrix " + file + " could not be loaded! Exiting.")
+	try:
+		matrix = np.loadtxt(open(file, "rb"), delimiter=", \t", skiprows=1)
+		return matrix
+	except:
+		raise ValueError("Matrix " + file + " could not be loaded! Exiting.")
 
 def read_matrix(folder, name, file_format=".csv"):
-    mat = load_matrix(folder + name + file_format)
-    return mat
+	mat = load_matrix(folder + name + file_format)
+	return mat
 
 def make_folder(folder):
-    try:
-        os.mkdir(folder)
-    except:
-        None # Directory exists
-    folder = folder + "/sim_" + time.strftime("%Y_%m_%d_%T")
-    os.mkdir(folder)
-    return folder + "/"
+	try:
+		os.mkdir(folder)
+	except:
+		None # Directory exists
+	folder = folder + "/sim_" + time.strftime("%Y_%m_%d_%T")
+	os.mkdir(folder)
+	return folder + "/"
 
 def save_data(filename,*args):
-    np.savez(filename,*args)
-    print("Data saved")
+	np.savez(filename,*args)
+	print("Data saved")
+
+def save_to_txt(mat,name):
+	NEWLINE_SIZE_IN_BYTES = -1  # -2 on Windows?
+	with open(name, 'wb') as fout:  # Note 'wb' instead of 'w'
+		np.savetxt(fout, mat, delimiter=" ", fmt='%.3f')
+		fout.seek(NEWLINE_SIZE_IN_BYTES, 2)
+		fout.truncate()
