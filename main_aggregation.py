@@ -15,6 +15,7 @@ import datetime
 ###### Simulate ######
 from simulator import swarmulator
 rerun = True
+evaluate = True
 n = 30 # Robots
 save_id = "data/" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H:%M:%S"))
 folder = "../swarmulator"
@@ -39,6 +40,10 @@ policy = np.ones([A.shape[1],int(A.max())]) / 2
 result, policy, empty_states = opt.main(policy, des, H, A, E)
 np.savez(save_id+"_optimization", des=des, policy=policy, H=H, A=A, E=E)
 
+###### Print results to terminal ######
+print(H)
+print(E)
+print(A)
 print("States desireability: ", str(des))
 print("Unknown states:" + str(empty_states))
 print('{:=^40}'.format(' Optimization '))
@@ -47,24 +52,27 @@ print("[ policy ]")
 np.set_printoptions(threshold=sys.maxsize)
 print(policy)
 
-###### Validate ######
-runs = 100
-sim.runtime_setting("time_limit", "1000")
+###### Evaluate ######
+if evaluate:
+	runs = 100
+	sim.runtime_setting("time_limit", "1000")
 
-# Benchmark #
-f_0 = []
-for i in range(0,runs):
-	print('{:=^40}'.format(' Simulator run '))
-	sim.runtime_setting("policy", "") # Use random policy
-	f_0 = np.append(f_0,sim.run(n))
+	# Benchmark #
+	f_0 = []
+	for i in range(0,runs):
+		print('{:=^40}'.format(' Simulator run '))
+		sim.runtime_setting("policy", "") # Use random policy
+		f_0 = np.append(f_0,sim.run(n))
 
-# Optimized #
-f_n = []
-policy_file = sim.path + "/conf/state_action_matrices/aggregation_policy.txt"
-fh.save_to_txt(policy.T, policy_file)
-for i in range(0,runs):
-	print('{:=^40}'.format(' Simulator run '))
-	sim.runtime_setting("policy", policy_file) # Use random policy
-	f_n = np.append(f_n,sim.run(n))
+	# Optimized #
+	f_n = []
+	policy_file = sim.path + "/conf/state_action_matrices/aggregation_policy.txt"
+	fh.save_to_txt(policy.T, policy_file)
+	for i in range(0,runs):
+		print('{:=^40}'.format(' Simulator run '))
+		sim.runtime_setting("policy", policy_file) # Use random policy
+		f_n = np.append(f_n,sim.run(n))
 
-fh.save_data(save_id+"_validation", f_0=f_0, f_n=f_n)
+	np.savez(save_id+"_validation", f_0=f_0, f_n=f_n)
+
+# Note: a separate script is available to plot the results as histograms

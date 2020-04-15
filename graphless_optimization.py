@@ -24,11 +24,13 @@ def update_H(H, A ,E , pol0, pol):
 		Atemp[np.where(A==int(i))] = 1
 		b0 += Atemp * p[:, np.newaxis]
 	
-	# Iterate over new actions (columns of pol)
+    # Reshape and normalize policy
 	cols = pol0.shape[1]
-	pol = np.reshape(pol,(pol.size//cols,cols))# Resize pol
-	if cols > 1: 
+	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize pol
+	if cols > 1:
 		pol = matop.normalize_rows(pol)
+
+	# Iterate over new actions (columns of pol)
 	b1 = np.zeros(A.shape)
 	i = 0
 	for p in pol.T:
@@ -46,22 +48,23 @@ def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
-	Hnew = update_H(H, A, E, pol0, pol)
-	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E)
-	pr = matop.pagerank(G)
-	f = fitness(pr, des)
+	Hnew = update_H(H, A, E, pol0, pol) # Update H with new policy
+	G = np.diag(pol).dot(Hnew) + np.diag(1-pol).dot(E) # Google formula
+	pr = matop.pagerank(G) # Evaluate pagerank vector 
+	f = fitness(pr, des) # Get fitness
 	if verbose > 1:
 		print(" Fitness \tf = " + str(np.round(f,5)) + 
 			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
+		print(pol)
 	return 100 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
 	# Bound probabilistic policy
 	ll = 0. # Lower limit
-	up = 1. # Upper limit
+	up = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
-	result = spopt.minimize(objective_function, pol0, # constraints=bounds,
-										bounds=bounds, 
+	result = spopt.differential_evolution(objective_function, bounds, # constraints=bounds,
+										# bounds=bounds,
 		                                args=(pol0, des, alpha, H, A, E))
 										# options={'disp':True})#, polish=False,popsize=1)
 
@@ -83,7 +86,7 @@ def main(pol0, des, H, A, E):
 	with np.errstate(divide='ignore',invalid='ignore'):
 		r = H.sum(axis=1) / E.sum(axis=1)
 	r = np.nan_to_num(r) # Just in case
-	alpha = r / (1 + r)
+	alpha = r / (1 + r) * 0.2
 	
 	result = optimize(pol0, des, alpha, H, A.astype("int"), E)
 
