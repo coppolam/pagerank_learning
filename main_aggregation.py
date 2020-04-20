@@ -13,7 +13,7 @@ import subprocess, sys
 import datetime
 
 ## Options
-rerun = True
+rerun = False
 evaluate = False
 n = 30 # Robots
 
@@ -23,13 +23,13 @@ save_id = "data/" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H:%M:%S"))
 folder = "../swarmulator"
 data_folder = folder + "/logs/"
 sim = swarmulator.swarmulator(folder) # Initialize
-sim.runtime_setting("time_limit", "100")
+sim.runtime_setting("time_limit", "2000")
 
 if rerun:
 	sim.runtime_setting("simulation_realtimefactor", "50")
 	sim.runtime_setting("environment", "square")
 	sim.make(clean=True,animation=False,logger=False,verbose=True) # Build (if already built, you can skip this)
-	sim.runtime_setting("policy", "") # Use random policy
+	# sim.runtime_setting("policy", "") # Use random policy
 	subprocess.call("cd " + data_folder + " && rm *.csv", shell=True)
 	f = sim.run(n) # Run it, and receive the fitness.
 
@@ -39,8 +39,8 @@ H = fh.read_matrix(data_folder,"H")
 A = fh.read_matrix(data_folder,"A")
 E = fh.read_matrix(data_folder,"E")
 des = fh.read_matrix(data_folder,"des")
-np.savez(save_id+"_estimated_data", des=des, H=H, A=A, E=E)
-policy = np.ones([A.shape[1],int(A.max())]) / 2
+#np.savez(save_id+"_estimated_data", des=des, H=H, A=A, E=E)
+policy = np.ones([A.shape[1],int(A.max())]) / A.shape[1]
 result, policy, empty_states = opt.main(policy, des, H, A, E)
 np.savez(save_id+"_optimization", des=des, policy=policy, H=H, A=A, E=E)
 #data = np.load('data/2020_04_16_10:58:24_optimization.npz')

@@ -49,7 +49,8 @@ def fitness(pr,des):
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
 	Hnew = update_H(H, A, E, pol0, pol) # Update H with new policy
-	G = np.diag(pol).dot(Hnew) + np.diag(1-pol).dot(E) # Google formula
+	psum = np.sum(pol0,axis=1)
+	G = np.diag(psum).dot(Hnew) + np.diag(1-psum).dot(E) # Google formula
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
 	f = fitness(pr, des) # Get fitness
 	if verbose > 1:
