@@ -29,7 +29,7 @@ if rerun:
 	sim.runtime_setting("simulation_realtimefactor", "50")
 	sim.runtime_setting("environment", "square")
 	sim.make(clean=True,animation=False,logger=False,verbose=True) # Build (if already built, you can skip this)
-	# sim.runtime_setting("policy", "") # Use random policy
+	sim.runtime_setting("policy", "./conf/state_action_matrices/exploration_policy_random.txt") # Use random policy
 	subprocess.call("cd " + data_folder + " && rm *.csv", shell=True)
 	f = sim.run(n) # Run it, and receive the fitness.
 
@@ -76,7 +76,7 @@ if evaluate:
 
 	# Benchmark #
 	f_0 = []
-	sim.runtime_setting("policy", "") # Use random policy
+	sim.runtime_setting("policy", "./conf/state_action_matrices/exploration_policy_random.txt") # Use random policy
 	for i in range(0,runs):
 		print('{:=^40}'.format(' Simulator run '))
 		print("Run " + str(i) + "/" + str(runs))
@@ -84,7 +84,7 @@ if evaluate:
 
 	# Optimized #
 	f_n = []
-	policy_file = sim.path + "/conf/state_action_matrices/evolved_policy.txt"
+	policy_file = sim.path + "./conf/state_action_matrices/exploration_policy_evolved.txt"
 	fh.save_to_txt(policy.T, policy_file)
 	sim.runtime_setting("policy", policy_file) # Use random policy
 	for i in range(0,runs):
