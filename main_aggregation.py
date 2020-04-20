@@ -23,7 +23,7 @@ save_id = "data/" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H:%M:%S"))
 folder = "../swarmulator"
 data_folder = folder + "/logs/"
 sim = swarmulator.swarmulator(folder) # Initialize
-sim.runtime_setting("time_limit", "2000")
+sim.runtime_setting("time_limit", "10000")
 
 if rerun:
 	sim.runtime_setting("simulation_realtimefactor", "50")
@@ -39,7 +39,7 @@ H = fh.read_matrix(data_folder,"H")
 A = fh.read_matrix(data_folder,"A")
 E = fh.read_matrix(data_folder,"E")
 des = fh.read_matrix(data_folder,"des")
-#np.savez(save_id+"_estimated_data", des=des, H=H, A=A, E=E)
+# np.savez(save_id+"_estimated_data", des=des, H=H, A=A, E=E)
 policy = np.ones([A.shape[1],int(A.max())]) / A.shape[1]
 result, policy, empty_states = opt.main(policy, des, H, A, E)
 np.savez(save_id+"_optimization", des=des, policy=policy, H=H, A=A, E=E)
@@ -70,7 +70,7 @@ print(policy)
 ###### Evaluate ######
 if evaluate:
 	runs = 100
-	sim.runtime_setting("time_limit", "1000")
+	sim.runtime_setting("time_limit", "200")
 	sim.runtime_setting("simulation_realtimefactor", "50")
 	sim.runtime_setting("environment", "square")
 
@@ -84,8 +84,8 @@ if evaluate:
 
 	# Optimized #
 	f_n = []
-	policy_file = sim.path + "./conf/state_action_matrices/exploration_policy_evolved.txt"
-	fh.save_to_txt(policy.T, policy_file)
+	policy_file = sim.path + "/conf/state_action_matrices/exploration_policy_evolved.txt"
+	fh.save_to_txt(policy, policy_file)
 	sim.runtime_setting("policy", policy_file) # Use random policy
 	for i in range(0,runs):
 		print('{:=^40}'.format(' Simulator run '))
