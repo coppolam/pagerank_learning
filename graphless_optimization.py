@@ -9,8 +9,9 @@ from tools import fileHandler as fh
 from tools import matrixOperations as matop
 import scipy.optimize as spopt
 np.set_printoptions(suppress=True) # Avoid scientific notation
-
+c = 0
 verbose = 2 # 0 barely, 1 = some, 2 = a lot
+# from deap import algorithms
 
 def update_H(H, A ,E , pol0, pol):
     # Update H based on actions
@@ -48,15 +49,20 @@ def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
+	global c
 	Hnew = update_H(H, A, E, pol0, pol) # Update H with new policy
-	psum = np.sum(pol0,axis=1)
+	psum = np.sum(pol0, axis=1)
 	G = np.diag(psum).dot(Hnew) + np.diag(1-psum).dot(E) # Google formula
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
 	f = fitness(pr, des) # Get fitness
+	# print(c)
+	# c = c+1
 	if verbose > 1:
 		print(" Fitness \tf = " + str(np.round(f,5)) + 
 			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
 		print(pol)
+	# if np.nan(f):
+	# 	print("huh")
 	return 100 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
@@ -64,10 +70,12 @@ def optimize(pol0, des, alpha, H, A, E):
 	ll = 0. # Lower limit
 	up = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
-	result = spopt.differential_evolution(objective_function, bounds, # constraints=bounds,
-										# bounds=bounds,
-		                                args=(pol0, des, alpha, H, A, E))
-										# options={'disp':True})#, polish=False,popsize=1)
+	result = spopt.minimize(objective_function, pol0, #bounds, # constraints=bounds,
+										bounds=bounds,
+										#popsize = 5, maxiter = 100,
+										method="COBYLA",
+										args=(pol0, des, alpha, H, A, E),
+										options={'disp':True})#, polish=False,popsize=1)
 
 	return result
  

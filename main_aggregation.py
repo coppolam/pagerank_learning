@@ -13,8 +13,8 @@ import subprocess, sys
 import datetime
 
 ## Options
-rerun = False
-evaluate = False
+rerun = True
+evaluate = True
 n = 30 # Robots
 
 ###### Simulate ######
@@ -84,7 +84,7 @@ if evaluate:
 
 	# Optimized #
 	f_n = []
-	policy_file = sim.path + "/conf/state_action_matrices/aggregation_policy.txt"
+	policy_file = sim.path + "/conf/state_action_matrices/evolved_policy.txt"
 	fh.save_to_txt(policy.T, policy_file)
 	sim.runtime_setting("policy", policy_file) # Use random policy
 	for i in range(0,runs):
