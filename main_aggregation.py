@@ -7,17 +7,16 @@ Simulate the aggregation and optimize the behavior
 import aggregation, sys
 rerun = False
 
-sim = aggregation.aggregation();
+sim = aggregation.aggregation()
 
 if rerun:
-	sim.run();
-	sim.save();
+	sim.run(time_limit=100)
+	sim.save()
 else:
-	sim.load(sys.argv);
+	sim.load(sys.argv)
+	sim.sim.plot_log()
 
-sim.disp()
-sim.optimize()
-sim.evaluate(runs=1)
-sim.histplots()
-
-# Note: a separate script is available to plot the results as histograms
+# sim.disp()
+# sim.optimize()
+# sim.evaluate(runs=1)
+# sim.histplots()

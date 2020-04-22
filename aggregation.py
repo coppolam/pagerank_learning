@@ -5,30 +5,33 @@ from tools import fileHandler as fh # Own package
 import matplotlib
 import matplotlib.pyplot as plt
 import graphless_optimization as opt
+import random 
 
 class aggregation:
 	def __init__(self, folder="../swarmulator"):
 		self.folder = folder
 		self.data_folder = folder + "/logs/"
-		self.save_id = "data/" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H:%M:%S"))
+		self.run_id = str(random.randrange(100000))
+		self.save_id = "data/" + self.run_id
 		self.sim = swarmulator.swarmulator(folder) # Initialize sim
 		
 	def run(self,robots=30, time_limit=10000, realtimefactor=50, environment="square"):
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
-		# self.sim.make(clean=True, animation=False, logger=True, verbose=True) # Build (if already built, you can skip this)
+		self.sim.make(clean=True, animation=False, logger=True, verbose=True) # Build (if already built, you can skip this)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
 		self.sim.runtime_setting("policy", "./conf/state_action_matrices/exploration_policy_random.txt") # Use random policy
 		self.robots = robots
-		self.sim.run(robots) # Run it, and receive the fitness
+		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
 	def save(self):
-		self.H = fh.read_matrix(self.data_folder,"H")
-		self.A = fh.read_matrix(self.data_folder,"A")
-		self.E = fh.read_matrix(self.data_folder,"E")
-		self.des = fh.read_matrix(self.data_folder,"des")
-		np.savez(self.save_id+"_learning_data", des=self.des, H=self.H, A=self.A, E=self.E)
+		self.H = fh.read_matrix(self.data_folder,"H_"+self.sim.run_id)
+		self.A = fh.read_matrix(self.data_folder,"A_"+self.sim.run_id)
+		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
+		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
+		self.log = self.sim.load()
+		np.savez(self.save_id+"_learning_data", des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
 	def load(self,cmd):
@@ -42,6 +45,7 @@ class aggregation:
 		self.A = data['A'].astype(float)
 		self.des = data['des'].astype(float)
 		self.save_id = file[0:file.find('_learning_data')]
+		self.data = self.sim.load(file[5:file.find('_learning_data')])
 
 	def optimize(self):
 		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]
@@ -60,7 +64,7 @@ class aggregation:
 		print(self.A)
 		print("States desireability: ", str(self.des))
 		
-	def evaluate(self,robots=30,time_limit=100, realtimefactor=50,environment="square",runs=100):
+	def evaluate(self, robots=30, time_limit=100, realtimefactor=50, environment="square",runs=100):
 		self.sim.make(clean=True, animation=False, logger=False, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
@@ -85,10 +89,10 @@ class aggregation:
 			f_n = np.append(f_n,self.sim.run(robots))
 		np.savez(self.save_id+"_validation", f_0=f_0, f_n=f_n)
 
-	def histplots(self,filename=None,show=True):
+	def histplots(self, filename=None):
 		# Load
 		file = filename if filename is not None else self.save_id
-		data_validation = np.load(file+"_validation.npz")
+		data_validation = np.load(file + "_validation.npz")
 		fitness_0 = data_validation['f_0'].astype(float)
 		fitness_n = data_validation['f_n'].astype(float)
 
