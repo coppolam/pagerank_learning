@@ -12,7 +12,7 @@ import sys
 
 #### Input
 folder = "data/"
-file  = "2020_04_17_19:11:43"
+file  = "2020_04_21_11:10:27"
 alpha = 0.5;
 matplotlib.rcParams['text.usetex'] = False # True for latex style
 plot = True
@@ -69,6 +69,6 @@ sim.runtime_setting("environment", "square")
 sim.make(clean=True,animation=True,logger=False) # Build (if already built, you can skip this)
 
 policy_file = sim.path + "/conf/state_action_matrices/aggregation_policy_test.txt"
-fh.save_to_txt(policy.T, policy_file)
+fh.save_to_txt(policy, policy_file)
 sim.runtime_setting("policy", policy_file) # Use random policy
 f = sim.run(n) # Run it, and receive the fitness.

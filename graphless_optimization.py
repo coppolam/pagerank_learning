@@ -51,18 +51,14 @@ def fitness(pr,des):
 def objective_function(pol, pol0, des, alpha, H, A, E):
 	global c
 	Hnew = update_H(H, A, E, pol0, pol) # Update H with new policy
-	psum = np.sum(pol0, axis=1)
-	G = np.diag(psum).dot(Hnew) + np.diag(1-psum).dot(E) # Google formula
+	# psum = np.sum(pol0, axis=1)
+	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E) # Google formula
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
 	f = fitness(pr, des) # Get fitness
-	# print(c)
-	# c = c+1
 	if verbose > 1:
 		print(" Fitness \tf = " + str(np.round(f,5)) + 
 			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
 		print(pol)
-	# if np.nan(f):
-	# 	print("huh")
 	return 100 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
@@ -72,8 +68,8 @@ def optimize(pol0, des, alpha, H, A, E):
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
 	result = spopt.minimize(objective_function, pol0, #bounds, # constraints=bounds,
 										bounds=bounds,
-										#popsize = 5, maxiter = 100,
-										method="COBYLA",
+										# popsize = 5, maxiter = 100,
+										# method="COBYLA",
 										args=(pol0, des, alpha, H, A, E),
 										options={'disp':True})#, polish=False,popsize=1)
 
@@ -95,7 +91,7 @@ def main(pol0, des, H, A, E):
 	with np.errstate(divide='ignore',invalid='ignore'):
 		r = H.sum(axis=1) / E.sum(axis=1)
 	r = np.nan_to_num(r) # Just in case
-	alpha = r / (1 + r) * 0.2
+	alpha = r / (1 + r)
 	
 	result = optimize(pol0, des, alpha, H, A.astype("int"), E)
 

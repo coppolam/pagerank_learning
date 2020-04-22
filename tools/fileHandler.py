@@ -5,6 +5,7 @@ Collection of functions to handle files, load them, save them, ect
 """
 import numpy as np
 import os, time
+import glob
 
 def load_matrix(file):
 	try:
@@ -36,3 +37,8 @@ def save_to_txt(mat,name):
 		np.savetxt(fout, mat, delimiter=" ", fmt='%.3f')
 		fout.seek(NEWLINE_SIZE_IN_BYTES, 2)
 		fout.truncate()
+
+def get_latest_file(path):
+	list_of_files = glob.glob(path) # * means all if need specific format then *.csv
+	latest_file = max(list_of_files, key=os.path.getctime)
+	return latest_file
