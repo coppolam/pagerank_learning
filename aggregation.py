@@ -46,6 +46,7 @@ class aggregation:
 		self.des = data['des'].astype(float)
 		self.save_id = file[0:file.find('_learning_data')]
 		self.data = self.sim.load(file[5:file.find('_learning_data')])
+		print("Loading " + file[5:file.find('_learning_data')])
 
 	def optimize(self):
 		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]

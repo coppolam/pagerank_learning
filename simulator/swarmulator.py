@@ -48,7 +48,6 @@ class swarmulator:
 			st = file.find('_')
 			end = file.find('.txt')
 			self.run_id = file[st+1:end] # reconstruct id
-
 		return np.loadtxt(self.path + "/logs/log_" + self.run_id + ".txt")
 
 	def plot_log(self, id_column=1, time_column=0, x_column=2, y_column=3):
@@ -64,6 +63,22 @@ class swarmulator:
 		ax.set_ylabel("N [m]")
 		ax.set_zlabel("E [m]")
 		plt.show()
+
+	# def animate_log(self, id_column=1, time_column=0, x_column=2, y_column=3):
+	# 	data = self.load()
+	# 	robots = int(data[:,id_column].max())
+	# 	print("Total number of robots: " + str(robots))
+	# 	fig = plt.figure()
+	# 	ax = fig.gca(projection='3d')
+	# 	t = np.unique(data[:,time_column])
+	# 	fitness = np.zeros(t.shape)
+	# 	for step in t:
+	# 		for x in range(1,robots):
+	# 			d = data[np.where(data[:,id_column] == x)]
+	# 			ax.plot(d[:,x_column],d[:,y_column])
+	# 		ax.set_ylabel("N [m]")
+	# 		ax.set_zlabel("E [m]")
+	# 		plt.show()
 
 	def runtime_setting(self, setting, value):
 		s = "xmlstarlet edit -L -u \"/parameters/" + setting + "\" -v \""+ value + "\" " + self.path + "/conf/parameters.xml"
