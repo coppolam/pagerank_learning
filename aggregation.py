@@ -15,14 +15,16 @@ class aggregation:
 		self.save_id = "data/" + self.run_id
 		self.sim = swarmulator.swarmulator(folder) # Initialize sim
 		
-	def run(self,robots=30, time_limit=10000, realtimefactor=50, environment="square"):
+	def run(self, logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square"):
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
 		self.sim.make(clean=True, animation=False, logger=True, verbose=True) # Build (if already built, you can skip this)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
+		self.sim.runtime_setting("logger_updatefreq", str(logger_updatefreq))
 		self.sim.runtime_setting("environment", environment)
-		self.sim.runtime_setting("policy", "./conf/state_action_matrices/exploration_policy_random.txt") # Use random policy
+		self.sim.runtime_setting("policy", "") # Use random policy
 		self.robots = robots
+		print("Generated ID: " + self.run_id)
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
 	def save(self):
@@ -30,7 +32,7 @@ class aggregation:
 		self.A = fh.read_matrix(self.data_folder,"A_"+self.sim.run_id)
 		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
 		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
-		self.log = self.sim.load()
+		self.log = self.sim.load(id=self.sim.run_id)
 		np.savez(self.save_id+"_learning_data", des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
@@ -45,7 +47,7 @@ class aggregation:
 		self.A = data['A'].astype(float)
 		self.des = data['des'].astype(float)
 		self.save_id = file[0:file.find('_learning_data')]
-		self.data = self.sim.load(file[5:file.find('_learning_data')])
+		self.log = self.sim.load(file[5:file.find('_learning_data')])
 		print("Loading " + file[5:file.find('_learning_data')])
 
 	def optimize(self):
