@@ -75,7 +75,7 @@ class aggregation:
 
 		# Benchmark
 		f_0 = []
-		self.sim.runtime_setting("policy", "./conf/state_action_matrices/exploration_policy_random.txt") # Use random policy
+		self.sim.runtime_setting("policy", "") # Use random policy
 		for i in range(0,runs):
 			print('{:=^40}'.format(' Simulator run '))
 			print("Run " + str(i) + "/" + str(runs))
@@ -83,7 +83,7 @@ class aggregation:
 
 		# Optimize
 		f_n = []
-		policy_file = self.sim.path + "/conf/state_action_matrices/exploration_policy_evolved.txt"
+		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_evolved.txt"
 		fh.save_to_txt(self.policy, policy_file)
 		self.sim.runtime_setting("policy", policy_file) # Use random policy
 		for i in range(0,runs):
