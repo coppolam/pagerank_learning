@@ -17,7 +17,9 @@ class aggregation:
 		
 	def run(self, logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square"):
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
-		self.sim.make(clean=True, animation=False, logger=True, verbose=True) # Build (if already built, you can skip this)
+		self.sim.make(controller="controller_aggregation",
+		agent="particle",
+		clean=True, animation=False, logger=True, verbose=True) # Build (if already built, you can skip this)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("logger_updatefreq", str(logger_updatefreq))
@@ -41,14 +43,15 @@ class aggregation:
 			file = fh.get_latest_file('data/*_learning_data.npz')
 		else:
 			file = cmd[1]
+		print("Loading " + file[5:file.find('_learning_data')] + "_learning_data.npz")
 		data = np.load(file)
 		self.H = data['H'].astype(float)
 		self.E = data['E'].astype(float)
 		self.A = data['A'].astype(float)
 		self.des = data['des'].astype(float)
 		self.save_id = file[0:file.find('_learning_data')]
-		self.log = self.sim.load(file[5:file.find('_learning_data')])
-		print("Loading " + file[5:file.find('_learning_data')])
+		self.log = data['log'].astype(float) #self.sim.load(file[5:file.find('_learning_data')])
+		print("Loaded")
 
 	def optimize(self):
 		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]

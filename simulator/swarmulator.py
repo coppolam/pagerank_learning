@@ -10,14 +10,16 @@ class swarmulator:
 	def __init__(self, path):
 		self.path = path
 	
-	def make(self, animation=False, logger=False, verbose=False, speed=True, clean=False):
+	def make(self, controller=None, agent=None, animation=False, logger=False, verbose=False, speed=True, clean=False):
 		spd = " -j" if speed else ""
 		ani = " ANIMATION=ON" if animation else ""
 		log = " LOG=ON" if logger else ""
 		vrb = " VERBOSE=ON" if verbose else ""
+		ctrl = " CONTROLLER="+controller if controller else ""
+		agnt = " AGENT="+agent if controller else ""
 		if clean:
 			subprocess.call("cd " + self.path + " && make clean ", shell=True)
-		subprocess.call("cd " + self.path + " && make" + spd + ani + log + vrb, shell=True)
+		subprocess.call("cd " + self.path + " && make" + spd + ani + log + vrb + ctrl + agnt, shell=True)
 		print("# Done")
 
 	def launch(self, n, i):
