@@ -4,7 +4,7 @@ Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-rerun = False
+rerun = True
 
 import aggregation, sys
 import numpy as np
@@ -36,7 +36,7 @@ def reevaluate(*args):
 	print("Re-evaluating")
 	a = 0
 	states = np.zeros([t.size,robots])
-	c = np.zeros([t.size,8])
+	des = np.zeros([t.size,8,len(args)])
 	for step in t:
 		d = sim.log[np.where(sim.log[:,time_column] == step)]
 		fref = 0
@@ -46,9 +46,9 @@ def reevaluate(*args):
 		f_official[a] = d[:,5].astype(float).mean()
 		states[a] = d[:,4].astype(int)
 		for r in np.arange(0,np.max(states[a])+1).astype(int):
-			c[a,r] = np.count_nonzero(states[a] == r)
+			des[a,r] = np.count_nonzero(states[a] == r)
 		a += 1
-	return t, f_official, fitness
+	return t, f_official, fitness, des
 
 # Fitnesses
 def plot_fitness(t,f_official,fitness):
@@ -69,9 +69,12 @@ def plot_correlation(fitness):
 	plt.xlabel("Fitness")
 	plt.show()
 
-t, f_official, fitness = reevaluate(
+print("Revaluating fitness")
+t, f_official, fitness, des = reevaluate(
 	f.number_of_clusters, 
 	f.mean_number_of_neighbors,
 	f.mean_distance_to_rest)
+np.savez(sim.save_id+"_fitness", f_official=fitness, fitness=fitness, des=des)
+print("Saved")
 
-plot_fitness(t, f_official, fitness)
+# plot_fitness(t, f_official, fitness)
