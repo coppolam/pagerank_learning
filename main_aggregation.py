@@ -4,7 +4,7 @@ Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-rerun = True
+rerun = False
 
 import aggregation, sys
 import numpy as np
@@ -23,6 +23,7 @@ else:
 	# sim.sim.plot_log()
 
 sim.disp()
+sim.optimize()
 
 # Re-evaluating
 def reevaluate(*args):
@@ -51,8 +52,8 @@ def reevaluate(*args):
 	return t, f_official, fitness, des
 
 # Fitnesses
-def plot_fitness(t,f_official,fitness):
-	plt.plot(t,f_official/np.mean(f_official))
+def plot_fitness(t,fitness):
+	# plt.plot(t,f_official/np.mean(f_official))
 	for a in range(fitness.shape[1]):
 		plt.plot(t,fitness[:,a]/np.mean(fitness[:,a]))
 	plt.ylabel("Fitness")
@@ -70,11 +71,17 @@ def plot_correlation(fitness):
 	plt.show()
 
 print("Revaluating fitness")
-t, f_official, fitness, des = reevaluate(
-	f.number_of_clusters, 
-	f.mean_number_of_neighbors,
-	f.mean_distance_to_rest)
-np.savez(sim.save_id+"_fitness", f_official=fitness, fitness=fitness, des=des)
-print("Saved")
-
-# plot_fitness(t, f_official, fitness)
+# t, f_official, fitness, des = reevaluate(
+# 	f.number_of_clusters, 
+# 	f.mean_number_of_neighbors,
+# 	f.mean_distance_to_rest)
+# np.savez(sim.save_id+"_fitness", f_official=f_official, fitness=fitness, des=des)
+# print("Saved")
+#data = np.load("data/43435_fitness.npz")
+#f_official = data['f_official'].astype(float)
+#fitness = data['fitness'].astype(float)
+#des = data['des'].astype(float)
+#time_column = 0
+#t = np.unique(sim.log[:,0])
+#plot_fitness(t, fitness)
+#plot_correlation(fitness)
