@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import tools.fileHandler as fh	
 class swarmulator:
-	def __init__(self, path):
+	def __init__(self, path="../swarmulator"):
 		self.path = path
 	
 	def make(self, controller=None, agent=None, animation=False, logger=False, verbose=False, speed=True, clean=False):

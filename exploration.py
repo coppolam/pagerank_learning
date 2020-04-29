@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import graphless_optimization as opt
 import random 
 
-class aggregation:
+class exploration:
 	def __init__(self, folder="../swarmulator"):
 		self.folder = folder
 		self.data_folder = folder + "/logs/"
@@ -15,20 +15,18 @@ class aggregation:
 		self.save_id = "data/" + self.run_id
 		self.sim = swarmulator.swarmulator(folder) # Initialize sim
 		
-	def make(self, controller="controller_aggregation", agent="particle", clean=True, animation=False, logger=True, verbose=True):
-		self.sim.make(controller=controller, agent=agent, clean=clean, animation=animation, logger=logger, verbose=verbose) # Build (if already built, you can skip this)
-		
-	def run(self, logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square", run_id=None):
+	def run(self, logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square"):
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
+		self.sim.make(controller="pfsm_exploration",
+		agent="particle_oriented",
+		clean=True, animation=True, logger=True, verbose=True) # Build (if already built, you can skip this)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("logger_updatefreq", str(logger_updatefreq))
 		self.sim.runtime_setting("environment", environment)
-		self.sim.runtime_setting("policy", "") # Use random policy
+		self.sim.runtime_setting("policy", "./conf/state_action_matrices/exploration_policy_random.txt") # Use random policy
 		self.robots = robots
-		self.run_id = id if id is not None else str(random.randrange(100000))
-		print("Runtime ID: " + self.run_id)
-		self.save_id = "data/" + self.run_id
+		print("Generated ID: " + self.run_id)
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
 	def save_learning_data(self):
@@ -57,15 +55,7 @@ class aggregation:
 
 	def optimize(self):
 		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]
-
-		temp = self.H + self.E
-		empty_cols = np.where(~temp.any(axis=0))[0]
-		empty_rows = np.where(~temp.any(axis=1))[0]
-		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
-		self.des = np.array([0, 0, 0, 0, 0, 0, 0, 0])
-		self.des[np.min(empty_states)-1] = 1
-
-		print(self.des)
+		# self.des = np.array([0, 15, 9, 1, 0, 0, 0 ])
 		self.result, self.policy, self.empty_states = opt.main(p0, self.des, self.H, self.A, self.E)
 		print("Unknown states:" + str(self.empty_states))
 		print('{:=^40}'.format(' Optimization '))

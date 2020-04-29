@@ -58,20 +58,20 @@ def objective_function(pol, pol0, des, alpha, H, A, E):
 	if verbose > 1:
 		print(" Fitness \tf = " + str(np.round(f,5)) + 
 			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
-		print(pol)
-	return 100 / (f + 1) # Trick it into maximizing
+		# print(pol)
+	return 1 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
 	# Bound probabilistic policy
-	ll = 0. # Lower limit
+	ll = 0.  # Lower limit
 	up = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
 	result = spopt.minimize(objective_function, pol0, #bounds, # constraints=bounds,
 										bounds=bounds,
-										# popsize = 5, maxiter = 100,
+										# popsize = 100, maxiter = 100,
 										# method="COBYLA",
-										args=(pol0, des, alpha, H, A, E),
-										options={'disp':True})#, polish=False,popsize=1)
+										args=(pol0, des, alpha, H, A, E))#, polish=True)
+										#options={'disp':True})#, polish=False,popsize=1)
 
 	return result
  
@@ -100,5 +100,5 @@ def main(pol0, des, H, A, E):
 	policy = np.reshape(policy,(policy.size//cols,cols)) # Resize pol
 	if cols > 1:
 		policy = matop.normalize_rows(policy)
-
+	print(alpha)
 	return result, policy, empty_states

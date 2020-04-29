@@ -10,7 +10,8 @@
             "request": "launch",
             "cwd": "./",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args" : ["data/73449_learning_data.npz"]
         }
     ]
 }

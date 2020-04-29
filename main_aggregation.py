@@ -3,32 +3,43 @@
 Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
-
 rerun = False
 
-import aggregation, sys
+import argparse
+import sys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx 
 from tools import fitness_functions as f
 
-sim = aggregation.aggregation()
+# parser = argparse.ArgumentParser(description='Optional app description')
+
+import aggregation as env
+sim = env.aggregation()
+# import exploration as env
+# sim = env.exploration()
+
+# Required positional argument
+# parser.add_argument('rerun', type=bool,
+#                     help='A required integer positional argument')
 
 if rerun:
-	sim.run(time_limit=100)
-	sim.save()
+	sim.make()
+	sim.run(time_limit=2000, robots=40, environment="square")
+	sim.save_learning_data()
 else:
 	sim.load(sys.argv)
 	# sim.sim.plot_log()
 
 sim.disp()
-sim.optimize()
+# sim.optimize()
 
-# Re-evaluating
+## Re-evaluating
 def reevaluate(*args):
 	id_column = 1
 	robots = int(sim.log[:,id_column].max())
+	print(robots)
 	time_column = 0
 	t = np.unique(sim.log[:,0])
 	f_official = np.zeros(t.shape)
@@ -37,7 +48,7 @@ def reevaluate(*args):
 	print("Re-evaluating")
 	a = 0
 	states = np.zeros([t.size,robots])
-	des = np.zeros([t.size,8,len(args)])
+	des = np.zeros([t.size,sim.H.shape[0]])
 	for step in t:
 		d = sim.log[np.where(sim.log[:,time_column] == step)]
 		fref = 0
@@ -45,15 +56,15 @@ def reevaluate(*args):
 			fitness[a,fref] = i(d)
 			fref += 1
 		f_official[a] = d[:,5].astype(float).mean()
-		states[a] = d[:,4].astype(int)
+		states[a] = d[0:robots,4].astype(int)
 		for r in np.arange(0,np.max(states[a])+1).astype(int):
-			des[a,r] = np.count_nonzero(states[a] == r)
+			if r < sim.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
+				des[a,r] = np.count_nonzero(states[a] == r)
 		a += 1
 	return t, f_official, fitness, des
 
-# Fitnesses
+## Fitnesses
 def plot_fitness(t,fitness):
-	# plt.plot(t,f_official/np.mean(f_official))
 	for a in range(fitness.shape[1]):
 		plt.plot(t,fitness[:,a]/np.mean(fitness[:,a]))
 	plt.ylabel("Fitness")
@@ -63,25 +74,45 @@ def plot_fitness(t,fitness):
 ## Correlation
 def plot_correlation(fitness):
 	for a in range(1,fitness.shape[1]):
-		plt.plot(fitness[:,0],fitness[:,a])
+		plt.plot(fitness[:,0],fitness[:,a],'*')
 		c = np.corrcoef(fitness[:,0],fitness[:,a])[0,1]
 		print("Cov 0:", str(a), " = ", str(c))
-	plt.ylabel("Fitness")
-	plt.xlabel("Fitness")
+	plt.ylabel("Local Fitness")
+	plt.xlabel("Global Fitness")
 	plt.show()
 
-print("Revaluating fitness")
+# print("Revaluating fitness")
 # t, f_official, fitness, des = reevaluate(
-# 	f.number_of_clusters, 
-# 	f.mean_number_of_neighbors,
-# 	f.mean_distance_to_rest)
-# np.savez(sim.save_id+"_fitness", f_official=f_official, fitness=fitness, des=des)
+# 	f.expl, 
+# 	f.mean_number_of_neighbors) # f.mean_distance_to_rest)
+# np.savez(sim.save_id+"_fitness_cc", f_official=f_official, fitness=fitness, des=des)
 # print("Saved")
-#data = np.load("data/43435_fitness.npz")
-#f_official = data['f_official'].astype(float)
-#fitness = data['fitness'].astype(float)
-#des = data['des'].astype(float)
-#time_column = 0
-#t = np.unique(sim.log[:,0])
-#plot_fitness(t, fitness)
-#plot_correlation(fitness)
+
+data1 = np.load("data/1_fitness_cc.npz")
+data2 = np.load("data/2_fitness_cc.npz")
+data3 = np.load("data/3_fitness_cc.npz") # 20 robots
+data4 = np.load("data/4_fitness_cc.npz") # 10 robots
+fitness1 = data1['fitness'].astype(float)
+fitness2 = data2['fitness'].astype(float)
+fitness3 = data3['fitness'].astype(float)
+fitness4 = data4['fitness'].astype(float)
+des1 = data1['des'].astype(float)
+des2 = data2['des'].astype(float)
+des3 = data3['des'].astype(float)
+des4 = data4['des'].astype(float)
+fitness1, ind1 = np.unique(fitness1,axis=0,return_index=True)
+fitness2, ind2 = np.unique(fitness2,axis=0,return_index=True)
+fitness3, ind3 = np.unique(fitness3,axis=0,return_index=True)
+fitness4, ind4 = np.unique(fitness4,axis=0,return_index=True)
+des1 = des1[ind1]
+des2 = des2[ind2]
+des3 = des3[ind3]
+des4 = des4[ind4]
+plt.plot(fitness1[:,0]*10,fitness1[:,1],'*')
+plt.plot(fitness2[:,0]*20,fitness2[:,1],'.')
+plt.plot(fitness3[:,0]*30,fitness3[:,1],'+')
+plt.plot(fitness4[:,0]*40,fitness4[:,1],'.')
+plt.show()
+
+# plot_fitness(t, fitness)
+# plot_correlation(fitness)
