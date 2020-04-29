@@ -2,6 +2,7 @@ import random, sys
 import numpy as np
 import matplotlib.pyplot as plt
 from deap import base, creator, tools
+import pickle
 
 class evolution:
 	def __init__(self):
@@ -22,8 +23,8 @@ class evolution:
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMax)
 		self.toolbox = base.Toolbox()
-		self.toolbox.register("attr_bool", random.randint, 0, 1)
-		self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attr_bool, self.GENOME_LENGTH)
+		self.toolbox.register("attr_float", random.random)
+		self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attr_float, self.GENOME_LENGTH)
 		self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 		self.toolbox.register("evaluate", fitness)
 		self.toolbox.register("mate", tools.cxTwoPoint)
@@ -66,7 +67,7 @@ class evolution:
 	def evolve(self, generations=100, verbose=False, population=None):
 		random.seed() # Random seed
 		pop = population if population is not None else self.toolbox.population(n=self.POPULATION_SIZE)
-		if verbose is True: print('{:=^40}'.format(' Start of evolution '))
+		if verbose: print('{:=^40}'.format(' Start of evolution '))
 			
 		# Evaluate the initial population
 		fitnesses = list(map(self.toolbox.evaluate, pop))
@@ -96,13 +97,30 @@ class evolution:
 			
 			pop[:] = offspring # Replace population
 			self.stats.append(self.store_stats(pop, g)) # Store stats
-			if verbose is True: self.disp_stats(g)
+			if verbose: self.disp_stats(g)
 			
 			g += 1
 		
 		self.best_ind = tools.selBest(pop, 1)[0]
+		self.pop = pop
+		self.g = g
 		return pop
 
-		if verbose is True: 
+		if verbose: 
 			print('{:=^40}'.format(' End of evolution '))
 			print("Best individual is %s, %s" % (self.best_ind, self.best_ind.fitness.values))
+
+	def save(self,filename):
+		# Fill the dictionary using the dict(key=value[, ...]) constructor
+		cp = dict(population=self.pop, generation=self.g, stats=self.stats)
+
+		with open(filename+".pkl", "wb") as cp_file:
+			pickle.dump(cp, cp_file)
+
+	def load(self,filename):
+		with open(filename+".pkl", "rb") as cp_file:
+			cp = pickle.load(cp_file)
+		self.stats = cp["stats"]
+		self.g = cp["generation"]
+		return cp["population"]
+
