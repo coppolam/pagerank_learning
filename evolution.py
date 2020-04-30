@@ -64,7 +64,7 @@ class evolution:
 		_ = plt.xlim(0,len(self.stats))
 		plt.show()
 
-	def evolve(self, generations=100, verbose=False, population=None):
+	def evolve(self, generations=100, verbose=False, population=None, checkpoint=False):
 		random.seed() # Random seed
 		pop = population if population is not None else self.toolbox.population(n=self.POPULATION_SIZE)
 		if verbose: print('{:=^40}'.format(' Start of evolution '))
@@ -99,21 +99,27 @@ class evolution:
 			self.stats.append(self.store_stats(pop, g)) # Store stats
 			if verbose: self.disp_stats(g)
 			
+			if checkpoint: save("chkpt", pop=pop, gen=g, stats=stats)
+
 			g += 1
-		
-		self.best_ind = tools.selBest(pop, 1)[0]
+
 		self.pop = pop
+		self.best_ind = get_best()
 		self.g = g
-		return pop
+
+		if checkpoint: save("chkpt")
 
 		if verbose: 
 			print('{:=^40}'.format(' End of evolution '))
 			print("Best individual is %s, %s" % (self.best_ind, self.best_ind.fitness.values))
 
-	def save(self,filename):
-		# Fill the dictionary using the dict(key=value[, ...]) constructor
-		cp = dict(population=self.pop, generation=self.g, stats=self.stats)
+		return pop
 
+	def save(self,filename,pop=None,gen=None,stats=None):
+		p = self.pop if pop is None else pop
+		g = self.g if gen is None else gen
+		s = self.stats if stats is None else stats
+		cp = dict(population=p, generation=g, stats=s)
 		with open(filename+".pkl", "wb") as cp_file:
 			pickle.dump(cp, cp_file)
 
@@ -122,5 +128,9 @@ class evolution:
 			cp = pickle.load(cp_file)
 		self.stats = cp["stats"]
 		self.g = cp["generation"]
-		return cp["population"]
+		self.pop = cp["population"]
+		return self.pop
 
+	def get_best(self,pop=None):
+		p = self.pop if pop is None else pop
+		return tools.selBest(p,1)[0]
