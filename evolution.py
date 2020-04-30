@@ -6,6 +6,8 @@ import pickle
 
 class evolution:
 	def __init__(self):
+		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+		creator.create("Individual", list, fitness=creator.FitnessMax)
 		pass
 
 	def setup(self, fitness=None, constraint=None, 
@@ -20,8 +22,6 @@ class evolution:
 		if fitness is None:
 			print("Please define a fitness function")
 			sys.exc_info()[0]
-		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-		creator.create("Individual", list, fitness=creator.FitnessMax)
 		self.toolbox = base.Toolbox()
 		self.toolbox.register("attr_float", random.random)
 		self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attr_float, self.GENOME_LENGTH)
@@ -99,15 +99,15 @@ class evolution:
 			self.stats.append(self.store_stats(pop, g)) # Store stats
 			if verbose: self.disp_stats(g)
 			
-			if checkpoint: save("chkpt", pop=pop, gen=g, stats=stats)
+			if checkpoint: self.save("chkpt", pop=pop, gen=g, stats=self.stats)
 
 			g += 1
 
 		self.pop = pop
-		self.best_ind = get_best()
+		self.best_ind = self.get_best()
 		self.g = g
 
-		if checkpoint: save("chkpt")
+		if checkpoint: self.save("chkpt")
 
 		if verbose: 
 			print('{:=^40}'.format(' End of evolution '))

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import tools.fileHandler as fh	
 import concurrent.futures
+from timeit import timeit
 class swarmulator:
 	def __init__(self, path="../swarmulator",verbose=True):
 		self.path = path
@@ -39,9 +40,10 @@ class swarmulator:
 		self.run_id = random.randrange(100000) if run_id is None else run_id;
 		self.run_id = str(self.run_id)
 		pipe = str("/tmp/swarmulator_" + self.run_id)
-		# self.runtime_setting("id", self.run_id) # unique pipe ID
+		# tic = time.time()
 		self.launch(n,run_id=self.run_id)
 		f = self.get_fitness(pipe)
+		# toc = time.time()
 		return f
 
 	def load(self,id=None):
