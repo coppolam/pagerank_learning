@@ -26,18 +26,18 @@ class aggregation:
 		self.sim.runtime_setting("environment", environment)
 		self.sim.runtime_setting("policy", "") # Use random policy
 		self.robots = robots
-		self.run_id = id if id is not None else str(random.randrange(100000))
+		self.run_id = run_id if run_id is not None else str(random.randrange(100000))
 		print("Runtime ID: " + self.run_id)
 		self.save_id = "data/" + self.run_id
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
-	def save_learning_data(self):
+	def save_learning_data(self,filename_ext=None):
 		self.H = fh.read_matrix(self.data_folder,"H_"+self.sim.run_id)
 		self.A = fh.read_matrix(self.data_folder,"A_"+self.sim.run_id)
 		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
 		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
 		self.log = self.sim.load(id=self.sim.run_id)
-		np.savez(self.save_id+"_learning_data", des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
+		np.savez(self.save_id+"_learning_data"+filename_ext, des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
 	def load(self,cmd):

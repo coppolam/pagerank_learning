@@ -61,20 +61,22 @@ def plot(filename,figurename=None):
 
 def main():
 	##### Primary input parameters -- Test parameters #####
-	n = 3 # Max number of robots
-	m = 2 # Re-runs to average out
-	batch = 2 # Number of batch runs
-	filename = "time" # Filename
-
+	n = 50 # Max number of robots
+	m = 5 # Re-runs to average out
+	batch = 5 # Number of batch runs
+	rtfactor = 300
+	tl = 200
+	filename = ("time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,rtfactor,tl))
+	print("Writing to " + filename)
 	##### Secondary input parameters -- Swarmulator configuration #####
 	sim.runtime_setting("simulation_updatefreq", str("20"))
-	sim.runtime_setting("simulation_realtimefactor", str("300"))
-	sim.runtime_setting("time_limit", str("200"))
 	sim.runtime_setting("environment", "square")
 	sim.runtime_setting("animation_updatefreq", str("25"))
+	sim.runtime_setting("simulation_realtimefactor", str(rtfactor))
+	sim.runtime_setting("time_limit", str(tl))
 
 	run(n,m,batch,filename)
-	plot(filename)
+	# plot(filename)
 
 if __name__ == "__main__":
     main()
