@@ -26,7 +26,7 @@ class aggregation:
 		self.sim.runtime_setting("environment", environment)
 		self.sim.runtime_setting("policy", "") # Use random policy
 		self.robots = robots
-		self.run_id = run_id if run_id is not None else str(random.randrange(100000))
+		self.run_id = str(run_id) if run_id is not None else str(random.randrange(100000))
 		print("Runtime ID: " + self.run_id)
 		self.save_id = "data/" + self.run_id
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness

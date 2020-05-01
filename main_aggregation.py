@@ -15,13 +15,13 @@ from tools import fitness_functions as f
 
 import aggregation as env
 sim = env.aggregation()
-tlim = 10000
+tlim = 50
 r = 10
 inc = 5
 if rerun:
 	sim.make()
 	for i in range(1,inc+1):
-		sim.run(time_limit=tlim, robots=r*i, environment="square")
+		sim.run(run_id=1, time_limit=tlim, robots=r*i, environment="square")
 		filename_ext = ("_t%i_r%i" % (tlim, r*i))
 		sim.save_learning_data(filename_ext=filename_ext)
 else:
