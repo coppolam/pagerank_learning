@@ -18,13 +18,13 @@ class aggregation:
 	def make(self, controller="controller_aggregation", agent="particle", clean=True, animation=False, logger=True, verbose=True):
 		self.sim.make(controller=controller, agent=agent, clean=clean, animation=animation, logger=logger, verbose=verbose) # Build (if already built, you can skip this)
 		
-	def run(self, logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square", run_id=None):
+	def run(self, policy="", logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square", run_id=None):
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("logger_updatefreq", str(logger_updatefreq))
 		self.sim.runtime_setting("environment", environment)
-		self.sim.runtime_setting("policy", "") # Use random policy
+		self.sim.runtime_setting("policy", policy) # Use random policy
 		self.robots = robots
 		self.run_id = str(run_id) if run_id is not None else str(random.randrange(100000))
 		print("Runtime ID: " + self.run_id)
@@ -40,12 +40,13 @@ class aggregation:
 		np.savez(self.save_id+"_learning_data"+filename_ext, des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
-	def load(self,cmd):
-		if np.size(cmd) == 1:
-			file = fh.get_latest_file('data/*_learning_data.npz')
-		else:
-			file = cmd[1]
-		print("Loading " + file[5:file.find('_learning_data')] + "_learning_data.npz")
+	def load(self,file=None):
+		# if cmd is not None:
+		# 	if np.size(cmd) == 1:
+		# 		file = fh.get_latest_file('data/*_learning_data.npz')
+		# 	else:
+		# 		file = cmd[1]
+		# 	print("Loading " + file[5:file.find('_learning_data')] + "_learning_data.npz")
 		data = np.load(file)
 		self.H = data['H'].astype(float)
 		self.E = data['E'].astype(float)
@@ -53,7 +54,7 @@ class aggregation:
 		self.des = data['des'].astype(float)
 		self.save_id = file[0:file.find('_learning_data')]
 		self.log = data['log'].astype(float) #self.sim.load(file[5:file.find('_learning_data')])
-		print("Loaded")
+		print("Loaded %s" %file)
 
 	def optimize(self):
 		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]
@@ -124,3 +125,50 @@ class aggregation:
 		plt.ylabel("Instances")
 		plt.legend(loc='upper right')
 		plt.savefig(self.save_id+"_histplot.png")
+
+		
+	## Re-evaluating
+	def reevaluate(self,*args):
+		id_column = 1
+		robots = int(self.log[:,id_column].max())
+		time_column = 0
+		t = np.unique(self.log[:,0])
+		f_official = np.zeros(t.shape)
+		fitness = np.zeros([t.size,len(args)])
+		arguments = locals()
+		print("Re-evaluating")
+		a = 0
+		states = np.zeros([t.size,robots])
+		des = np.zeros([t.size,self.H.shape[0]])
+		for step in t:
+			d = self.log[np.where(self.log[:,time_column] == step)]
+			fref = 0
+			for i in args:
+				fitness[a,fref] = i(d)
+				fref += 1
+			f_official[a] = d[:,5].astype(float).mean()
+			states[a] = d[0:robots,4].astype(int)
+			for r in np.arange(0,np.max(states[a])+1).astype(int):
+				if r < self.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
+					des[a,r] = np.count_nonzero(states[a] == r)
+			a += 1
+		print("Re-evaluation done")
+		return t, fitness, des
+
+	## Fitnesses
+	def plot_fitness(self,t,fitness):
+		for a in range(fitness.shape[1]):
+			plt.plot(t,fitness[:,a]/np.mean(fitness[:,a]))
+		plt.ylabel("Fitness")
+		plt.xlabel("Time [s]")
+		plt.show()
+
+	## Correlation
+	def plot_correlation(self,fitness):
+		for a in range(1,fitness.shape[1]):
+			plt.plot(fitness[:,0],fitness[:,a],'*')
+			c = np.corrcoef(fitness[:,0],fitness[:,a])[0,1]
+			print("Cov 0:", str(a), " = ", str(c))
+		plt.ylabel("Local Fitness")
+		plt.xlabel("Global Fitness")
+		plt.show()
