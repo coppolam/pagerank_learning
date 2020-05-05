@@ -8,6 +8,7 @@ import os, time
 import glob
 
 def load_matrix(file):
+	'''Loads a matrix from a file'''
 	try:
 		matrix = np.loadtxt(open(file, "rb"), delimiter=", \t", skiprows=1)
 		return matrix
@@ -19,6 +20,7 @@ def read_matrix(folder, name, file_format=".csv"):
 	return mat
 
 def make_folder(folder):
+	'''Generates a folder if it doesn not exist'''
 	try:
 		os.mkdir(folder)
 	except:

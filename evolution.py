@@ -5,7 +5,10 @@ from deap import base, creator, tools
 import pickle
 
 class evolution:
+	'''Wrapper around the DEAP package to run an evolutionary process with just a few commands'''
+
 	def __init__(self):
+		'''Itilize the deap wrapper'''
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMax)
 		pass
@@ -15,6 +18,7 @@ class evolution:
 		POPULATION_SIZE = 100,
 		P_CROSSOVER = 0.5,
 		P_MUTATION = 0.2):
+		'''Set up the parameters'''
 		self.GENOME_LENGTH = GENOME_LENGTH
 		self.POPULATION_SIZE = POPULATION_SIZE
 		self.P_CROSSOVER = P_CROSSOVER
@@ -34,6 +38,7 @@ class evolution:
 		self.stats = []
 	
 	def store_stats(self, population, iteration=0):
+		'''Store the current stats and return a dict'''
 		fitnesses = [ individual.fitness.values[0] for individual in population ]
 		return {
 			'g': iteration,
@@ -44,7 +49,8 @@ class evolution:
 		}
 
 	def disp_stats(self,iteration=0):
-		print(">> g = %i, mu = %.2f, std = %.2f, max = %.2f, min = %.2f" % 
+		'''Print the current stats'''
+		print(">> gen = %i, mu = %.2f, std = %.2f, max = %.2f, min = %.2f" % 
 		(self.stats[iteration]['g'],
 		self.stats[iteration]['mu'],
 		self.stats[iteration]['std'],
@@ -52,6 +58,7 @@ class evolution:
 		self.stats[iteration]['min']))
 
 	def plot_evolution(self):
+		'''Plot the evolution outcome'''
 		plt.style.use('seaborn-whitegrid')
 		_ = plt.plot(range(1, len(self.stats)+1), [ s['mu'] for s in self.stats ])
 		_ = plt.title('Average fitness per iteration')
@@ -64,7 +71,8 @@ class evolution:
 		_ = plt.xlim(0,len(self.stats))
 		plt.show()
 
-	def evolve(self, generations=100, verbose=False, population=None, checkpoint=False):
+	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
+		'''Run the evolution. Use checkpoint="filename.pkl" to save the status to a file after each generation, just in case.'''
 		random.seed() # Random seed
 		pop = population if population is not None else self.toolbox.population(n=self.POPULATION_SIZE)
 		if verbose: print('{:=^40}'.format(' Start of evolution '))
@@ -99,7 +107,7 @@ class evolution:
 			self.stats.append(self.store_stats(pop, g)) # Store stats
 			if verbose: self.disp_stats(g)
 			
-			if checkpoint: self.save("chkpt", pop=pop, gen=g, stats=self.stats)
+			if checkpoint is not None: self.save(checkpoint, pop=pop, gen=g, stats=self.stats)
 
 			g += 1
 
@@ -107,7 +115,7 @@ class evolution:
 		self.best_ind = self.get_best()
 		self.g = g
 
-		if checkpoint: self.save("chkpt")
+		if checkpoint is not None: self.save(checkpoint)
 
 		if verbose: 
 			print('{:=^40}'.format(' End of evolution '))
@@ -116,6 +124,7 @@ class evolution:
 		return pop
 
 	def save(self,filename,pop=None,gen=None,stats=None):
+		'''Save the current status in a pkl file'''
 		p = self.pop if pop is None else pop
 		g = self.g if gen is None else gen
 		s = self.stats if stats is None else stats
@@ -124,6 +133,7 @@ class evolution:
 			pickle.dump(cp, cp_file)
 
 	def load(self,filename):
+		'''Load the status from a pkl file'''
 		with open(filename+".pkl", "rb") as cp_file:
 			cp = pickle.load(cp_file)
 		self.stats = cp["stats"]
@@ -132,5 +142,6 @@ class evolution:
 		return self.pop
 
 	def get_best(self,pop=None):
+		'''Get the fittest element of a population'''
 		p = self.pop if pop is None else pop
 		return tools.selBest(p,1)[0]

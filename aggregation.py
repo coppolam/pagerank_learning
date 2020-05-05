@@ -1,14 +1,14 @@
-import datetime, subprocess, sys
+import datetime, subprocess, sys, random
 import numpy as np
-from simulator import swarmulator # Own package
-from tools import fileHandler as fh # Own package
 import matplotlib
 import matplotlib.pyplot as plt
-import graphless_optimization as opt
-import random 
+import graphless_optimization as opt # Own package
+from simulator import swarmulator # Own package
+from tools import fileHandler as fh # Own package
 
 class aggregation:
 	def __init__(self, folder="../swarmulator"):
+		'''Load simulator'''
 		self.folder = folder
 		self.data_folder = folder + "/logs/"
 		self.run_id = str(random.randrange(100000))
@@ -16,9 +16,11 @@ class aggregation:
 		self.sim = swarmulator.swarmulator(folder) # Initialize sim
 		
 	def make(self, controller="controller_aggregation", agent="particle", clean=True, animation=False, logger=True, verbose=True):
+		''' Build simulator'''
 		self.sim.make(controller=controller, agent=agent, clean=clean, animation=animation, logger=logger, verbose=verbose) # Build (if already built, you can skip this)
 		
 	def run(self, policy="", logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square", run_id=None):
+		''' Run simulator with specified settings '''
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
@@ -129,6 +131,7 @@ class aggregation:
 		
 	## Re-evaluating
 	def reevaluate(self,*args):
+		'''Re-evaluate the fitnesses based on new fitness functions'''
 		id_column = 1
 		robots = int(self.log[:,id_column].max())
 		time_column = 0
