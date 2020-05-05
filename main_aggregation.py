@@ -8,7 +8,7 @@ rerun = True
 import argparse, sys
 import aggregation as env
 
-tmax = 100
+tmax = 10000
 r = 10
 file = "data/1_learning_data_t%i_r%i.npz"
 inc = 5
