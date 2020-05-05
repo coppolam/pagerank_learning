@@ -66,7 +66,7 @@ class aggregation:
 		empty_rows = np.where(~temp.any(axis=1))[0]
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
 		self.des = np.zeros([1,16])[0]
-		self.des[15] = 1
+		self.des[12] = 1
 		print(self.des)
 		self.result, self.policy, self.empty_states = opt.main(p0, self.des, self.H, self.A, self.E)
 		print("Unknown states:" + str(self.empty_states))
@@ -86,19 +86,19 @@ class aggregation:
 		print("States desireability: ", str(self.des))
 		
 	def benchmark(self, controller=None, agent=None, robots=30, time_limit=1000, realtimefactor=50, environment="square",runs=100,policy=None):
-		self.sim.make(controller=controller,agent=agent,clean=True, animation=True, logger=False, verbose=True)
+		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
-		# TODO: Change to batch run
+		# TODO: Change to batch runs
 		# Benchmark
 		f_0 = []
-		if policy is None: self.sim.runtime_setting("policy", "") # Use random policy
-		else: self.sim.runtime_setting("policy",policy)
-		for i in range(0,runs):
-			print('{:=^40}'.format(' Simulator run '))
-			print("Run " + str(i) + "/" + str(runs))
-			f_0 = np.append(f_0,self.sim.run(robots))
+		if policy is not None: # Use random policy
+			self.sim.runtime_setting("policy",policy)
+			for i in range(0,runs):
+				print('{:=^40}'.format(' Simulator run '))
+				print("Run " + str(i) + "/" + str(runs))
+				f_0 = np.append(f_0,self.sim.run(robots))
 
 		# Optimize
 		f_n = []
@@ -109,7 +109,7 @@ class aggregation:
 			print('{:=^40}'.format(' Simulator run '))
 			print("Run " + str(i) + "/"  +str(runs))
 			f_n = np.append(f_n,self.sim.run(robots))
-		np.savez(self.save_id+"_validation", f_n=f_n)
+		np.savez(self.save_id+"_validation", f_0=f_0, f_n=f_n)
 
 	def histplots(self, filename=None):
 		# Load
@@ -121,8 +121,8 @@ class aggregation:
 		# Plot
 		matplotlib.rcParams['text.usetex'] = False # True for latex style
 		alpha = 0.5;
-		plt.hist(fitness_0, alpha=alpha, density=True, label='$\pi_0$')
-		plt.hist(fitness_n, alpha=alpha, density=True, label='$\pi_n$')
+		plt.hist(fitness_0, alpha=alpha, label='$\pi_0$')
+		plt.hist(fitness_n, alpha=alpha, label='$\pi_n$')
 		plt.xlabel("Fitness")
 		plt.ylabel("Instances")
 		plt.legend(loc='upper right')
