@@ -63,7 +63,7 @@ class swarmulator:
 		elif '.npz' in file:
 			log = np.load(file)["log"].astype(float)
 		else:
-			print("File format unknown!")
+			raise ValueError("File format unknown!")
 			return -1
 		return log
 
