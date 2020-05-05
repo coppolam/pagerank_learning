@@ -8,8 +8,9 @@ rerun = True
 import argparse, sys
 import aggregation as env
 
-tlim = 10000
+tmax = 10000
 r = 10
+file = "data/1_learning_data_t%i_r%i.npz"
 inc = 5
 
 sim = env.aggregation()
@@ -18,12 +19,14 @@ if rerun:
 	sim.make(controller="pfsm_exploration", agent="particle_oriented")
 
 	for i in range(1,inc+1):
-		sim.run(run_id=1, time_limit=tlim, robots=r*i, environment="square",
+		sim.run(run_id=1, time_limit=tmax, robots=r*i, environment="square",
 		policy="conf/state_action_matrices/exploration_policy_random.txt")
-		filename_ext = ("_t%i_r%i" % (tlim, r*i))
+		filename_ext = ("_t%i_r%i" % (tmax, r*i))
 		sim.save_learning_data(filename_ext=filename_ext)
 else:
-	sim.load(sys.argv)
+	sim.load(file=(file %(tmax,r)))
 
-sim.disp()
+# sim.disp()
 # sim.optimize()
+
+sim.benchmark(time_limit=tmax,controller="pfsm_exploration", agent="particle_oriented",policy="conf/state_action_matrices/exploration_policy_random.txt")

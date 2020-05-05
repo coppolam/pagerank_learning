@@ -65,9 +65,8 @@ class aggregation:
 		empty_cols = np.where(~temp.any(axis=0))[0]
 		empty_rows = np.where(~temp.any(axis=1))[0]
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
-		self.des = np.array([0, 0, 0, 0, 0, 0, 0, 0])
-		self.des[np.min(empty_states)-1] = 1
-
+		self.des = np.zeros([1,16])[0]
+		self.des[15] = 1
 		print(self.des)
 		self.result, self.policy, self.empty_states = opt.main(p0, self.des, self.H, self.A, self.E)
 		print("Unknown states:" + str(self.empty_states))
@@ -86,15 +85,16 @@ class aggregation:
 		print(self.A)
 		print("States desireability: ", str(self.des))
 		
-	def evaluate(self, robots=30, time_limit=100, realtimefactor=50, environment="square",runs=100):
-		self.sim.make(clean=True, animation=False, logger=False, verbose=True)
+	def benchmark(self, controller=None, agent=None, robots=30, time_limit=1000, realtimefactor=50, environment="square",runs=100,policy=None):
+		self.sim.make(controller=controller,agent=agent,clean=True, animation=True, logger=False, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
-
+		# TODO: Change to batch run
 		# Benchmark
 		f_0 = []
-		self.sim.runtime_setting("policy", "") # Use random policy
+		if policy is None: self.sim.runtime_setting("policy", "") # Use random policy
+		else: self.sim.runtime_setting("policy",policy)
 		for i in range(0,runs):
 			print('{:=^40}'.format(' Simulator run '))
 			print("Run " + str(i) + "/" + str(runs))
@@ -109,7 +109,7 @@ class aggregation:
 			print('{:=^40}'.format(' Simulator run '))
 			print("Run " + str(i) + "/"  +str(runs))
 			f_n = np.append(f_n,self.sim.run(robots))
-		np.savez(self.save_id+"_validation", f_0=f_0, f_n=f_n)
+		np.savez(self.save_id+"_validation", f_n=f_n)
 
 	def histplots(self, filename=None):
 		# Load

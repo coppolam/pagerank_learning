@@ -4,9 +4,9 @@ import pickle
 # Load environment
 sim = env.aggregation()
 	
-run = True
-r = [10,20,30,40]
-tmax = 500
+run = False
+r = [10,20,30,40,50]
+tmax = 10000
 if run:
 	file = "data/1_learning_data_t%i_r%i.npz"
 	from tools import fitness_functions as ff
@@ -16,7 +16,8 @@ if run:
 	data = {"t":[], "f":[], "s":[]}
 	for c in r:
 		sim.load(file=(file %(tmax,c)))
-		t, f, s = sim.reevaluate(ff.largest_cluster, ff.mean_number_of_neighbors)
+		sim.sim.plot_log(file=(file %(tmax,c)))
+		t, f, s = sim.reevaluate(ff.mean_number_of_neighbors, ff.mean_number_of_neighbors)
 		data["t"].append(t)
 		data["f"].append(f)
 		data["s"].append(s)
@@ -27,7 +28,7 @@ if run:
 		pickle.dump(data, cp_file)
 
 # Load
-with open("data_fig2.pkl", "rb") as cp_file:
+with open("data.pkl", "rb") as cp_file:
 	data = pickle.load(cp_file)
 			
 # Compare

@@ -30,7 +30,7 @@ def neighbors_adjacency_map(log):
 		p_rel = p[r,:]-p
 		d = (get_distance(p_rel) < rangesensor)
 		A[r,:] = d
-	return A
+	return A, robots
 
 def mean_distance_to_all(log):
 	'''Global fitness function to get the mean distance to all other robots in a swarm'''
@@ -44,14 +44,14 @@ def mean_distance_to_all(log):
 
 def number_of_clusters(log):
 	'''Global fitness function to get number of clusters, relative to the size of the swarm'''
-	A = neighbors_adjacency_map(log)
+	A, robots = neighbors_adjacency_map(log)
 	G = nx.from_numpy_array(A)
 	f = nx.components.number_connected_components(G)
 	return f/robots
 
 def largest_cluster(log):
 	'''Global fitness function to get size of the largest cluster, relative to the size of the swarm'''
-	A = neighbors_adjacency_map(log)
+	A, robots = neighbors_adjacency_map(log)
 	G = nx.from_numpy_array(A)
 	largest_cc = max(nx.connected_components(G), key=len)
 	f = len(largest_cc)

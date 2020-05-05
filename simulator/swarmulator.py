@@ -49,30 +49,35 @@ class swarmulator:
 		self.run_id = random.randrange(100000) if run_id is None else run_id;
 		self.run_id = str(self.run_id)
 		pipe = str("/tmp/swarmulator_" + self.run_id)
-		self.launch(n,run_id=self.run_id)
+		self._launch(n,run_id=self.run_id)
 		f = self._get_fitness(pipe)
 		return f
 
-	def load(self,id=None):
+	def load(self,file=None):
 		'''Loads the log of a swarmulator run. If id is not specified, it will take the most recent log'''
-		if id is not None:
-			self.run_id = str(id) 
-		else: # use latest
-			file = fh.get_latest_file(self.path + "/logs/log_*.txt")
-			st = file.find('_')
-			end = file.find('.txt')
-			self.run_id = file[st+1:end] # reconstruct id
-		return np.loadtxt(self.path + "/logs/log_" + self.run_id + ".txt")
+		if file is None:
+			file = self.path + "/" + fh.get_latest_file(self.path + "/logs/log_*.txt")
+			log = np.loadtxt(file)
+		elif '.txt' in file:
+			log = np.loadtxt(file)
+		elif '.npz' in file:
+			log = np.load(file)["log"].astype(float)
+		else:
+			print("File format unknown!")
+			return -1
+		return log
 
-	def plot_log(self, id_column=1, time_column=0, x_column=2, y_column=3):
+	def plot_log(self, log=None, file=None, time_column=0, id_column=1, x_column=2, y_column=3):
 		'''Visualizes the log of a swarmulator run'''
-		data = self.load()
-		robots = int(data[:,id_column].max())
+		if log is None:
+			if file is None: log = self.load()
+			else: log = self.load(file)
+		robots = int(log[:,id_column].max())
 		if self.verbose: print("Total number of robots: " + str(robots))
 		fig = plt.figure()
 		ax = fig.gca(projection='3d')
 		for x in range(1,robots):
-			d = data[np.where(data[:,id_column] == x)]
+			d = log[np.where(log[:,id_column] == x)]
 			ax.plot(d[:,time_column],d[:,x_column],d[:,y_column])
 		ax.set_xlabel("Time [s]")
 		ax.set_ylabel("N [m]")
