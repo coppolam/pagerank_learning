@@ -39,7 +39,6 @@ class aggregation:
 		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
 		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
 		self.log = self.sim.load(file=self.data_folder+"log_"+self.sim.run_id+".txt") # Latest
-		print(self.log)
 		np.savez(self.save_id+"_learning_data"+filename_ext, des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
