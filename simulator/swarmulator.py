@@ -108,6 +108,7 @@ class swarmulator:
 	
 	def batch_run(self,n,runs):
 		'''Runs a batch of parallel simulations in parallel. By being different processes, the simulations can run unobstructed.'''
+		self._clear_pipes()
 		if isinstance(n,int): 
 			robots = np.repeat(n,runs)
 		elif len(n) == 2: 
@@ -122,5 +123,5 @@ class swarmulator:
 			for i, f in zip(robots,executor.map(self.run, robots)):
 				out[c] = float(f)
 				c += 1
-				
+		
 		return out
