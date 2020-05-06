@@ -34,16 +34,16 @@ class swarmulator:
 
 	def _clear_pipes(self,folder="/tmp/"):
 		fileList = glob.glob(folder+"swarmulator_*") # list of all pipes that have been created
-		# Iterate over the list of filepaths & remove each file.
+		# Iterate over the list of filepaths and remove each file
 		for filePath in fileList:
 			try: 
 				os.remove(filePath)
 			except OSError:
 				print("Error while deleting file")
     		
-	def _launch(self, n, run_id=None):
+	def _launch(self, n, run_id):
 		'''Launches an instance of a swarmulator simulation'''
-		subprocess.call("cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &>/dev/null", shell=True)
+		subprocess.call("cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &", shell=True)
 		if self.verbose: print("Launched instance of swarmulator with %s robots and pipe ID %s" % (n,run_id))
 
 	def _get_fitness(self,pipe):
@@ -56,9 +56,8 @@ class swarmulator:
 
 	def run(self, n, run_id=None):
 		'''Runs swarmulator. If run_id is not specified, it will assign a random id'''
-		self.run_id = random.randrange(10000000000000) if run_id is None else run_id
-		self.run_id = str(self.run_id)
-		pipe = str("/tmp/swarmulator_" + self.run_id)
+		self.run_id = random.randrange(10000000000) if run_id is None else run_id
+		pipe = "/tmp/swarmulator_" + str(self.run_id)
 		self._launch(n,run_id=self.run_id)
 		f = self._get_fitness(pipe)
 		return f
@@ -123,5 +122,5 @@ class swarmulator:
 			for i, f in zip(robots,executor.map(self.run, robots)):
 				out[c] = float(f)
 				c += 1
-		self._clear_pipes()
+				
 		return out
