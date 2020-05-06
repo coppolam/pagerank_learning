@@ -3,7 +3,7 @@
 Python API for swarmulator
 @author: Mario Coppola, 2020
 """
-import os, subprocess, threading, time, random
+import os, subprocess, threading, time, random, glob
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -17,7 +17,18 @@ class swarmulator:
 		'''Load swarmulator object. Ensure that the correct path to swarmulator is given as input'''
 		self.path = path
 		self.verbose = verbose
+		# os.remove("/tmp/swarmulator_*")
+		# get a recursive list of file paths that matches pattern including sub directories
+		fileList = glob.glob("/tmp/swarmulator_*")
 		
+		# Iterate over the list of filepaths & remove each file.
+		for filePath in fileList:
+			try:
+				os.remove(filePath)
+			except OSError:
+				print("Error while deleting file")
+
+					
 	def make(self, controller=None, agent=None, animation=False, logger=False, verbose=False, speed=True, clean=False):
 		'''Builds swarmulator'''
 		spd = " -j" if speed else ""
@@ -31,7 +42,7 @@ class swarmulator:
 		subprocess.call("cd " + self.path + " && make" + spd + ani + log + vrb + ctrl + agnt, shell=True)
 		print("# Done")
 
-	def _launch(self, n, run_id=1):
+	def _launch(self, n, run_id=None):
 		'''Launches an instance of a swarmulator simulation'''
 		subprocess.call("cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &>/dev/null", shell=True)
 		if self.verbose: print("Launched instance of swarmulator with %s robots and pipe ID %s" % (n,run_id))
@@ -51,6 +62,7 @@ class swarmulator:
 		pipe = str("/tmp/swarmulator_" + self.run_id)
 		self._launch(n,run_id=self.run_id)
 		f = self._get_fitness(pipe)
+		os.remove(pipe)
 		return f
 
 	def load(self,file=None):
