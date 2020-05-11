@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import graphless_optimization as opt # Own package
 from simulator import swarmulator # Own package
 from tools import fileHandler as fh # Own package
+from tqdm import tqdm
+from tools import matrixOperations as matop
 
 class aggregation:
 	def __init__(self, folder="../swarmulator"):
@@ -13,7 +15,7 @@ class aggregation:
 		self.data_folder = folder + "/logs/"
 		self.run_id = str(random.randrange(100000))
 		self.save_id = "data/" + self.run_id
-		self.sim = swarmulator.swarmulator(folder) # Initialize sim
+		self.sim = swarmulator.swarmulator(folder,verbose=False) # Initialize sim
 		
 	def make(self, controller="controller_aggregation", agent="particle", clean=True, animation=False, logger=True, verbose=True):
 		''' Build simulator'''
@@ -43,12 +45,6 @@ class aggregation:
 		print("Saved")
 
 	def load(self,file=None):
-		# if cmd is not None:
-		# 	if np.size(cmd) == 1:
-		# 		file = fh.get_latest_file('data/*_learning_data.npz')
-		# 	else:
-		# 		file = cmd[1]
-		# 	print("Loading " + file[5:file.find('_learning_data')] + "_learning_data.npz")
 		data = np.load(file)
 		self.H = data['H'].astype(float)
 		self.E = data['E'].astype(float)
@@ -58,23 +54,21 @@ class aggregation:
 		self.log = data['log'].astype(float) #self.sim.load(file[5:file.find('_learning_data')])
 		print("Loaded %s" %file)
 
-	def optimize(self):
+	def optimize(self,des):
 		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]
 
 		temp = self.H + self.E
 		empty_cols = np.where(~temp.any(axis=0))[0]
 		empty_rows = np.where(~temp.any(axis=1))[0]
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
-		self.des = np.zeros([1,16])[0]
-		self.des[12] = 1
-		print(self.des)
-		self.result, self.policy, self.empty_states = opt.main(p0, self.des, self.H, self.A, self.E)
+		self.result, policy, self.empty_states = opt.main(p0, des, self.H, self.A, self.E)
 		print("Unknown states:" + str(self.empty_states))
 		print('{:=^40}'.format(' Optimization '))
 		print("Final fitness: " + str(self.result.fun))
 		print("[ policy ]")
+		print(policy)
 		np.set_printoptions(threshold=sys.maxsize)
-		print(self.policy)
+		return policy
 
 	def save_optimized(self):
 		np.savez(self.save_id+"_optimization", result=self.result, policy=self.policy, empty_states=self.empty_states)
@@ -85,31 +79,20 @@ class aggregation:
 		print(self.A)
 		print("States desireability: ", str(self.des))
 		
-	def benchmark(self, controller=None, agent=None, robots=30, time_limit=1000, realtimefactor=50, environment="square",runs=100,policy=None):
-		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=True)
+	def benchmark(self, policy, controller=None, agent=None, robots=30, time_limit=1000, realtimefactor=50, environment="square",runs=100):
+		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
-		# TODO: Change to batch runs
-		# Benchmark
-		f_0 = []
-		if policy is not None: # Use random policy
-			self.sim.runtime_setting("policy",policy)
-			for i in range(0,runs):
-				print('{:=^40}'.format(' Simulator run '))
-				print("Run " + str(i) + "/" + str(runs))
-				f_0 = np.append(f_0,self.sim.run(robots))
-
+		
 		# Optimize
-		f_n = []
-		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_evolved.txt"
-		fh.save_to_txt(self.policy, policy_file)
+		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
+		fh.save_to_txt(policy, policy_file)
 		self.sim.runtime_setting("policy", policy_file) # Use random policy
-		for i in range(0,runs):
-			print('{:=^40}'.format(' Simulator run '))
-			print("Run " + str(i) + "/"  +str(runs))
-			f_n = np.append(f_n,self.sim.run(robots))
-		np.savez(self.save_id+"_validation", f_0=f_0, f_n=f_n)
+		f = []
+		for i in tqdm(range(0,round(runs/5))):
+			f = np.append(f,self.sim.batch_run(robots,5))
+		return f
 
 	def histplots(self, filename=None):
 		# Load
@@ -143,7 +126,7 @@ class aggregation:
 		a = 0
 		states = np.zeros([t.size,robots])
 		des = np.zeros([t.size,self.H.shape[0]])
-		for step in t:
+		for step in tqdm(t):
 			d = self.log[np.where(self.log[:,time_column] == step)]
 			fref = 0
 			for i in args:

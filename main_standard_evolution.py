@@ -25,6 +25,5 @@ def fitness(individual):
 
 e = evolution.evolution()
 e.setup(fitness, GENOME_LENGTH=8, POPULATION_SIZE=50)
-e.load(filename)
 p = e.evolve(verbose=True, generations=100, checkpoint=filename, population=e.pop)
 e.save(filename)

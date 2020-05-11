@@ -57,7 +57,7 @@ class evolution:
 		self.stats[iteration]['max'],
 		self.stats[iteration]['min']))
 
-	def plot_evolution(self):
+	def plot_evolution(self,figurename=None):
 		'''Plot the evolution outcome'''
 		plt.style.use('seaborn-whitegrid')
 		_ = plt.plot(range(1, len(self.stats)+1), [ s['mu'] for s in self.stats ])
@@ -69,7 +69,7 @@ class evolution:
 					[ s['mu']+s['std'] for s in self.stats ],
 					color='gray', alpha=0.2)
 		_ = plt.xlim(0,len(self.stats))
-		plt.show()
+		plt.savefig(figurename) if figurename is not None else plt.show()
 
 	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
 		'''Run the evolution. Use checkpoint="filename.pkl" to save the status to a file after each generation, just in case.'''

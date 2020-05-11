@@ -1,12 +1,14 @@
 import numpy as np
 from simulator import swarmulator
-import time
-
+import time, tqdm
+import matplotlib
+matplotlib.rc('text', usetex=True)
+import matplotlib.pyplot as plt
 sim = swarmulator.swarmulator(verbose=True)
 	
 def wall_clock_test(n,m):
 	t = np.zeros([n,m])
-	for i in range(1,n+1): # Itarate over number of robots
+	for i in tqdm(range(1,n+1)): # Itarate over number of robots
 		for j in range(0,m): # Do multiple runs to average out
 			tic = time.time()    
 			f = sim.run(i) # Launch simulation run
@@ -17,19 +19,15 @@ def wall_clock_test(n,m):
 
 def wall_clock_batch_test(n,m,batch):
 	t = np.zeros([n,m])
-	for i in range(1,n+1): # Itarate over number of robots
+	for i in tqdm(range(1,n+1)): # Itarate over number of robots
 		for j in range(0,m): # Do multiple runs to average out
 			tic = time.time()
 			f = sim.batch_run(i,batch) # Launch batch
 			toc = time.time()
 			t[i-1,j] = (toc-tic)
-			print("New result %i/%i, %i/%i: %.2f" % (i,n,j+1,m,t[i-1,j]))
 	return t
 
 def run(n,m,batch,filename=None):
-	# Test wall-clock time for single runs with animation
-	# sim.make(clean=True, animation=True); t_animation = wall_clock_test(n,m)
-
 	# Test wall-clock time for single runs without animation
 	sim.make(clean=True); t = wall_clock_test(n,m)
 
@@ -50,14 +48,22 @@ def load(filename):
 
 def plot(filename,figurename=None):
 	t, t_batch = load(filename)
-	import matplotlib.pyplot as plt
-	plt.plot(range(1,t.shape[0]+1),t.mean(axis=1),label="t")
-	# plt.plot(range(1,t_animation.shape[0]+1),t_animation.mean(axis=1),label="t_animation")
-	plt.plot(range(1,t_batch.shape[0]+1),t_batch.mean(axis=1)/5,label="t_batch")
-	plt.xlabel("Number of robots")
-	plt.ylabel("Wall-clock time")
-	plt.legend()
-	plt.savefig("time_plot.eps") if figurename is not None else plt.show()
+	tmean = t.mean(axis=1)
+	tmean_batch = t_batch.mean(axis=1)/5
+	_ = plt.plot(range(1,t.shape[0]+1),tmean,color='blue',label="Single")
+	_ = plt.plot(range(1,t_batch.shape[0]+1),tmean_batch,color='orange',label="Batch (5)")
+	_ = plt.fill_between(range(1, len(tmean)+1),
+			tmean-t.std(axis=1),
+			tmean+t.std(axis=1),
+			color='blue', alpha=0.2)
+	_ = plt.fill_between(range(1, len(tmean)+1),
+			tmean_batch-t_batch.std(axis=1),
+			tmean_batch+t_batch.std(axis=1),
+			color='orange', alpha=0.2)
+	_ = plt.xlabel("Number of robots")
+	_ = plt.ylabel("Wall-clock time [s]")
+	_ = plt.legend(loc="upper left")
+	_ = plt.savefig(figurename) if figurename is not None else plt.show()
 
 def main():
 	##### Primary input parameters -- Test parameters #####
@@ -66,7 +72,8 @@ def main():
 	batch = 5 # Number of batch runs
 	rtfactor = 300
 	tl = 200
-	filename = ("time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,rtfactor,tl))
+	folder = "data/time/"
+	filename = (folder+"time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,rtfactor,tl))
 	print("Writing to " + filename)
 	##### Secondary input parameters -- Swarmulator configuration #####
 	sim.runtime_setting("simulation_updatefreq", str("20"))
@@ -76,7 +83,7 @@ def main():
 	sim.runtime_setting("time_limit", str(tl))
 
 	# run(n,m,batch,filename)
-	plot(filename)
+	plot(filename,folder+"runtime_comparison.pdf")
 
 if __name__ == "__main__":
     main()

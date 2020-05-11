@@ -10,3 +10,6 @@ __pycache__/
 *.save
 *.pkl
 test.py
+*.pdf
+*.eps
+

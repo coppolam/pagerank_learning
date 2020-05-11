@@ -43,7 +43,9 @@ class swarmulator:
     		
 	def _launch(self, n, run_id):
 		'''Launches an instance of a swarmulator simulation'''
-		subprocess.call("cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &", shell=True)
+		cmd = "cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &"
+		# print(cmd)
+		subprocess.call(cmd, shell=True)
 		if self.verbose: print("Launched instance of swarmulator with %s robots and pipe ID %s" % (n,run_id))
 
 	def _get_fitness(self,pipe):
