@@ -10,7 +10,7 @@ a = sys.argv[2]
 sim = swarmulator.swarmulator(verbose=False)
 sim.make(controller=c, agent=a, clean=True, logger=False, verbose=False)
 sim.runtime_setting("time_limit", str("100"))
-sim.runtime_setting("simulation_realtimefactor", str("50"))
+sim.runtime_setting("simulation_realtimefactor", str("0"))
 sim.runtime_setting("environment", "square")
 filename = "evo_run_%s_%s" % (c, a)
 
@@ -25,5 +25,7 @@ def fitness(individual):
 
 e = evolution.evolution()
 e.setup(fitness, GENOME_LENGTH=8, POPULATION_SIZE=50)
-p = e.evolve(verbose=True, generations=100, checkpoint=filename, population=e.pop)
-e.save(filename)
+#e.load(filename)
+#e.plot_evolution()
+p = e.evolve(verbose=True, generations=100, checkpoint=filename)
+#e.save(filename)

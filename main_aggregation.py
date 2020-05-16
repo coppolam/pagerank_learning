@@ -7,17 +7,19 @@ Simulate the aggregation and optimize the behavior
 import argparse, sys
 import aggregation as env
 
-tmax = 10000
-r = [10,20,30]
+tmax = 100
+r = [30]
 file = "data/1_learning_data_t%i_r%i.npz"
 
 sim = env.aggregation()
+# sim.make(sys.argv[1], sys.argv[2], animation=True)
 
-# sim.make(controller="controller_aggregation", agent="particle")
-sim.make(controller="pfsm_exploration", agent="particle_oriented")
+# if sys.argv[1]=="pfsm_exploration":
+policy = "conf/state_action_matrices/exploration_policy_random.txt"
+# else: 
+# 	policy = ""
 
 for i in r:
-	sim.run(time_limit=tmax, robots=i, environment="square",
-	policy="conf/state_action_matrices/exploration_policy_random.txt")
+	sim.run(time_limit=tmax, robots=i, environment="square", policy=policy, run_id=1)
 	filename_ext = ("_t%i_r%i" % (tmax, i))
 	sim.save_learning_data(filename_ext=filename_ext)

@@ -33,6 +33,7 @@ def pagerank(G, tol=1e-8):
 		pr_previous = pr
 		pr = np.matmul(pr,G) # Pagerank formula
 		residual = np.linalg.norm(np.subtract(pr,pr_previous))
+		# print(residual)
 	
 	return normalize_rows(np.asarray(pr))
 

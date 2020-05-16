@@ -8,10 +8,9 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "cwd": "./",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args" : ["data/73449_learning_data.npz"]
+            "args" : ["data/learning_data_oriented_forage/"]
         }
     ]
 }

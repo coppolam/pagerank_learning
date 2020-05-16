@@ -9,14 +9,16 @@ import pickle, sys
 import matplotlib.pyplot as plt
 import numpy as np
 import evolution
-import matplotlib
+import matplotlib, os
 matplotlib.rc('text', usetex=True)
 
 # Load environment
 sim = env.aggregation()
 run = False
-folder = sys.argv[1]
-r = [10,20,30]
+controller = "pfsm_exploration" #sys.argv[1]
+agent = "particle_oriented" #sys.argv[2]
+folder = "data/learning_data_"+controller+"_"+agent+"/"
+r = [30]
 tmax = 10000
 
 def analyze(foldername):
@@ -61,43 +63,71 @@ def load_pkl(name):
 		data = pickle.load(cp_file)
 	return data
 
-def optimize(foldername,tmax,r,des):
+def optimize(foldername,tmax,r):
 	file = foldername + "1_learning_data_t%i_r%i.npz"
 	sim.load(file=(file %(tmax,r)))
 	sim.disp()
 	
-	# des = np.zeros([1,16])[0]
-	# des[14] = 1
-	des = np.zeros([1,8])[0]
-	des[4] = 1
+	if controller == "aggregation":
+		des = np.zeros([1,8])[0]
+		des[4] = 1
+	elif controller == "pfsm_exploration":
+		des = np.zeros([1,16])[0]
+		# 0 0 0 0   0
+		# 0 0 0 1   1
+		# 0 0 1 0   2
+		# 0 0 1 1   3
+		# 0 1 0 0   4
+		# 0 1 0 1   5
+		# 0 1 1 0   6
+		# 0 1 1 1   7 des
+		# 1 0 0 0   8
+		# 1 0 0 1   9
+		# 1 0 1 0   10
+		# 1 0 1 1   11
+		# 1 1 0 0   12
+		# 1 1 0 1   13 des
+		# 1 1 1 0   14 des
+		# 1 1 1 1   15 des (but unavailable)
+		des[7] = 1
+		des[11] = 1
+		des[13] = 1
+		des[14] = 1
+		des[15] = 1
+	elif controller == "forage":
+		des = np.zeros([1,16])[0]
+		des[15] = 1
 
 	policy = sim.optimize(des)
 	return policy
 
 def benchmark(time_limit=100):
-	p_n = optimize(folder,tmax,20)
-	p_0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
-	# p_0 = np.ones((16,8))/8
-	e = evolution.evolution()
-	e.load(folder+"evolution")
-	p_s = e.get_best()
+	if controller == "aggregation": p_0 = np.ones((8,1))/2
+	elif controller == "pfsm_exploration": p_0 = np.ones((16,8))/8
+	elif controller == "forage": p_0 = np.ones((16,1))/2
+	
+	p_n = optimize(folder,tmax,30)
+	
+	# e = evolution.evolution()
+	# e.load(folder+"evolution")
+	# p_s = e.get_best()
 	# p_s = np.reshape(p_s,(16,8))
-
-	f_0 = sim.benchmark(p_0,time_limit=time_limit)
-	f_n = sim.benchmark(p_n,time_limit=time_limit)
-	f_s = sim.benchmark(p_s,time_limit=time_limit)
-	data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
+	f_0 = sim.benchmark(p_0,controller,agent,runs=100,time_limit=time_limit)
+	f_n = sim.benchmark(p_n,controller,agent,runs=100,time_limit=time_limit)
+	# f_s = sim.benchmark(p_s,controller,agent,time_limit=time_limit)
+	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
+	data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
 def plot_benchmark():
 	data = np.load(folder + "benchmark.npz")
-	f_0 = data["f_0"].astype(float)
-	f_n = data["f_n"].astype(float)
-	f_s = data["f_s"].astype(float)
 	alpha = 0.5
-	plt.hist(f_0, alpha=alpha, label='$\pi_0$')
-	plt.hist(f_n, alpha=alpha, label='$\pi_n$')
-	plt.hist(f_s, alpha=alpha, label='$\pi*$')
+	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
+	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')
+	if "f_s" in data.files: plt.hist(data["f_s"].astype(float), alpha=alpha, label='$\pi*$')
 	plt.legend()
+	directory = os.path.dirname(folder + "figures/")
+	if not os.path.exists(directory):
+		os.makedirs(directory)
 	plt.savefig(folder+"figures/benchmark.pdf")
 	plt.clf()
 
@@ -107,11 +137,11 @@ def plot_evolution():
 	e.plot_evolution(folder+"evolution_2.pdf")
 
 
-# if run:
-# 	fdata = analyze(folder)
-# 	save_pkl(fdata,folder+"fitness_eval.pkl")
+if run:
+	fdata = analyze(folder)
+	save_pkl(fdata,folder+"fitness_eval.pkl")
 
-# benchmark()
+benchmark(time_limit=200)
 # compare(load_pkl(folder+"fitness_eval.pkl"))
-# plot_benchmark()
-plot_evolution()
+plot_benchmark()
+# plot_evolution()

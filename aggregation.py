@@ -17,11 +17,11 @@ class aggregation:
 		self.save_id = "data/" + self.run_id
 		self.sim = swarmulator.swarmulator(folder,verbose=False) # Initialize sim
 		
-	def make(self, controller="controller_aggregation", agent="particle", clean=True, animation=False, logger=True, verbose=True):
+	def make(self, controller, agent, clean=True, animation=False, logger=True, verbose=True):
 		''' Build simulator'''
 		self.sim.make(controller=controller, agent=agent, clean=clean, animation=animation, logger=logger, verbose=verbose) # Build (if already built, you can skip this)
 		
-	def run(self, policy="", logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=50, environment="square", run_id=None):
+	def run(self, policy="", logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=300, environment="square", run_id=None):
 		''' Run simulator with specified settings '''
 		subprocess.call("cd " + self.data_folder + " && rm *.csv", shell=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
@@ -37,7 +37,9 @@ class aggregation:
 
 	def save_learning_data(self,filename_ext=None):
 		self.H = fh.read_matrix(self.data_folder,"H_"+self.sim.run_id)
-		self.A = fh.read_matrix(self.data_folder,"A_"+self.sim.run_id)
+		self.A = []
+		for i in range(0,self.H.shape[0]):
+			self.A.append(fh.read_matrix(self.data_folder,"A_"+self.sim.run_id+"_"+str(i)))
 		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
 		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
 		self.log = self.sim.load(file=self.data_folder+"log_"+self.sim.run_id+".txt") # Latest
@@ -79,7 +81,7 @@ class aggregation:
 		print(self.A)
 		print("States desireability: ", str(self.des))
 		
-	def benchmark(self, policy, controller=None, agent=None, robots=30, time_limit=1000, realtimefactor=50, environment="square",runs=100):
+	def benchmark(self, policy, controller, agent, robots=30, time_limit=1000, realtimefactor=0, environment="square",runs=100):
 		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
@@ -93,6 +95,21 @@ class aggregation:
 		for i in tqdm(range(0,round(runs/5))):
 			f = np.append(f,self.sim.batch_run(robots,5))
 		return f
+
+	def observe(self, policy, clean=True, controller=None, agent=None, robots=30, time_limit=0, realtimefactor=50, environment="square",runs=100):
+		self.sim.make(controller=controller,agent=agent,clean=clean, animation=True, logger=True, verbose=False)
+		self.sim.runtime_setting("time_limit", str(time_limit))
+		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
+		self.sim.runtime_setting("environment", environment)
+		
+		# Optimize
+		policy_file = self.sim.path + "/conf/state_action_matrices/policy_observe.txt"
+		fh.save_to_txt(policy, policy_file)
+		self.sim.runtime_setting("policy", policy_file) # Use random policy
+		f = []
+		self.sim.run(robots)
+		log = self.sim.load(file=self.data_folder+"log_"+str(self.sim.run_id)+".txt") # Latest
+		return log
 
 	def histplots(self, filename=None):
 		# Load
@@ -139,7 +156,7 @@ class aggregation:
 					des[a,r] = np.count_nonzero(states[a] == r)
 			a += 1
 		print("Re-evaluation done")
-		return t, fitness, des
+		return t, fitness, des, f_official
 
 	## Fitnesses
 	def plot_fitness(self,t,fitness):

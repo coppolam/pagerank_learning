@@ -13,52 +13,55 @@ c = 0
 verbose = 2 # 0 barely, 1 = some, 2 = a lot
 import sys
 
-def update_H(H, A ,E , pol0, pol):
-    # Update H based on actions
 
-	# Iterate over actions (columns of pol0)
-	b0 = np.zeros(A.shape)
+def update_b(A,pol):
+	b = np.zeros(A.shape)
 	i = 0
-	for p in pol0.T:
-		i += 1
-		Atemp = np.zeros(A.shape)
-		Atemp[np.where(A==int(i))] = 1
-		b0 += Atemp * p[:, np.newaxis]
-	
-    # Reshape and normalize policy
+	for p in pol.T:  # Iterate over each action (columns of pol0)
+		i += 1 # Start with action i=1 (action i=0 is reserved for E matrix)
+		# temp = np.zeros(A.shape) # Initialize temporary matrix of size H with zeros
+		# temp[np.where(A==int(i))] = 1 # Set to 1 if the action is responsible for state transition
+		b += A * p[:, np.newaxis] # Multiply by the policy
+	return b
+
+def update_H(H, A ,E , pol0, pol):
+    	
+	# Reshape policy vector to the right matrix dimensions and normalize
 	cols = pol0.shape[1]
 	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize pol
-	if cols > 1:
-		pol = matop.normalize_rows(pol)
+	if cols > 1: pol = matop.normalize_rows(pol+0.001) # 0.001 as nonzero hack
 
-	# Iterate over new actions (columns of pol)
-	b1 = np.zeros(A.shape)
-	i = 0
-	for p in pol.T:
-		i += 1
-		Atemp = np.zeros(A.shape)
-		Atemp[np.where(A==int(i))] = 1
-		b1 += Atemp * p[:, np.newaxis]
+    ### Routine to update H based on new policy ###
 
+	### Step 1. Remove the known impact from the sim
+	b0 = update_b(A,pol0)
+	# Remove b0 from H
+	# (unless no action is associated in which case we just get a row of zeros
 	Hnew = np.divide(H, b0, out=np.zeros_like(H), where=b0!=0);
-	Hnew = Hnew * b1;
+	
+	### Step 2. Reassign to new policy
+	b = update_b(A,pol)
+	Hnew = Hnew * b;
 
-	return Hnew
+	return Hnew, pol
 
 def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
 def objective_function(pol, pol0, des, alpha, H, A, E):
 	global c
-	Hnew = update_H(H, A, E, pol0, pol) # Update H with new policy
+	Hnew, pol = update_H(H, A, E, pol0, pol) # Update H with new policy
 	# psum = np.sum(pol0, axis=1)
 	G = np.diag(alpha).dot(Hnew) + np.diag(1-alpha).dot(E) # Google formula
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
 	f = fitness(pr, des) # Get fitness
 	if verbose > 1:
-		sys.stdout.write("\r Fitness \tf = " + str(np.round(f,5)) + 
-			"\t100/(1+f) = " + str(np.round(100/(f + 1),5)))
+		sys.stdout.write("\r Fitness \tf = " + str(np.round(f,5)) + "\t1/(1+f) = " + str(np.round(1/(f + 1),5)))
 		sys.stdout.flush()
+		# print(pol)
+		# print("\r Fitness \tf = " + str(np.round(f,10)) + 
+		# 	"\t1/(1+f) = " + str(np.round(1/(f + 1),10)))
+		
 	return 1 / (f + 1) # Trick it into maximizing
 
 def optimize(pol0, des, alpha, H, A, E):
