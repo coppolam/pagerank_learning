@@ -97,8 +97,8 @@ class aggregation:
 			f = np.append(f,self.sim.batch_run(robots,5))
 		return f
 
-	def observe(self, policy, clean=True, controller=None, agent=None, robots=30, time_limit=0, realtimefactor=50, environment="square",runs=100):
-		self.sim.make(controller=controller,agent=agent,clean=clean, animation=True, logger=True, verbose=False)
+	def observe(self, policy, controller, agent, clean=True, robots=30, time_limit=0, realtimefactor=300, environment="square",runs=100):
+		self.sim.make(controller,agent,clean=clean, animation=True, logger=True, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
