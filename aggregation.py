@@ -7,6 +7,7 @@ from simulator import swarmulator # Own package
 from tools import fileHandler as fh # Own package
 from tqdm import tqdm
 from tools import matrixOperations as matop
+import glob
 
 class aggregation:
 	def __init__(self, folder="../swarmulator"):
@@ -38,7 +39,7 @@ class aggregation:
 	def save_learning_data(self,filename_ext=None):
 		self.H = fh.read_matrix(self.data_folder,"H_"+self.sim.run_id)
 		self.A = []
-		for i in range(0,self.H.shape[0]):
+		for i in range(len(glob.glob(self.data_folder+"A_"+self.sim.run_id+"_*"))):
 			self.A.append(fh.read_matrix(self.data_folder,"A_"+self.sim.run_id+"_"+str(i)))
 		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
 		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
@@ -57,7 +58,7 @@ class aggregation:
 		print("Loaded %s" %file)
 
 	def optimize(self,des):
-		p0 = np.ones([self.A.shape[1],int(self.A.max())]) / self.A.shape[1]
+		p0 = np.ones([self.A.shape[1],self.A.shape[0]]) / self.A.shape[0]
 
 		temp = self.H + self.E
 		empty_cols = np.where(~temp.any(axis=0))[0]
@@ -81,7 +82,7 @@ class aggregation:
 		print(self.A)
 		print("States desireability: ", str(self.des))
 		
-	def benchmark(self, policy, controller, agent, robots=30, time_limit=1000, realtimefactor=0, environment="square",runs=100):
+	def benchmark(self, policy, controller, agent, robots=30, time_limit=1000, realtimefactor=300, environment="square",runs=100):
 		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))

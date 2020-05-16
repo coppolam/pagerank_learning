@@ -93,7 +93,7 @@ def optimize(foldername,tmax,r):
 		des[11] = 1
 		des[13] = 1
 		des[14] = 1
-		des[15] = 1
+		# des[15] = 1
 	elif controller == "forage":
 		des = np.zeros([1,16])[0]
 		des[15] = 1
