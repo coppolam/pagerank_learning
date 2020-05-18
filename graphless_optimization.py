@@ -68,24 +68,26 @@ def optimize(pol0, des, alpha, H, A, E):
 	return result
  
 def main(pol0, des, H, A, E):
-    # Calculate estimated alpha using ratio of H to E for each row
+    #### Calculate estimated alpha using ratio of H to E for each row ####
+	# Solve for alpha as follows
+	# Use: r = H/E = alpha/(1-alpha) (based on alpha = probability of H, (1-alpha) = probability of E)
+	# Then: solve for alpha --> alpha = H/E / (1+H/E)
 	with np.errstate(divide='ignore',invalid='ignore'):
 		r = H.sum(axis=1) / E.sum(axis=1)
 	r = np.nan_to_num(r) # Remove NaN Just in case
-	alpha = r / (1 + r) # Solve for alpha
-	# aH + (1-a)E = 0
-
-	# Optimize using pagerank fitness
+	alpha = r / (1 + r)
+	
+	#### Optimize using pagerank fitness ####
 	result = optimize(pol0, des, alpha, H, A.astype("int"), E)
 	print("\nDone")
 
-	# Extract output
+	#### Extract output ####
 	policy = result.x
 	cols = pol0.shape[1] # Number of columns (as per input policy)
 	policy = np.reshape(policy,(policy.size//cols,cols)) # Resize pol
 	if cols > 1: policy = matop.normalize_rows(policy) # Normalize rows
 
-	# Extract unknown states (for analysis purposes)
+	#### Extract unknown states (for analysis purposes) ####
 	temp = H + E # All transitions
 	empty_cols = np.where(~temp.any(axis=0))[0]
 	empty_rows = np.where(~temp.any(axis=1))[0]

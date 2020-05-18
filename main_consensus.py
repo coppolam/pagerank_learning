@@ -4,16 +4,18 @@ Simulate the consensus and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import sys
+from tqdm import tqdm
+matplotlib.rc('text', usetex=True)
+
 from simulator import consensus as sim
 from tools import matrixOperations as matop
 import graphless_optimization as opt
-import numpy as np
-import matplotlib
-matplotlib.rc('text', usetex=True)
-import matplotlib.pyplot as plt
-import sys
+
 folder = sys.argv[1]
-from tqdm import tqdm
 
 ###### Simulate ######
 n = 10 # Number of robots

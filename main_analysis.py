@@ -4,12 +4,11 @@ Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-import pickle, sys, matplotlib, os
+import pickle, sys, matplotlib, os, argparse
 import matplotlib.pyplot as plt
-import aggregation as env
 import numpy as np
+import aggregation as env
 import evolution
-import argparse
 matplotlib.rc('text', usetex=True)
 
 # Input argument parser
