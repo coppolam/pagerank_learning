@@ -4,20 +4,24 @@ Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-import aggregation as env
-import pickle, sys
+import pickle, sys, matplotlib, os
 import matplotlib.pyplot as plt
+import aggregation as env
 import numpy as np
 import evolution
-import matplotlib, os
+import argparse
 matplotlib.rc('text', usetex=True)
+
+# Input argument parser
+parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
+parser.add_argument('controller', type=str, help="Controller to use")
+parser.add_argument('agent', type=str, help="Agent to use")
+args = parser.parse_args()
 
 # Load environment
 sim = env.aggregation()
 run = False
-controller = "pfsm_exploration" #sys.argv[1]
-agent = "particle_oriented" #sys.argv[2]
-folder = "data/learning_data_"+controller+"_"+agent+"/"
+folder = "data/learning_data_"+args.controller+"_"+args.agent+"/"
 r = [30]
 tmax = 10000
 
@@ -68,10 +72,10 @@ def optimize(foldername,tmax,r):
 	sim.load(file=(file %(tmax,r)))
 	sim.disp()
 	
-	if controller == "aggregation":
+	if args.controller == "aggregation":
 		des = np.zeros([1,8])[0]
 		des[4] = 1
-	elif controller == "pfsm_exploration":
+	elif args.controller == "pfsm_exploration":
 		des = np.zeros([1,16])[0]
 		# 0 0 0 0   0
 		# 0 0 0 1   1
@@ -94,7 +98,7 @@ def optimize(foldername,tmax,r):
 		des[13] = 1
 		des[14] = 1
 		# des[15] = 1
-	elif controller == "forage":
+	elif args.controller == "forage":
 		des = np.zeros([1,16])[0]
 		des[15] = 1
 
@@ -102,9 +106,9 @@ def optimize(foldername,tmax,r):
 	return policy
 
 def benchmark(time_limit=100):
-	if controller == "aggregation": p_0 = np.ones((8,1))/2
-	elif controller == "pfsm_exploration": p_0 = np.ones((16,8))/8
-	elif controller == "forage": p_0 = np.ones((16,1))/2
+	if args.controller == "aggregation": p_0 = np.ones((8,1))/2
+	elif args.controller == "pfsm_exploration": p_0 = np.ones((16,8))/8
+	elif args.controller == "forage": p_0 = np.ones((16,1))/2
 	
 	p_n = optimize(folder,tmax,30)
 	
@@ -112,15 +116,16 @@ def benchmark(time_limit=100):
 	# e.load(folder+"evolution")
 	# p_s = e.get_best()
 	# p_s = np.reshape(p_s,(16,8))
-	f_0 = sim.benchmark(p_0,controller,agent,runs=100,time_limit=time_limit)
-	f_n = sim.benchmark(p_n,controller,agent,runs=100,time_limit=time_limit)
-	# f_s = sim.benchmark(p_s,controller,agent,time_limit=time_limit)
+	f_0 = sim.benchmark(p_0,args.controller,args.agent,runs=100,time_limit=time_limit)
+	f_n = sim.benchmark(p_n,args.controller,args.agent,runs=100,time_limit=time_limit)
+	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
 	data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
 def plot_benchmark():
 	data = np.load(folder + "benchmark.npz")
 	alpha = 0.5
+	# Plot if it exists
 	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
 	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')
 	if "f_s" in data.files: plt.hist(data["f_s"].astype(float), alpha=alpha, label='$\pi*$')
@@ -135,7 +140,6 @@ def plot_evolution():
 	e = evolution.evolution()
 	e.load(folder+"evolution")
 	e.plot_evolution(folder+"evolution_2.pdf")
-
 
 if run:
 	fdata = analyze(folder)
