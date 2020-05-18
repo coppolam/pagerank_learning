@@ -11,13 +11,11 @@ import aggregation as env
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
 parser.add_argument('agent', type=str, help="Agent to use")
-parser.add_argument('-t', type=int, help="Max time of simulation. Default = 10000s",default=10000)
-parser.add_argument('-n', type=int, help="Size of swarm. Default = 30",default=30)
-parser.add_argument('-animate', type=bool, help="Turn on/off animation",default=False)
-parser.add_argument('-id', type=bool, help="Sim ID",default=1)
+parser.add_argument('-t', type=int, help="Max time of simulation. Default = 10000s", default=10000)
+parser.add_argument('-n', type=int, help="Size of swarm. Default = 30", default=30)
+parser.add_argument('-animate', type=bool, help="Turn on/off animation", default=False)
+parser.add_argument('-id', type=bool, help="Sim ID", default=1)
 args = parser.parse_args()
-
-file = "data/learning_data_%s_%s_t%i_r%i.npz"
 
 sim = env.aggregation() # High level simulator interface, connected to swarmulator
 sim.make(args.controller, args.agent, animation=args.animate) # Build
@@ -29,5 +27,5 @@ else:
 	policy = ""
 
 sim.run(time_limit=args.t, robots=args.n, environment="square", policy=policy, run_id=args.id)
-filename_ext = ("%s_%s_t%i_r%i" % (args.controller, args.agent, args.t, args.n))
+filename_ext = ("%s_%s_t%i_r%i_id%i" % (args.controller, args.agent, args.t, args.n, args.id))
 sim.save_learning_data(filename_ext=filename_ext)

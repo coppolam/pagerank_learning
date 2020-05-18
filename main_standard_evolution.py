@@ -33,9 +33,10 @@ e = evolution.evolution()
 e.setup(fitness, GENOME_LENGTH=8, POPULATION_SIZE=100)
 #e.plot_evolution()
 
-if args.resume():
+if args.resume:
 	e.load(filename)
-	p = e.evolve(verbose=True, generations=100, checkpoint=filename, population=e.pop)
+	p = e.evolve(verbose=True, generations=args.gen, checkpoint=filename, population=e.pop)
 else:
-	p = e.evolve(verbose=True, generations=100, checkpoint=filename)
+	p = e.evolve(verbose=True, generations=args.gen, checkpoint=filename)
+
 e.save(filename)

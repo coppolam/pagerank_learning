@@ -1,13 +1,13 @@
-import datetime, subprocess, sys, random
+import datetime, subprocess, sys, random, glob
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import graphless_optimization as opt # Own package
-from simulator import swarmulator # Own package
-from tools import fileHandler as fh # Own package
 from tqdm import tqdm
+
+import graphless_optimization as opt
+from simulator import swarmulator
+from tools import fileHandler as fh
 from tools import matrixOperations as matop
-import glob
 
 class aggregation:
 	def __init__(self, folder="../swarmulator"):
@@ -44,7 +44,7 @@ class aggregation:
 		self.E = fh.read_matrix(self.data_folder,"E_"+self.sim.run_id)
 		self.des = fh.read_matrix(self.data_folder,"des_"+self.sim.run_id)
 		self.log = self.sim.load(file=self.data_folder+"log_"+self.sim.run_id+".txt") # Latest
-		np.savez(self.save_id+"_learning_data"+filename_ext, des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
+		np.savez("learning_data"+filename_ext, des=self.des, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
 	def load(self,file=None):

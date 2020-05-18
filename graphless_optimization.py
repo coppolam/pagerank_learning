@@ -11,12 +11,14 @@ np.set_printoptions(suppress=True) # Avoid scientific notation
 
 def update_b(H,A,pol):
 	b = np.zeros(H.shape)
-	i = 0 # Itarator
+	i = 0 # Iterator
 	for p in pol.T: # Iterate over each action (columns of pol0)
 		temp = A[i].astype(float)
 		b += np.divide(temp * p, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
 		i += 1
-		
+	# Each matrix b holds the probability of the transition happening, 
+	# which is the probability of the action times the relative probability 
+	# of the action leading to a particular state change.
 	return b
 
 def update_H(H0, A ,E , pol0, pol):	
@@ -28,6 +30,7 @@ def update_H(H0, A ,E , pol0, pol):
     ###########################################
 	# Routine to update H based on new policy #
 	###########################################
+	# We first strip H of the impact of the policy, then reassign it with the new policy
 
 	### Step 1. Remove the known impact from the sim
 	# TODO: Step 1 is always the same, move outside to speed up
