@@ -93,7 +93,7 @@ def benchmark(file,time_limit=100):
 	else:
 		ValueError("Uknown inputs!")
 
-	p_n = optimize(file,p_0,des)
+	p_n = optimize(folder + file,p_0,des)
 	
 	# e = evolution.evolution()
 	# e.load(folder+"evolution")
@@ -103,10 +103,10 @@ def benchmark(file,time_limit=100):
 	f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
 	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
-	data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
+	data_validation = np.savez(folder + "benchmark_%s.npz"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
-def plot_benchmark():
-	data = np.load(folder + "benchmark.npz")
+def plot_benchmark(file):
+	data = np.load(folder + "benchmark_%s.npz"%file)
 	alpha = 0.5
 	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
 	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')
@@ -115,7 +115,7 @@ def plot_benchmark():
 	directory = os.path.dirname(folder + "figures/")
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	plt.savefig(folder+"figures/benchmark.pdf")
+	plt.savefig(folder+"figures/benchmark_%s.pdf"%file)
 	plt.clf()
 
 def plot_evolution():
@@ -128,7 +128,7 @@ def plot_evolution():
 # 	save_pkl(fdata,folder+"fitness_eval.pkl")
 # compare_fitness(load_pkl(folder+"fitness_eval.pkl"))
 
-file = folder + "learning_data_%s_%s_t%i_r%i_id%i.npz"
-benchmark(file%(args.controller,args.agent,args.t,args.n,args.id),time_limit=200)
-plot_benchmark()
+file = "learning_data_%s_%s_t%i_r%i_id%i.npz" %(args.controller,args.agent,args.t,args.n,args.id)
+benchmark(file,time_limit=200)
+plot_benchmark(file)
 # plot_evolution()
