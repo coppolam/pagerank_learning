@@ -84,7 +84,7 @@ def benchmark(file,time_limit=100):
 		des[11] = 1
 		des[13] = 1
 		des[14] = 1 # 3 neighbors
-		# des[15] = 1 # 4 neighbors
+		des[15] = 1 # 4 neighbors
 	elif args.controller == "forage":
 		fitness = "food"
 		p_0 = np.ones((16,1))/2 # all = 1/2
@@ -99,14 +99,14 @@ def benchmark(file,time_limit=100):
 	# e.load(folder+"evolution")
 	# p_s = e.get_best()
 	# p_s = np.reshape(p_s,(16,8))
-	f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
 	f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
 	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
-	data_validation = np.savez(folder + "benchmark_%s.npz"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
+	data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
 def plot_benchmark(file):
-	data = np.load(folder + "benchmark_%s.npz"%file)
+	data = np.load(folder + "benchmark_%s"%file)
 	alpha = 0.5
 	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
 	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')

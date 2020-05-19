@@ -12,8 +12,10 @@ np.set_printoptions(suppress=True) # Avoid scientific notation
 def update_b(H,A,pol):
 	b = np.zeros(H.shape)
 	i = 0 # Iterator
+	cols = pol.shape[0]
 	for p in pol.T: # Iterate over each action (columns of pol0)
-		Ap = A[i].astype(float) * p[:, np.newaxis]
+		if cols == 1: Ap = A[i].astype(float) * p[:, np.newaxis]
+		else: Ap = A[i].astype(float) * p[:, np.newaxis]
 		b += np.divide(Ap, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
 		i += 1
 	# Matrix b holds the probability of the transition happening weighted by the action, 
