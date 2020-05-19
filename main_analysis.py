@@ -11,38 +11,37 @@ import aggregation as env
 import evolution
 matplotlib.rc('text', usetex=True)
 
-# Input argument parser
+###########################
+#  Input argument parser  #
+###########################
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
 parser.add_argument('agent', type=str, help="Agent to use")
+parser.add_argument('-t', type=int, help="Max time of simulation. Default = 10000s", default=10000)
+parser.add_argument('-n', type=int, help="Size of swarm. Default = 30", default=30)
+parser.add_argument('-id', type=int, help="ID", default=1)
 args = parser.parse_args()
 
 # Load environment
 sim = env.aggregation()
-run = False
-folder = "data/learning_data_"+args.controller+"_"+args.agent+"/"
-r = [30]
-tmax = 10000
+folder = "data/learning_data_%s_%s/" % (args.controller,args.agent)
 
-def analyze(foldername):
+# run = False
+
+def analyze_fitness(foldername):
 	file = foldername + "1_learning_data_t%i_r%i.npz"
-	from tools import fitness_functions as ff
-
 	# Load all and re-evaluate global and local fitnesses
-	counter = 0
 	data = {"t":[], "f":[], "s":[]}
-	for c in r:
-		sim.load(file=(file %(tmax,c)))
-		# sim.sim.plot_log(file=(file %(tmax,c)))
-		t, f, s = sim.reevaluate(ff.number_of_clusters, ff.mean_number_of_neighbors)
-		data["t"].append(t)
-		data["f"].append(f)
-		data["s"].append(s)
-		counter += 1
-
+	sim.load(file=(file %(args.t,args.n)))
+	# sim.sim.plot_log(file=(file %(args.t,c)))
+	from tools import fitness_functions as ff
+	t, f, s = sim.reevaluate(ff.number_of_clusters, ff.mean_number_of_neighbors)
+	data["t"].append(t)
+	data["f"].append(f)
+	data["s"].append(s)
 	return data
 
-def compare(data):
+def compare_fitness(data):
 	symbols = ["o",".","+","."]
 	s = len(data["f"])
 	corr = np.zeros((1,s))[0]
@@ -66,57 +65,39 @@ def load_pkl(name):
 		data = pickle.load(cp_file)
 	return data
 
-def optimize(foldername,tmax,r):
-	file = foldername + "1_learning_data_t%i_r%i.npz"
-	sim.load(file=(file %(tmax,r)))
+def optimize(file,p0,des):
+	sim.load(file)
 	sim.disp()
-	
-	if args.controller == "aggregation":
+	return sim.optimize(p0,des)
+
+def benchmark(file,time_limit=100):
+	if args.controller == "controller_aggregation":
+		fitness = "aggregation_clusters"
+		p_0 = np.ones((8,1))/2 # all = 1/2
 		des = np.zeros([1,8])[0]
-		des[4] = 1
+		des[5] = 1
 	elif args.controller == "pfsm_exploration":
+		fitness = "aggregation_clusters"
+		p_0 = np.ones((16,8))/8 # all = 1/8
 		des = np.zeros([1,16])[0]
-		# 0 0 0 0   0
-		# 0 0 0 1   1
-		# 0 0 1 0   2
-		# 0 0 1 1   3
-		# 0 1 0 0   4
-		# 0 1 0 1   5
-		# 0 1 1 0   6
-		# 0 1 1 1   7 des
-		# 1 0 0 0   8
-		# 1 0 0 1   9
-		# 1 0 1 0   10
-		# 1 0 1 1   11
-		# 1 1 0 0   12
-		# 1 1 0 1   13 des
-		# 1 1 1 0   14 des
-		# 1 1 1 1   15 des (but unavailable)
-		des[7] = 1
-		des[11] = 1
-		des[13] = 1
-		des[14] = 1
-		# des[15] = 1
+		des[7,11,13,14] = 1 # 3 neighbors
+		des[15] = 1 # 4 neighbors
 	elif args.controller == "forage":
+		fitness = "food"
+		p_0 = np.ones((16,1))/2 # all = 1/2
 		des = np.zeros([1,16])[0]
-		des[15] = 1
+		des[12] = 1
+	else:
+		ValueError("Uknown inputs!")
 
-	policy = sim.optimize(des)
-	return policy
-
-def benchmark(time_limit=100):
-	if args.controller == "aggregation": p_0 = np.ones((8,1))/2
-	elif args.controller == "pfsm_exploration": p_0 = np.ones((16,8))/8
-	elif args.controller == "forage": p_0 = np.ones((16,1))/2
-	
-	p_n = optimize(folder,tmax,30)
+	p_n = optimize(file,p_0,des)
 	
 	# e = evolution.evolution()
 	# e.load(folder+"evolution")
 	# p_s = e.get_best()
 	# p_s = np.reshape(p_s,(16,8))
-	f_0 = sim.benchmark(p_0,args.controller,args.agent,runs=100,time_limit=time_limit)
-	f_n = sim.benchmark(p_n,args.controller,args.agent,runs=100,time_limit=time_limit)
+	f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
 	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
 	data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
@@ -124,7 +105,6 @@ def benchmark(time_limit=100):
 def plot_benchmark():
 	data = np.load(folder + "benchmark.npz")
 	alpha = 0.5
-	# Plot if it exists
 	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
 	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')
 	if "f_s" in data.files: plt.hist(data["f_s"].astype(float), alpha=alpha, label='$\pi*$')
@@ -140,11 +120,12 @@ def plot_evolution():
 	e.load(folder+"evolution")
 	e.plot_evolution(folder+"evolution_2.pdf")
 
-if run:
-	fdata = analyze(folder)
-	save_pkl(fdata,folder+"fitness_eval.pkl")
+# if run:
+# 	fdata = analyze_fitness(folder)
+# 	save_pkl(fdata,folder+"fitness_eval.pkl")
+# compare_fitness(load_pkl(folder+"fitness_eval.pkl"))
 
-benchmark(time_limit=200)
-# compare(load_pkl(folder+"fitness_eval.pkl"))
+file = folder + "learning_data_%s_%s_t%i_r%i_id%i.npz"
+benchmark(file%(args.controller,args.agent,args.t,args.n,args.id),time_limit=200)
 plot_benchmark()
 # plot_evolution()

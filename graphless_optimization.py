@@ -13,10 +13,10 @@ def update_b(H,A,pol):
 	b = np.zeros(H.shape)
 	i = 0 # Iterator
 	for p in pol.T: # Iterate over each action (columns of pol0)
-		temp = A[i].astype(float)
-		b += np.divide(temp * p, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
+		Ap = A[i].astype(float) * p
+		b += np.divide(Ap, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
 		i += 1
-	# Each matrix b holds the probability of the transition happening, 
+	# Matrix b holds the probability of the transition happening weighted by the action, 
 	# which is the probability of the action times the relative probability 
 	# of the action leading to a particular state change.
 	return b
@@ -24,8 +24,8 @@ def update_b(H,A,pol):
 def update_H(H0, Ht, A ,E , pol0, pol):	
 	# Reshape policy vector to the right matrix dimensions and normalize
 	cols = pol0.shape[1]
-	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize pol
-	if cols > 1: pol = matop.normalize_rows(pol)
+	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize policy
+	if cols > 1: pol = matop.normalize_rows(pol+0.001) # Normalize +0.001 to keep connected
 
     ###########################################
 	# Routine to update H based on new policy #
@@ -36,9 +36,7 @@ def update_H(H0, Ht, A ,E , pol0, pol):
 
 	### Step 2. Reassign to new policy
 	b1 = update_b(H0, A, pol) # Use H0 since that holds the total # of transitions, we only change the weighing
-	H1 = Ht * b1;
-
-	return H1
+	return Ht * b1;
 
 def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
@@ -50,20 +48,20 @@ def objective_function(pol, pol0, des, alpha, H, Ht, A, E):
 	f = fitness(pr, des) # Get fitness
 	
 	# Display to terminal
-	sys.stdout.write("\r Fitness \t maximizing f = " + str(np.round(f,5)) + "\t, minimizing 1/(1+f) = " + str(np.round(1/(f + 1),5)))
+	p = "\r Fitness \t max:f=%2.f \t min:1/(1+f)=%2.f" % (np.round(f,5), np.round(1/(f+1),5))
+	sys.stdout.write(p)
 	sys.stdout.flush()
 
 	return 1 / (f + 1) # Trick scipy into maximizing
 
 def optimize(pol0, des, alpha, H, Ht, A, E):
 	# Bind probabilistic policy
-	ll = 0.001  # Lower limit 0.001 because ll!=0
+	ll = 0.0 # Lower limit
 	up = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
-	result = scipy.optimize.minimize(objective_function, pol0,
+	return scipy.optimize.minimize(objective_function, pol0,
 							bounds=bounds, 
 							args=(pol0, des, alpha, H, Ht, A, E))
-	return result
  
 def main(pol0, des, H, A, E):
     #### Calculate estimated alpha using ratio of H to E for each row ####
@@ -74,7 +72,7 @@ def main(pol0, des, H, A, E):
 		r = H.sum(axis=1) / E.sum(axis=1)
 	r = np.nan_to_num(r) # Remove NaN Just in case
 	alpha = r / (1 + r)
-	
+
 	### Step 1. Remove the known impact from the sim
 	b0 = update_b(H, A, pol0) # Use H0 which holds the total # of transitions, we only change the weighing
 	# Remove b0 from H (unless no action is associated 
@@ -83,7 +81,6 @@ def main(pol0, des, H, A, E):
 	
 	#### Optimize using pagerank fitness ####
 	result = optimize(pol0, des, alpha, H, Ht, A.astype("int"), E)
-	print("\nDone")
 
 	#### Extract output ####
 	policy = result.x
