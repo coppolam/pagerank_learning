@@ -80,8 +80,11 @@ def benchmark(file,time_limit=100):
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((16,8))/8 # all = 1/8
 		des = np.zeros([1,16])[0]
-		des[7,11,13,14] = 1 # 3 neighbors
-		des[15] = 1 # 4 neighbors
+		des[7] = 1
+		des[11] = 1
+		des[13] = 1
+		des[14] = 1 # 3 neighbors
+		# des[15] = 1 # 4 neighbors
 	elif args.controller == "forage":
 		fitness = "food"
 		p_0 = np.ones((16,1))/2 # all = 1/2

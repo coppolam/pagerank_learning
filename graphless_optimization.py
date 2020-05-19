@@ -13,8 +13,7 @@ def update_b(H,A,pol):
 	b = np.zeros(H.shape)
 	i = 0 # Iterator
 	for p in pol.T: # Iterate over each action (columns of pol0)
-		Ap = A.astype(float) * p
-		print(Ap)
+		Ap = A[i].astype(float) * p[:, np.newaxis]
 		b += np.divide(Ap, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
 		i += 1
 	# Matrix b holds the probability of the transition happening weighted by the action, 
@@ -26,7 +25,7 @@ def update_H(H0, Ht, A ,E , pol0, pol):
 	# Reshape policy vector to the right matrix dimensions and normalize
 	cols = pol0.shape[1]
 	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize policy
-	if cols > 1: pol = matop.normalize_rows(pol) # Normalize +0.001 to keep connected
+	if cols > 1: pol = matop.normalize_rows(pol+0.001) # Normalize +0.001 to keep connected
 
     ###########################################
 	# Routine to update H based on new policy #
@@ -49,7 +48,7 @@ def objective_function(pol, pol0, des, alpha, H, Ht, A, E):
 	f = fitness(pr, des) # Get fitness
 	
 	# Display to terminal
-	p = "\r Fitness \t max:f=%2.f \t min:1/(1+f)=%2.f" % (np.round(f,5), np.round(1/(f+1),5))
+	p = "\r Fitness \t max:f=%.10f \t min:1/(1+f)=%.10f" % (f, 1/(f+1))
 	sys.stdout.write(p)
 	sys.stdout.flush()
 
@@ -65,7 +64,7 @@ def optimize(pol0, des, alpha, H, Ht, A, E):
 							args=(pol0, des, alpha, H, Ht, A, E))
  
 def main(pol0, des, H, A, E):
-    #### Calculate estimated alpha using ratio of H to E for each row ####
+	#### Calculate estimated alpha using ratio of H to E for each row ####
 	# Solve for alpha as follows
 	# Use: r = H/E = alpha/(1-alpha) (based on alpha = probability of H, (1-alpha) = probability of E)
 	# Then: solve for alpha --> alpha = H/E / (1+H/E)
@@ -81,7 +80,7 @@ def main(pol0, des, H, A, E):
 	Ht = np.divide(H, b0, out=np.zeros_like(H), where=b0!=0);
 	
 	#### Optimize using pagerank fitness ####
-	result = optimize(pol0, des, alpha, H, Ht, A.astype("float"), E)
+	result = optimize(pol0, des, alpha, H, Ht, A, E)
 
 	#### Extract output ####
 	policy = result.x
