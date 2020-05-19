@@ -61,7 +61,7 @@ class aggregation:
 		self.log = data['log'].astype(float) #self.sim.load(file[5:file.find('_learning_data')])
 		print("Loaded %s" %file)
 
-	def optimize(self,p0,des):
+	def optimize(self, p0, des):
 		temp = self.H + self.E
 		empty_cols = np.where(~temp.any(axis=0))[0]
 		empty_rows = np.where(~temp.any(axis=1))[0]

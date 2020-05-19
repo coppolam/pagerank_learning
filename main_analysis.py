@@ -75,7 +75,7 @@ def benchmark(file,time_limit=100):
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((8,1))/2 # all = 1/2
 		des = np.zeros([1,8])[0]
-		des[5] = 1
+		des[4] = 1
 	elif args.controller == "pfsm_exploration":
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((16,8))/8 # all = 1/8

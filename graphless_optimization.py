@@ -13,7 +13,8 @@ def update_b(H,A,pol):
 	b = np.zeros(H.shape)
 	i = 0 # Iterator
 	for p in pol.T: # Iterate over each action (columns of pol0)
-		Ap = A[i].astype(float) * p
+		Ap = A.astype(float) * p
+		print(Ap)
 		b += np.divide(Ap, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
 		i += 1
 	# Matrix b holds the probability of the transition happening weighted by the action, 
@@ -25,7 +26,7 @@ def update_H(H0, Ht, A ,E , pol0, pol):
 	# Reshape policy vector to the right matrix dimensions and normalize
 	cols = pol0.shape[1]
 	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize policy
-	if cols > 1: pol = matop.normalize_rows(pol+0.001) # Normalize +0.001 to keep connected
+	if cols > 1: pol = matop.normalize_rows(pol) # Normalize +0.001 to keep connected
 
     ###########################################
 	# Routine to update H based on new policy #
@@ -80,7 +81,7 @@ def main(pol0, des, H, A, E):
 	Ht = np.divide(H, b0, out=np.zeros_like(H), where=b0!=0);
 	
 	#### Optimize using pagerank fitness ####
-	result = optimize(pol0, des, alpha, H, Ht, A.astype("int"), E)
+	result = optimize(pol0, des, alpha, H, Ht, A.astype("float"), E)
 
 	#### Extract output ####
 	policy = result.x
