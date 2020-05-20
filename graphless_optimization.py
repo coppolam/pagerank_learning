@@ -29,11 +29,7 @@ def update_H(H0, b0, A ,E , pol0, pol):
     ###########################################
 	# Routine to update H based on new policy #
 	###########################################
-	# We first strip H of the impact of the policy, then reassign it with the new policy
-	### Step 1. Remove the known impact from the sim
-	# We do this once in the beginning since it's always the same operation
-
-	### Step 2. Reassign to new policy
+	# H1 = b1 / b0 * H0
 	b1 = update_b(A, pol) # Use H0 since that holds the total # of transitions, we only change the weighing
 	return np.divide(b1, b0, where=b0!=0) * H0;
 
@@ -77,6 +73,7 @@ def main(pol0, des, H, A, E):
 	H = matop.normalize_rows(H)
 	E = matop.normalize_rows(E)
 
+	# Get b0
 	b0 = update_b(A, pol0) # b0 holds the total # of transitions weighted by the policy pol0
 
 	#### Optimize using pagerank fitness ####
