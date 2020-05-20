@@ -19,18 +19,18 @@ parser.add_argument('-animate', type=bool, help="Turn on/off animation", default
 parser.add_argument('-id', type=int, help="Sim ID", default=None)
 args = parser.parse_args()
 
-#######################################
-# Ad-hoc settings for each controller #
-#######################################
+#########################################
+#  Ad-hoc settings for each controller  #
+#########################################
 if args.controller == "controller_aggregation":
 	policy = ""
 	pr_states = 8
 	pr_actions = 1
-elif args.controller=="pfsm_exploration":
+elif args.controller == "pfsm_exploration":
 	policy = "conf/state_action_matrices/exploration_policy_random.txt"
 	pr_states = 16
 	pr_actions = 8
-elif args.controller=="forage":
+elif args.controller == "forage":
 	policy = ""
 	pr_states = 16
 	pr_actions = 1

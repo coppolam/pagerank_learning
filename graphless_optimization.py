@@ -9,21 +9,19 @@ import numpy as np
 from tools import matrixOperations as matop
 np.set_printoptions(suppress=True) # Avoid scientific notation
 
-def update_b(H,A,pol):
-	b = np.zeros(H.shape)
+def update_b(A,pol):
+	b = np.zeros(A[0].shape)
 	i = 0 # Iterator
-	cols = pol.shape[0]
-	for p in pol.T: # Iterate over each action (columns of pol0)
-		if cols == 1: Ap = A[i].astype(float) * p[:, np.newaxis]
-		else: Ap = A[i].astype(float) * p[:, np.newaxis]
-		b += np.divide(Ap, H, out=np.zeros_like(H), where=H!=0) # Multiply by the policy
+	# cols = pol.shape[1]
+	for p in pol.T: # Iterate over each action (columns of pol)
+		b += A[i].astype(float) * p[:,np.newaxis]
 		i += 1
-	# Matrix b holds the probability of the transition happening weighted by the action, 
-	# which is the probability of the action times the relative probability 
-	# of the action leading to a particular state change.
+	# Matrix b holds a measure of the probability of the transition happening 
+	# given a policy, which is the probability of the action times the 
+	# relative probability of the action leading to a particular state change.
 	return b
 
-def update_H(H0, Ht, A ,E , pol0, pol):	
+def update_H(H0, b0, A ,E , pol0, pol):	
 	# Reshape policy vector to the right matrix dimensions and normalize
 	cols = pol0.shape[1]
 	pol = np.reshape(pol,(pol.size//cols,cols)) # Resize policy
@@ -37,14 +35,14 @@ def update_H(H0, Ht, A ,E , pol0, pol):
 	# We do this once in the beginning since it's always the same operation
 
 	### Step 2. Reassign to new policy
-	b1 = update_b(H0, A, pol) # Use H0 since that holds the total # of transitions, we only change the weighing
-	return Ht * b1;
+	b1 = update_b(A, pol) # Use H0 since that holds the total # of transitions, we only change the weighing
+	return np.divide(b1, b0, where=b0!=0) * H0;
 
 def fitness(pr,des):
     return np.average(pr,axis=1,weights=des)/pr.mean()
 
-def objective_function(pol, pol0, des, alpha, H, Ht, A, E):
-	H1 = update_H(H, Ht, A, E, pol0, pol) # Update H with new policy
+def objective_function(pol, pol0, des, alpha, H, b0, A, E):
+	H1 = update_H(H, b0, A, E, pol0, pol) # Update H with new policy
 	G = np.diag(alpha).dot(H1) + np.diag(1-alpha).dot(E) # Google matrix
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
 	f = fitness(pr, des) # Get fitness
@@ -56,14 +54,14 @@ def objective_function(pol, pol0, des, alpha, H, Ht, A, E):
 
 	return 1 / (f + 1) # Trick scipy into maximizing
 
-def optimize(pol0, des, alpha, H, Ht, A, E):
+def optimize(pol0, des, alpha, H, b0, A, E):
 	# Bind probabilistic policy
 	ll = 0.0 # Lower limit
 	up = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),up*np.ones(pol0.size))) # Bind values
 	return scipy.optimize.minimize(objective_function, pol0,
 							bounds=bounds, 
-							args=(pol0, des, alpha, H, Ht, A, E))
+							args=(pol0, des, alpha, H, b0, A, E))
  
 def main(pol0, des, H, A, E):
 	#### Calculate estimated alpha using ratio of H to E for each row ####
@@ -75,14 +73,11 @@ def main(pol0, des, H, A, E):
 	r = np.nan_to_num(r) # Remove NaN Just in case
 	alpha = r / (1 + r)
 
-	### Step 1. Remove the known impact from the sim
-	b0 = update_b(H, A, pol0) # Use H0 which holds the total # of transitions, we only change the weighing
-	# Remove b0 from H (unless no action is associated 
-	# in which case we just get a row of zeros)
-	Ht = np.divide(H, b0, out=np.zeros_like(H), where=b0!=0);
-	
+	### b0
+	b0 = update_b(A, pol0) # b0 holds the total # of transitions weighted by the policy pol0
+
 	#### Optimize using pagerank fitness ####
-	result = optimize(pol0, des, alpha, H, Ht, A, E)
+	result = optimize(pol0, des, alpha, H, b0, A, E)
 
 	#### Extract output ####
 	policy = result.x

@@ -1,41 +1,41 @@
-import random, sys
+#!/usr/bin/env python3
+"""
+Simulate the aggregation and optimize the behavior
+@author: Mario Coppola, 2020
+"""
+import random, sys, pickle, matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from deap import base, creator, tools
-import pickle
+matplotlib.rc('text', usetex=True)
 
 class evolution:
 	'''Wrapper around the DEAP package to run an evolutionary process with just a few commands'''
 
 	def __init__(self):
-		'''Itilize the deap wrapper'''
+		'''Itilize the DEAP wrapper'''
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMax)
-		pass
 
-	def setup(self, fitness=None, constraint=None, 
-		GENOME_LENGTH = 20,
-		POPULATION_SIZE = 100,
-		P_CROSSOVER = 0.5,
-		P_MUTATION = 0.2):
+	def setup(self, fitness_function_handle, constraint=None, GENOME_LENGTH = 20, POPULATION_SIZE = 100, P_CROSSOVER = 0.5, P_MUTATION = 0.2):
 		'''Set up the parameters'''
+		# Set the main variables
 		self.GENOME_LENGTH = GENOME_LENGTH
 		self.POPULATION_SIZE = POPULATION_SIZE
 		self.P_CROSSOVER = P_CROSSOVER
 		self.P_MUTATION = P_MUTATION
-		if fitness is None:
-			print("Please define a fitness function")
-			sys.exc_info()[0]
+
+		# Set the lower level parameters
 		self.toolbox = base.Toolbox()
 		self.toolbox.register("attr_float", random.random)
 		self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attr_float, self.GENOME_LENGTH)
 		self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
-		self.toolbox.register("evaluate", fitness)
-		self.toolbox.register("mate", tools.cxTwoPoint)
-		self.toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
-		self.toolbox.register("select", tools.selTournament, tournsize=3)
+		self.toolbox.register("evaluate", fitness_function_handle)
+		self.toolbox.register("mate", tools.cxTwoPoint) # Mating method
+		self.toolbox.register("mutate", tools.mutFlipBit, indpb=0.05) # Mutation method
+		self.toolbox.register("select", tools.selTournament, tournsize=3) # Selection method
 		if constraint is not None: self.toolbox.decorate("evaluate", tools.DeltaPenalty(constraint, 7))
-		self.stats = []
+		self.stats = [] # Initialize stats vector
 	
 	def store_stats(self, population, iteration=0):
 		'''Store the current stats and return a dict'''
@@ -60,20 +60,20 @@ class evolution:
 	def plot_evolution(self,figurename=None):
 		'''Plot the evolution outcome'''
 		plt.style.use('seaborn-whitegrid')
-		_ = plt.plot(range(1, len(self.stats)+1), [ s['mu'] for s in self.stats ])
-		_ = plt.title('Average fitness per iteration')
-		_ = plt.xlabel('Iterations')
-		_ = plt.ylabel('Fitness')
-		_ = plt.fill_between(range(1, len(self.stats)+1),
+		plt.plot(range(1, len(self.stats)+1), [ s['mu'] for s in self.stats ])
+		plt.title('Average fitness per iteration')
+		plt.xlabel('Iterations')
+		plt.ylabel('Fitness')
+		plt.fill_between(range(1, len(self.stats)+1),
 					[ s['mu']-s['std'] for s in self.stats ],
 					[ s['mu']+s['std'] for s in self.stats ],
 					color='gray', alpha=0.2)
-		_ = plt.xlim(0,len(self.stats))
+		plt.xlim(0,len(self.stats))
 		plt.savefig(figurename) if figurename is not None else plt.show()
 
 	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
 		'''Run the evolution. Use checkpoint="filename.pkl" to save the status to a file after each generation, just in case.'''
-		random.seed() # Random seed
+		random.seed() # Use random seed
 		pop = population if population is not None else self.toolbox.population(n=self.POPULATION_SIZE)
 		if verbose: print('{:=^40}'.format(' Start of evolution '))
 			
@@ -81,6 +81,8 @@ class evolution:
 		fitnesses = list(map(self.toolbox.evaluate, pop))
 		for ind, fit in zip(pop, fitnesses):
 			ind.fitness.values = fit
+
+		# Evolve!
 		g = len(self.stats) # Number of generations
 		gmax = len(self.stats) + generations
 		while g < gmax:
@@ -111,12 +113,15 @@ class evolution:
 
 			g += 1
 
+		# Store oucomes
 		self.pop = pop
 		self.best_ind = self.get_best()
 		self.g = g
 
+		# Save to checkpoint file
 		if checkpoint is not None: self.save(checkpoint)
 
+		# Display outcome
 		if verbose: 
 			print('{:=^40}'.format(' End of evolution '))
 			print("Best individual is %s, %s" % (self.best_ind, self.best_ind.fitness.values))
@@ -142,6 +147,6 @@ class evolution:
 		return self.pop
 
 	def get_best(self,pop=None):
-		'''Get the fittest element of a population'''
+		'''Returns the fittest element of a population'''
 		p = self.pop if pop is None else pop
 		return tools.selBest(p,1)[0]

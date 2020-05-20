@@ -86,7 +86,7 @@ class aggregation:
 		i = 0; 
 		for a in self.A: print("A%i:"%i); print(a); i += 1
 
-	def benchmark(self, policy, controller, agent, fitness, robots=30, time_limit=1000, realtimefactor=300, environment="square",runs=100):
+	def benchmark(self, policy, controller, agent, fitness, robots=30, time_limit=1000, realtimefactor=0, environment="square",runs=100):
 		#### Build ####
 		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
 
