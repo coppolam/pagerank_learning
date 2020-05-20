@@ -1,4 +1,4 @@
-import datetime, subprocess, sys, random, glob, os
+import datetime, time, subprocess, sys, random, glob, os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -67,6 +67,7 @@ class aggregation:
 		empty_rows = np.where(~temp.any(axis=1))[0]
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
 		self.result, policy, self.empty_states = opt.main(p0, des, self.H, self.A, self.E)
+		print("")
 		print("Unknown states:" + str(self.empty_states))
 		print('{:=^40}'.format(' Optimization '))
 		print("Final fitness: " + str(self.result.fun))
@@ -86,7 +87,8 @@ class aggregation:
 		i = 0; 
 		for a in self.A: print("A%i:"%i); print(a); i += 1
 
-	def benchmark(self, policy, controller, agent, fitness, robots=30, time_limit=1000, realtimefactor=0, environment="square",runs=100):
+	def benchmark(self, policy, controller, agent, fitness, robots=30, 
+	time_limit=1000, realtimefactor=500, environment="square",runs=100):
 		#### Build ####
 		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
 
@@ -111,19 +113,18 @@ class aggregation:
 		return f
 
 	def observe(self, policy, controller, agent, clean=True, robots=30, time_limit=0, realtimefactor=300, environment="square",runs=100):
-		self.sim.make(controller,agent,clean=clean, animation=True, logger=True, verbose=False)
+		policy_file = self.sim.path + "/conf/state_action_matrices/policy_observe.txt"
+		fh.save_to_txt(policy, policy_file)
+		
+		self.sim.make(controller,agent,clean=clean, animation=True, logger=True, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
-		
-		# Optimize
-		policy_file = self.sim.path + "/conf/state_action_matrices/policy_observe.txt"
-		fh.save_to_txt(policy, policy_file)
 		self.sim.runtime_setting("policy", policy_file) # Use random policy
-		f = []
+
 		self.sim.run(robots)
-		log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt") # Latest
-		return log
+		# log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt") # Latest
+		# return log
 	
 	## Re-evaluating
 	def reevaluate(self,*args):

@@ -12,9 +12,8 @@ np.set_printoptions(suppress=True) # Avoid scientific notation
 def update_b(A,pol):
 	b = np.zeros(A[0].shape)
 	i = 0 # Iterator
-	# cols = pol.shape[1]
 	for p in pol.T: # Iterate over each action (columns of pol)
-		b += A[i].astype(float) * p[:,np.newaxis]
+		b += A[i] * p[:,np.newaxis] # [:,np.newaxis] makes p vertical
 		i += 1
 	# Matrix b holds a measure of the probability of the transition happening 
 	# given a policy, which is the probability of the action times the 
@@ -73,7 +72,11 @@ def main(pol0, des, H, A, E):
 	r = np.nan_to_num(r) # Remove NaN Just in case
 	alpha = r / (1 + r)
 
-	### b0
+	# Normalize
+	for i in range(0,A.shape[0]): A[i] = matop.normalize_rows(A[i])
+	H = matop.normalize_rows(H)
+	E = matop.normalize_rows(E)
+
 	b0 = update_b(A, pol0) # b0 holds the total # of transitions weighted by the policy pol0
 
 	#### Optimize using pagerank fitness ####

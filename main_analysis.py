@@ -75,7 +75,7 @@ def benchmark(file,time_limit=100):
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((8,1))/2 # all = 1/2
 		des = np.zeros([1,8])[0]
-		des[4] = 1
+		des[4:] = 1
 	elif args.controller == "pfsm_exploration":
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((16,8))/8 # all = 1/8
@@ -84,7 +84,7 @@ def benchmark(file,time_limit=100):
 		des[11] = 1
 		des[13] = 1
 		des[14] = 1 # 3 neighbors
-		des[15] = 1 # 4 neighbors
+		# des[15] = 1 # 4 neighbors
 	elif args.controller == "forage":
 		fitness = "food"
 		p_0 = np.ones((16,1))/2 # all = 1/2
@@ -93,17 +93,19 @@ def benchmark(file,time_limit=100):
 	else:
 		ValueError("Uknown inputs!")
 
+	print(des)
 	p_n = optimize(folder + file,p_0,des)
 	
 	# e = evolution.evolution()
 	# e.load(folder+"evolution")
 	# p_s = e.get_best()
 	# p_s = np.reshape(p_s,(16,8))
-	f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
-	f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	# f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	# f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	sim.observe(p_n,args.controller,args.agent)
 	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
-	data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
+	# data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
 def plot_benchmark(file):
 	data = np.load(folder + "benchmark_%s"%file)
@@ -130,5 +132,5 @@ def plot_evolution():
 
 file = "learning_data_%s_%s_t%i_r%i_id%i.npz" %(args.controller,args.agent,args.t,args.n,args.id)
 benchmark(file,time_limit=200)
-plot_benchmark(file)
+# plot_benchmark(file)
 # plot_evolution()
