@@ -131,6 +131,6 @@ def plot_evolution():
 # compare_fitness(load_pkl(folder+"fitness_eval.pkl"))
 
 file = "learning_data_%s_%s_t%i_r%i_id%i.npz" %(args.controller,args.agent,args.t,args.n,args.id)
-benchmark(file,time_limit=200)
-# plot_benchmark(file)
+#benchmark(file,time_limit=200)
+plot_benchmark(file)
 # plot_evolution()

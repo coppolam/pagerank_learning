@@ -47,7 +47,7 @@ sim.make(args.controller, args.agent, animation=args.animate) # Build
 
 # Run
 sim.run(time_limit=args.t, robots=args.n, environment="square", policy=policy, 
-	fitness=fitness, pr_states=pr_states, pr_actions=pr_actions, run_id=args.id)
+	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id)
 
 # Save data
 filename_ext = ("%s_%s_t%i_r%i_id%s" % (args.controller, args.agent, args.t, args.n, sim.run_id))
