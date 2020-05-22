@@ -67,7 +67,7 @@ def load_pkl(name):
 
 def optimize(file,p0,des):
 	sim.load(file)
-	# sim.disp()
+	sim.disp()
 	return sim.optimize(p0,des)
 
 def benchmark(file,time_limit=100):
@@ -84,7 +84,7 @@ def benchmark(file,time_limit=100):
 		des[11] = 1
 		des[13] = 1
 		des[14] = 1 # 3 neighbors
-		# des[15] = 1 # 4 neighbors
+		#des[15] = 1 # 4 neighbors
 	elif args.controller == "forage":
 		fitness = "food"
 		p_0 = np.ones((16,1))/2 # all = 1/2
