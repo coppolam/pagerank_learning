@@ -88,7 +88,7 @@ class aggregation:
 		for a in self.A: print("A%i:"%i); print(a); i += 1
 
 	def benchmark(self, policy, controller, agent, fitness, robots=30, 
-	time_limit=1000, realtimefactor=500, environment="square",runs=100):
+	time_limit=1000, realtimefactor=0, environment="square",runs=100):
 		#### Build ####
 		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
 
@@ -113,9 +113,11 @@ class aggregation:
 		return f
 
 	def observe(self, policy, controller, agent, clean=True, robots=30, time_limit=0, realtimefactor=300, environment="square",runs=100):
-		policy_file = self.sim.path + "/conf/state_action_matrices/policy_observe.txt"
-		fh.save_to_txt(policy, policy_file)
-		
+		#### Save policy file ####
+		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
+		if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
+		else: fh.save_to_txt(policy, policy_file)
+
 		self.sim.make(controller,agent,clean=clean, animation=True, logger=True, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))

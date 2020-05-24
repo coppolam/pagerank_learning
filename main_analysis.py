@@ -89,7 +89,7 @@ def benchmark(file,time_limit=100):
 		fitness = "food"
 		p_0 = np.ones((16,1))/2 # all = 1/2
 		des = np.zeros([1,16])[0]
-		des[12] = 1
+		des[15] = 1
 	else:
 		ValueError("Uknown inputs!")
 
@@ -131,6 +131,6 @@ def plot_evolution():
 # compare_fitness(load_pkl(folder+"fitness_eval.pkl"))
 
 file = "learning_data_%s_%s_t%i_r%i_id%i.npz" %(args.controller,args.agent,args.t,args.n,args.id)
-#benchmark(file,time_limit=200)
+benchmark(file,time_limit=200)
 plot_benchmark(file)
 # plot_evolution()
