@@ -109,7 +109,8 @@ class aggregation:
 		#### Run (in batches for speed) ####
 		f = []
 		for i in tqdm(range(0,round(runs/5))):
-			f = np.append(f,self.sim.batch_run(robots,5))
+			f = np.append(f,self.sim.batch_run(robots,1))
+			print(f)
 		return f
 
 	def observe(self, policy, controller, agent, clean=True, robots=30, time_limit=0, realtimefactor=300, environment="square",runs=100):
