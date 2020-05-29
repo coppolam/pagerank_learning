@@ -139,7 +139,7 @@ class evolution:
 
 	def load(self,filename):
 		'''Load the status from a pkl file'''
-		with open(filename+".pkl", "rb") as cp_file:
+		with open(filename, "rb") as cp_file:
 			cp = pickle.load(cp_file)
 		self.stats = cp["stats"]
 		self.g = cp["generation"]

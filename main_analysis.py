@@ -71,7 +71,7 @@ def optimize(file,p0,des):
 	return sim.optimize(p0,des)
 
 def benchmark(file,time_limit=100):
-	if args.controller == "controller_aggregation":
+	if args.controller == "aggregation":
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((8,1))/2 # all = 1/2
 		des = np.zeros([1,8])[0]
@@ -100,9 +100,9 @@ def benchmark(file,time_limit=100):
 	# e.load(folder+"evolution")
 	# p_s = e.get_best()
 	# p_s = np.reshape(p_s,(16,8))
-	f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
-	f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
-	# sim.observe(p_n,args.controller,args.agent)
+	# f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	# f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
+	sim.observe(p_n,args.controller,args.agent)
 	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
 	data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
@@ -132,5 +132,5 @@ def plot_evolution():
 
 file = "learning_data_%s_%s_t%i_r%i_id%i.npz" %(args.controller,args.agent,args.t,args.n,args.id)
 benchmark(file,time_limit=200)
-plot_benchmark(file)
+#plot_benchmark(file)
 # plot_evolution()

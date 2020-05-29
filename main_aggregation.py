@@ -22,7 +22,7 @@ args = parser.parse_args()
 #########################################
 #  Ad-hoc settings for each controller  #
 #########################################
-if args.controller == "controller_aggregation":
+if args.controller == "aggregation":
 	policy = ""
 	pr_states = 8
 	pr_actions = 1

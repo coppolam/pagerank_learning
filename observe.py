@@ -14,8 +14,8 @@ print(p_s)
 print("new")
 print(p_n)
 
-log_s = sim.observe(p_s,time_limit=100,clean=True,controller="controller_aggregation",agent="particle")
-log_n = sim.observe(p_n,time_limit=100,clean=False,controller="controller_aggregation",agent="particle")
+log_s = sim.observe(p_s,time_limit=100,clean=True,controller="aggregation",agent="particle")
+log_n = sim.observe(p_n,time_limit=100,clean=False,controller="aggregation",agent="particle")
 
 
 sim.sim.plot_log(log=log_s)
