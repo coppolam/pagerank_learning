@@ -109,7 +109,7 @@ class aggregation:
 		#### Run (in batches for speed) ####
 		f = []
 		for i in tqdm(range(0,round(runs/5))):
-			f = np.append(f,self.sim.batch_run(robots,1))
+			f = np.append(f,self.sim.batch_run(robots,5))
 			print(f)
 		return f
 
@@ -132,18 +132,22 @@ class aggregation:
 	## Re-evaluating
 	def reevaluate(self,*args):
 		'''Re-evaluate the fitnesses based on new fitness functions'''
-		id_column = 1
-		robots = int(self.log[:,id_column].max())
 		time_column = 0
-		t = np.unique(self.log[:,0])
+		id_column = 1
+		
+		t = np.unique(self.log[:,time_column]) # time
+		robots = int(self.log[:,id_column].max())
+		
 		f_official = np.zeros(t.shape)
+		
 		fitness = np.zeros([t.size,len(args)])
 		arguments = locals()
 		print("Re-evaluating")
+		
 		a = 0
 		states = np.zeros([t.size,robots])
 		des = np.zeros([t.size,self.H.shape[0]])
-		for step in tqdm(t):
+		for step in tqdm(t): # Extract what is relevant from each log 
 			d = self.log[np.where(self.log[:,time_column] == step)]
 			fref = 0
 			for i in args:

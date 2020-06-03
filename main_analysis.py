@@ -75,27 +75,29 @@ def benchmark(file,time_limit=100):
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((8,1))/2 # all = 1/2
 		des = np.zeros([1,8])[0]
-		des[4:] = 1
+		des[4:] = 1 # from nn
 	elif args.controller == "pfsm_exploration":
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((16,8))/8 # all = 1/8
-		des = np.zeros([1,16])[0]
-		des[7] = 1
-		des[11] = 1
-		des[13] = 1
-		des[14] = 1 # 3 neighbors
-		#des[15] = 1 # 4 neighbors
+		des = np.ones([1,16])[0]
+		des[0] = 0 # from nn
+	elif args.controller == "pfsm_exploration_mod":
+		fitness = "aggregation_clusters"
+		p_0 = np.ones((16,8))/8 # all = 1/8
+		# des = np.ones([1,16])[0]
+		# des[0] = 0 # from nn
+		des = [0.0, 0.9848900061808971, 0.976980500207466, 0.9891087896631704, 0.980456436324312, 0.9935526779444446, 0.9865328989055827, 0.991669223914925, 0.9754366280896926, 0.9634689362627317, 0.9923385484054741, 0.9995649232133225, 0.9128809930185515, 0.9990481518590899, 0.9847521337659593, 0.9949568797324759]
 	elif args.controller == "forage":
 		fitness = "food"
-		p_0 = np.ones((16,1))/2 # all = 1/2
+		p_0 = np.ones((16,1))/2
 		des = np.zeros([1,16])[0]
+		des[5:13] = 1
 		des[15] = 1
 	else:
 		ValueError("Uknown inputs!")
 
-	print(des)
-	p_n = optimize(folder + file,p_0,des)
-	
+	p_n = optimize(folder + file, p_0, des)
+
 	# e = evolution.evolution()
 	# e.load(folder+"evolution")
 	# p_s = e.get_best()
@@ -105,7 +107,7 @@ def benchmark(file,time_limit=100):
 	sim.observe(p_n,args.controller,args.agent)
 	# f_s = sim.benchmark(p_s,args.controller,args.agent,time_limit=time_limit)
 	# data_validation = np.savez(folder + "benchmark.npz",f_0=f_0,f_n=f_n,f_s=f_s,p_0=p_0,p_n=p_n,p_s=p_s)
-	data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
+	# data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
 def plot_benchmark(file):
 	data = np.load(folder + "benchmark_%s"%file)
@@ -132,5 +134,5 @@ def plot_evolution():
 
 file = "learning_data_%s_%s_t%i_r%i_id%i.npz" %(args.controller,args.agent,args.t,args.n,args.id)
 benchmark(file,time_limit=200)
-#plot_benchmark(file)
+plot_benchmark(file)
 # plot_evolution()

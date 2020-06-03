@@ -47,7 +47,7 @@ def number_of_clusters(log):
 	A, robots = neighbors_adjacency_map(log)
 	G = nx.from_numpy_array(A)
 	f = nx.components.number_connected_components(G)
-	return f/robots
+	return 1/(f/robots)
 
 def largest_cluster(log):
 	'''Global fitness function to get size of the largest cluster, relative to the size of the swarm'''

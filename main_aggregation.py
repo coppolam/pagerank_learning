@@ -24,6 +24,7 @@ args = parser.parse_args()
 #########################################
 if args.controller == "aggregation":
 	policy = ""
+	fitness = "aggregation_clusters"
 	pr_states = 8
 	pr_actions = 1
 elif args.controller == "pfsm_exploration":
@@ -31,7 +32,13 @@ elif args.controller == "pfsm_exploration":
 	fitness = "aggregation_clusters"
 	pr_states = 16
 	pr_actions = 8
+elif args.controller == "pfsm_exploration_mod":
+	policy = "conf/state_action_matrices/exploration_policy_random.txt"
+	fitness = "aggregation_clusters"
+	pr_states = 16
+	pr_actions = 8
 elif args.controller == "forage":
+	fitness = "food"
 	policy = ""
 	pr_states = 16
 	pr_actions = 1
@@ -47,7 +54,7 @@ sim.make(args.controller, args.agent, animation=args.animate) # Build
 
 # Run
 sim.run(time_limit=args.t, robots=args.n, environment="square", policy=policy, 
-	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id)
+	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
 # Save data
 filename_ext = ("%s_%s_t%i_r%i_id%s" % (args.controller, args.agent, args.t, args.n, sim.run_id))
