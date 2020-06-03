@@ -52,7 +52,7 @@ class aggregation:
 		np.savez(self.savefolder+"learning_data_"+filename_ext, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved")
 
-	def load(self,file=None):
+	def load(self,file):
 		data = np.load(file)
 		self.H = data['H'].astype(float)
 		self.E = data['E'].astype(float)
@@ -161,6 +161,26 @@ class aggregation:
 			a += 1
 		print("Re-evaluation done")
 		return t, fitness, des, f_official
+
+	## Extract
+	def extract(self):
+		time_column = 0
+		id_column = 1
+		t = np.unique(self.log[:,time_column])
+		robots = int(self.log[:,id_column].max())
+		f_official = np.zeros(t.shape)
+		a = 0
+		states = np.zeros([t.size,robots])
+		states_count = np.zeros([t.size,self.H.shape[0]])
+		for step in tqdm(t): # Extract what is relevant from each log 
+			d = self.log[np.where(self.log[:,time_column] == step)]
+			f_official[a] = d[:,5].astype(float).mean()
+			states[a] = d[0:robots,4].astype(int)
+			for r in np.arange(0,np.max(states[a])+1).astype(int):
+				if r < self.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
+					states_count[a,r] = np.count_nonzero(states[a] == r)
+			a += 1
+		return states_count, f_official
 
 	## Fitnesses
 	def plot_fitness(self,t,fitness):
