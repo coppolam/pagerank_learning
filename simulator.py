@@ -120,6 +120,8 @@ class simulator:
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
 		self.sim.runtime_setting("policy", policy_file) # Use random policy
+		self.sim.runtime_setting("pr_states", str(0)) # Don't run pr estimator
+		self.sim.runtime_setting("pr_actions", str(0)) # Don't run pr estimator
 
 		self.sim.run(robots)
 		# log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt") # Latest

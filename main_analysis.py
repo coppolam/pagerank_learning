@@ -16,6 +16,7 @@ sim = simulator.simulator()
 
 def optimize(file,p0,des):
 	sim.load(file)
+	sim.disp()
 	return sim.optimize(p0,des)
 	
 def plot_benchmark(loadfile):
