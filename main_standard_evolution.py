@@ -60,7 +60,7 @@ if args.plot is not None:
 sim = swarmulator.swarmulator(verbose=False)
 sim.make(controller=args.controller, agent=args.agent, clean=True, logger=False, verbose=False)
 sim.runtime_setting("time_limit", str("100"))
-sim.runtime_setting("simulation_realtimefactor", str("0"))
+sim.runtime_setting("simulation_realtimefactor", str("300"))
 sim.runtime_setting("environment", "square")
 filename = folder + "evo_run_%s_%s_%i" % (args.controller, args.agent, args.id)
 

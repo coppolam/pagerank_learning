@@ -95,7 +95,7 @@ def main():
 	n = 50 # Max number of robots
 	m = 5 # Re-runs to average out
 	batch = 5 # Number of batch runs
-	rtfactor = 0 # Desired realtime factor (0 = #nosleep)
+	rtfactor = 300 # Desired realtime factor (0 = #nosleep)
 	tl = 200 # Length of simulation
 	folder = "data/time/"
 	filename = (folder+"time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,rtfactor,tl))

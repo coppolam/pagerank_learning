@@ -6,6 +6,7 @@ Collection of functions to handle files, load them, save them, ect
 import numpy as np
 import os, time
 import glob
+import pickle
 
 def load_matrix(file):
 	'''Loads a matrix from a file'''
@@ -44,3 +45,12 @@ def get_latest_file(path):
 	list_of_files = glob.glob(path) # * means all if need specific format then *.csv
 	latest_file = max(list_of_files, key=os.path.getctime)
 	return latest_file
+
+def save_pkl(var,filename):
+	with open(name, "wb") as cp_file:
+		pickle.dump(var, cp_file)
+
+def load_pkl(filename):
+	with open(filename, "rb") as cp_file:
+		data = pickle.load(cp_file)
+	return data
