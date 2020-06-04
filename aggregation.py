@@ -119,7 +119,7 @@ class aggregation:
 		if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 		else: fh.save_to_txt(policy, policy_file)
 
-		self.sim.make(controller,agent,clean=clean, animation=True, logger=True, verbose=True)
+		self.sim.make(controller,agent,clean=True, animation=True, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)

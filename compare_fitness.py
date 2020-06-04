@@ -6,7 +6,8 @@ Simulate the aggregation and optimize the behavior
 
 import pickle, sys, os, argparse
 import numpy as np
-		
+import desired_states_extractor
+
 if __name__ == "__main__":
 	###########################
 	#  Input argument parser  #
@@ -16,9 +17,9 @@ if __name__ == "__main__":
 	parser.add_argument('-evaluation', type=str, help="Load from file or re-run", default=None)
 	args = parser.parse_args()
 
-	extractor = desired_states_extractor()
-	des = extractor.extract_states(args.file)
-	model = extractor.make_model(s,f)
+	extractor = desired_states_extractor.desired_states_extractor()
+	s, f = extractor.extract_states(args.file)
+	model = extractor.make_model(s, f)
 	if args.evaluation is not None:
 		sc, fc = extractor.extract_states(args.evaluation)
 		extractor.evaluate_model(model, sc, fc)

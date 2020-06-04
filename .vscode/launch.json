@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             // "args" : ["pfsm_exploration","particle_oriented","-id","3","-n","50"]
-            "args" : ["data/learning_data_forage_particle_oriented/learning_data_forage_particle_oriented_t10000_r40_id6.npz"]            ]
+            "args" : ["data/learning_data_forage_particle_oriented/learning_data_forage_particle_oriented_t10000_r10_id1.npz"]            ]
         }
     ]
 }

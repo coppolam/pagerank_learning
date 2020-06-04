@@ -22,6 +22,7 @@ parser.add_argument('agent', type=str, help="Agent to use")
 parser.add_argument('-t', type=int, help="Max time of simulation. Default = 10000s", default=10000)
 parser.add_argument('-n', type=int, help="Size of swarm. Default = 30", default=30)
 parser.add_argument('-id', type=int, help="ID", default=1)
+parser.add_argument('-observe', type=bool, help="", default=False)
 args = parser.parse_args()
 
 # Load environment
@@ -84,16 +85,17 @@ def benchmark(file,time_limit=100):
 		p_0 = np.ones((16,8))/8
 	elif args.controller == "forage":
 		fitness = "food"
-		p_0 = np.ones((16,1))/2	
+		p_0 = np.ones((16,1))/2
 	else:
 		ValueError("Uknown inputs!")
 
 	des = desired_states_extractor.desired_states_extractor().run(file,verbose=True)
 	p_n = optimize(file, p_0, des)
-	f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
-	f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,runs=100,time_limit=time_limit)
-	sim.observe(p_n,args.controller,args.agent)
-	data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
+	if args.observe: sim.observe(p_0,args.controller,args.agent,robots=args.n)
+	else:
+		f_0 = sim.benchmark(p_0,args.controller,args.agent,fitness,robots=args.n,runs=100,time_limit=time_limit)
+		f_n = sim.benchmark(p_n,args.controller,args.agent,fitness,robots=args.n,runs=100,time_limit=time_limit)
+		data_validation = np.savez(folder + "benchmark_%s"%file,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
 
 	# e = evolution.evolution()
 	# e.load(folder+"evolution")
@@ -120,6 +122,6 @@ def plot_evolution():
 	e.load(folder+"evolution")
 	e.plot_evolution(folder+"evolution_2.pdf")
 
-benchmark(args.file,time_limit=200)
-plot_benchmark(file)
+benchmark(args.file,time_limit=1000)
+# plot_benchmark(args.file)
 # plot_evolution()
