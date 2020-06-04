@@ -4,8 +4,8 @@ class simplenetwork:
 	def __init__(self,D_in):
 		self.network = self.initialize(D_in, 1000, 1)
 		self.loss_fn = torch.nn.MSELoss(reduction='sum')
-		self.optimizer = torch.optim.SGD(self.network.parameters(), lr=1e-4)
-		# self.optimizer = torch.optim.Adam(self.network.parameters(), lr=1e-4)
+		self.optimizer = torch.optim.Adam(self.network.parameters(), lr=1e-4)
+		# (Note: Adam optimizer works well, SGD unstablish with 1e-4 learning rate)
 
 	def initialize(self, D_in, H, D_out):
 		model = torch.nn.Sequential(
@@ -24,3 +24,4 @@ class simplenetwork:
 
 	def get(self):
 		return self.network
+		

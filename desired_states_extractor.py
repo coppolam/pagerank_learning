@@ -4,16 +4,17 @@ import simplenetwork
 from tools import matrixOperations as matop
 import evolution
 import simulator
+from tqdm import tqdm
 
 class desired_states_extractor:
 	def __init__(self):
 		pass
 
-	def make_model(self,x,y,plot=False):
+	def make_model(self,x,y):
 		self.network = simplenetwork.simplenetwork(x.shape[1])
 		i = 0
 		loss_history = []
-		for element in y:
+		for element in tqdm(y):
 			in_tensor = torch.tensor([x[i]]).float()
 			out_tensor = torch.tensor([[element]]).float()
 			_,loss = self.network.run(in_tensor,out_tensor)
@@ -21,7 +22,7 @@ class desired_states_extractor:
 			i += 1
 		return self.network, loss_history
 	
-	def evaluate_model(self,network,x,y,plot=False):
+	def evaluate_model(self,network,x,y):
 		y_pred = []
 		for element in x:
 			in_tensor = torch.tensor([element]).float()

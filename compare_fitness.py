@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Simulate the aggregation and optimize the behavior
+File to extract desired states
 @author: Mario Coppola, 2020
 """
 
 import pickle, sys, os, argparse
 import numpy as np
 import desired_states_extractor
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
 	###########################
@@ -19,9 +20,15 @@ if __name__ == "__main__":
 
 	extractor = desired_states_extractor.desired_states_extractor()
 	s, f = extractor.extract_states(args.file)
-	model = extractor.make_model(s, f)
+	print("Making the NN model")
+	model,loss_history = extractor.make_model(s, f)
+	plt.plot(range(len(loss_history)),loss_history); plt.show()
+
 	if args.evaluation is not None:
+    	print("Evaluating against validation set")
 		sc, fc = extractor.extract_states(args.evaluation)
 		extractor.evaluate_model(model, sc, fc)
+
+	print("Extractig desired states")
 	des = extractor.get_des()
 	print(des)

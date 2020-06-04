@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from deap import base, creator, tools
 matplotlib.rc('text', usetex=True)
+from tqdm import tqdm
 
 class evolution:
 	'''Wrapper around the DEAP package to run an evolutionary process with just a few commands'''
@@ -85,7 +86,8 @@ class evolution:
 		# Evolve!
 		g = len(self.stats) # Number of generations
 		gmax = len(self.stats) + generations
-		while g < gmax:
+		for g in tqdm(range(gmax)):
+		# while g < gmax:
 			# Offspring
 			offspring = self.toolbox.select(pop, len(pop))
 			offspring = list(map(self.toolbox.clone, offspring))
