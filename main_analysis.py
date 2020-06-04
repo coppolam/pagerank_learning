@@ -8,15 +8,15 @@ import pickle, sys, matplotlib, os, argparse
 import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
 import numpy as np
-import aggregation as env
+import simulator
 import evolution
 import desired_states_extractor
 
-sim = env.aggregation()
+sim = simulator.simulator()
 
 def optimize(file,p0,des):
 	sim.load(file)
-	sim.optimize(p0,des)
+	return sim.optimize(p0,des)
 	
 def plot_benchmark(loadfile):
 	## Plot
@@ -60,12 +60,12 @@ if __name__ == "__main__":
 		p_0 = np.ones((16,8))/8 # all = 1/8
 	elif args.controller == "pfsm_exploration_mod":
 		fitness = "aggregation_clusters"
-		p_0 = np.ones((16,8))/8
+		p_0 = np.ones((16,8))/8 # all 1/8
 	elif args.controller == "forage":
 		fitness = "food"
-		p_0 = np.ones((16,1))/2
+		p_0 = np.ones((16,1))/2 # all = 1/2
 	else:
-		ValueError("Uknown inputs!")
+		ValueError("Unknown controller!")
 
 	############################
 	#  Optimization procedure  #
@@ -81,11 +81,11 @@ if __name__ == "__main__":
 	#############
 	if args.observe:
     	# Just do one run and observe what happens visually
-		sim.observe(p_n,args.controller,args.agent,robots=args.n)
+		sim.observe(args.controller, args.agent, p_n, robots=args.n)
 	else: 
 		# Run a proper benchmark against unoptimized
-		f_0 = sim.benchmark(p_0, args.controller, args.agent,fitness,robots=args.n,runs=args.runs,time_limit=args.t)
-		f_n = sim.benchmark(p_n, args.controller, args.agent,fitness,robots=args.n,runs=args.runs,time_limit=args.t)
+		f_0 = sim.benchmark(args.controller, args.agent, p_0, fitness,robots=args.n,runs=args.runs,time_limit=args.t)
+		f_n = sim.benchmark(args.controller, args.agent, p_n, fitness,robots=args.n,runs=args.runs,time_limit=args.t)
 
 		# Save
 		folder = os.path.dirname(args.file)

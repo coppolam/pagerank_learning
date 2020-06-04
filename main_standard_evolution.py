@@ -2,7 +2,7 @@ import random, sys, pickle, argparse, os
 import numpy as np
 from tools import fileHandler as fh
 import evolution
-from simulator import swarmulator
+from simulators import swarmulator
 
 ## Run as
 # python3 main_standard_evolution.py CONTROLLER AGENT

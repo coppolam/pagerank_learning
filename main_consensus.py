@@ -11,9 +11,9 @@ import sys
 from tqdm import tqdm
 matplotlib.rc('text', usetex=True)
 
-from simulator import consensus as sim
+from simulators import consensus as sim
 from tools import matrixOperations as matop
-import graphless_optimization as opt
+import pagerank_optimization as opt
 
 folder = sys.argv[1]
 
@@ -65,14 +65,15 @@ def validate(policy):
 
     np.savez(folder+"validation_n%i_m%i"%(n,m), f=f, f_n=f_n)
 
-simulate()
-policy = optimize()
-validate(policy)
-data = np.load(folder+"validation_n%i_m%i.npz"%(n,m))
-f = data["f"].astype(float)
-f_n = data["f_n"].astype(float)
-_ = plt.hist(f, alpha=0.5, bins='auto', label='Original')  # arguments are passed to np.histogram
-_ = plt.hist(f_n, alpha=0.5, bins='auto', label='Optimized')  # arguments are passed to np.histogram
-_ = plt.title("Results")
-_ = plt.legend(loc='upper right')
-_ = plt.savefig(folder+"benchmark.pdf")
+if __name__ == "__main__":    
+    simulate()
+    policy = optimize()
+    validate(policy)
+    data = np.load(folder+"validation_n%i_m%i.npz"%(n,m))
+    f = data["f"].astype(float)
+    f_n = data["f_n"].astype(float)
+    _ = plt.hist(f, alpha=0.5, bins='auto', label='Original')  # arguments are passed to np.histogram
+    _ = plt.hist(f_n, alpha=0.5, bins='auto', label='Optimized')  # arguments are passed to np.histogram
+    _ = plt.title("Results")
+    _ = plt.legend(loc='upper right')
+    _ = plt.savefig(folder+"benchmark.pdf")

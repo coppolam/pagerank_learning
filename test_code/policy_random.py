@@ -4,14 +4,14 @@ Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-import graphless_optimization as opt
+import pagerank_optimization as opt
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 import numpy as np
 import subprocess, sys
 
 ###### Simulate ######
-from simulator import swarmulator
+from simulators import swarmulator
 # rerun = False
 # n = 30 # Robots
 # folder = "../swarmulator"

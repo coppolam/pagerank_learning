@@ -5,7 +5,7 @@ matplotlib.rc('text', usetex=True)
 from tqdm import tqdm
 import time
 
-from simulator import swarmulator
+from simulators import swarmulator
 sim = swarmulator.swarmulator(verbose=False)
 	
 def wall_clock_test(n,m):
@@ -90,7 +90,7 @@ def plot_rtfactor(filename,tl,figurename=None):
 	plt.legend(loc="upper left")
 	plt.savefig(figurename) if figurename is not None else plt.show()
 
-def main():
+if __name__ == "__main__":
 	##### Primary input parameters -- Test parameters #####
 	n = 50 # Max number of robots
 	m = 5 # Re-runs to average out
@@ -110,6 +110,3 @@ def main():
 	# run(n,m,batch,filename)
 	plot(filename,folder+"runtime_comparison.pdf")
 	plot_rtfactor(filename,tl)
-
-if __name__ == "__main__":
-    main()

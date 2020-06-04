@@ -3,7 +3,7 @@ import numpy as np
 import simplenetwork
 from tools import matrixOperations as matop
 import evolution
-import aggregation as env
+import simulator
 
 class desired_states_extractor:
 	def __init__(self):
@@ -30,7 +30,7 @@ class desired_states_extractor:
 		return error
 
 	def extract_states(self,file):
-		sim = env.aggregation()
+		sim = simulator.simulator()
 		sim.load(file)
 		local_states, fitness = sim.extract()
 		self.dim = local_states.shape[1]

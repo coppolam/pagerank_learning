@@ -3,9 +3,9 @@
 Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
-
-import argparse, sys
-import aggregation as env
+import argparse
+import sys
+import simulator
 
 ###########################
 #  Input argument parser  #
@@ -49,7 +49,7 @@ else:
 #   RUN    #
 ############
 # Load and build
-sim = env.aggregation(savefolder="data/learning_data_%s_%s/"%(args.controller,args.agent)) # Load high level simulator interface, connected to swarmulator
+sim = simulator.simulator(savefolder="data/learning_data_%s_%s/"%(args.controller,args.agent)) # Load high level simulator interface, connected to swarmulator
 sim.make(args.controller, args.agent, animation=args.animate) # Build
 
 # Run

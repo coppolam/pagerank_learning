@@ -4,12 +4,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-import graphless_optimization as opt
-from simulator import swarmulator
+import pagerank_optimization as opt
+from simulators import swarmulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 
-class aggregation:
+class simulator:
 	def __init__(self, folder="../swarmulator", savefolder="data/"):
 		'''Load simulator'''
 		self.folder = folder
@@ -38,7 +38,7 @@ class aggregation:
 		self.sim.runtime_setting("pr_actions", str(pr_actions))
 		self.robots = robots
 		self.run_id = str(run_id) if run_id is not None else str(random.randrange(100000))
-		print("Runtime ID: " + self.run_id)
+		print("Runtime ID: %s"%self.run_id)
 		self.save_id = self.savefolder + self.run_id
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
@@ -48,9 +48,10 @@ class aggregation:
 		for i in range(len(glob.glob(self.logs_folder+"A_"+self.sim.run_id+"_*"))):
 			self.A.append(fh.read_matrix(self.logs_folder,"A_"+self.sim.run_id+"_"+str(i)))
 		self.E = fh.read_matrix(self.logs_folder,"E_"+self.sim.run_id)
-		self.log = self.sim.load(file=self.logs_folder+"log_"+self.sim.run_id+".txt") # Latest
-		np.savez(self.savefolder+"learning_data_"+filename_ext, H=self.H, A=self.A, E=self.E, log=self.log)
-		print("Saved")
+		self.log = self.sim.load(file=self.logs_folder+"log_"+self.sim.run_id+".txt")
+		save_filename = self.savefolder+"learning_data_"+filename_ext
+		np.savez(save_filename, H=self.H, A=self.A, E=self.E, log=self.log)
+		print("Saved to %s"%save_filename)
 
 	def load(self,file):
 		data = np.load(file)
@@ -58,8 +59,8 @@ class aggregation:
 		self.E = data['E'].astype(float)
 		self.A = data['A'].astype(float)
 		self.save_id = file[0:file.find('_learning_data')]
-		self.log = data['log'].astype(float) #self.sim.load(file[5:file.find('_learning_data')])
-		print("Loaded %s" %file)
+		self.log = data['log'].astype(float)
+		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
 		temp = self.H + self.E
@@ -67,37 +68,28 @@ class aggregation:
 		empty_rows = np.where(~temp.any(axis=1))[0]
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
 		self.result, policy, self.empty_states = opt.main(p0, des, self.H, self.A, self.E)
-		print("")
-		print("Unknown states:" + str(self.empty_states))
-		print('{:=^40}'.format(' Optimization '))
-		print("Final fitness: " + str(self.result.fun))
-		print("[ policy ]")
-		print(policy)
+		print("\nUnknown states: \t" + str(self.empty_states))
+		print("Final fitness: \t" + str(self.result.fun))
+		print("Policy: \n" + str(policy))
 		np.set_printoptions(threshold=sys.maxsize)
 		return policy
 
-	def save_optimized(self):
-		np.savez(self.save_id+"_optimization", result=self.result, policy=self.policy, empty_states=self.empty_states)
-
 	def disp(self):
-		print("H:")
-		print(self.H)
-		print("E:")
-		print(self.E)
-		i = 0; 
-		for a in self.A: print("A%i:"%i); print(a); i += 1
+		print("H:"); print(self.H)
+		print("E:"); print(self.E)
+		for i,a in enumerate(self.A): print("A%i:"%i); print(a);
 
 	def benchmark(self, controller, agent, policy, fitness, robots=30, 
-	time_limit=1000, realtimefactor=300, environment="square",runs=100):
-		#### Build ####
-		self.sim.make(controller=controller,agent=agent,clean=True, animation=False, logger=False, verbose=False)
-
-		#### Save policy file ####
+		time_limit=1000, realtimefactor=300, environment="square",runs=100):
+		'''Perform many runs of the simulator to observe what happens'''
+		
+		#### Save policy file to test ####
 		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
 		if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 		else: fh.save_to_txt(policy, policy_file)
 
-		#### Set runtime settings ####
+		#### Build with correct settings ####
+		self.sim.make(controller=controller, agent=agent, clean=True, animation=False, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
@@ -113,13 +105,17 @@ class aggregation:
 			print(f)
 		return f
 
-	def observe(self, policy, controller, agent, clean=True, robots=30, time_limit=0, realtimefactor=300, environment="square",runs=100):
-		#### Save policy file ####
+	def observe(self, controller, agent, policy, clean=True, robots=30, 
+		time_limit=0, realtimefactor=300, environment="square"):
+		'''Launch a single run of the simulator with animation to observe what happens'''
+
+		#### Save policy file to test ####
 		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
 		if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 		else: fh.save_to_txt(policy, policy_file)
 
-		self.sim.make(controller,agent,clean=True, animation=True, logger=False, verbose=False)
+		#### Build with correct settings ####
+		self.sim.make(controller,agent,clean=True, animation=True, logger=False, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
@@ -129,73 +125,23 @@ class aggregation:
 		# log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt") # Latest
 		# return log
 	
-	## Re-evaluating
-	def reevaluate(self,*args):
-		'''Re-evaluate the fitnesses based on new fitness functions'''
-		time_column = 0
-		id_column = 1
-		
-		t = np.unique(self.log[:,time_column]) # time
-		robots = int(self.log[:,id_column].max())
-		
-		f_official = np.zeros(t.shape)
-		
-		fitness = np.zeros([t.size,len(args)])
-		arguments = locals()
-		print("Re-evaluating")
-		
-		a = 0
-		states = np.zeros([t.size,robots])
-		des = np.zeros([t.size,self.H.shape[0]])
-		for step in tqdm(t): # Extract what is relevant from each log 
-			d = self.log[np.where(self.log[:,time_column] == step)]
-			fref = 0
-			for i in args:
-				fitness[a,fref] = i(d)
-				fref += 1
-			f_official[a] = d[:,5].astype(float).mean()
-			states[a] = d[0:robots,4].astype(int)
-			for r in np.arange(0,np.max(states[a])+1).astype(int):
-				if r < self.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
-					des[a,r] = np.count_nonzero(states[a] == r)
-			a += 1
-		print("Re-evaluation done")
-		return t, fitness, des, f_official
-
-	## Extract
 	def extract(self):
+		''' Extract data from the log file that has already been loaded using the load method'''
+
 		time_column = 0
 		id_column = 1
 		t = np.unique(self.log[:,time_column])
 		robots = int(self.log[:,id_column].max())
-		f_official = np.zeros(t.shape)
+		fitness = np.zeros(t.shape)
 		a = 0
 		states = np.zeros([t.size,robots])
 		states_count = np.zeros([t.size,self.H.shape[0]])
 		for step in tqdm(t): # Extract what is relevant from each log 
 			d = self.log[np.where(self.log[:,time_column] == step)]
-			f_official[a] = d[:,5].astype(float).mean()
+			fitness[a] = d[:,5].astype(float).mean()
 			states[a] = d[0:robots,4].astype(int)
 			for r in np.arange(0,np.max(states[a])+1).astype(int):
 				if r < self.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
 					states_count[a,r] = np.count_nonzero(states[a] == r)
 			a += 1
-		return states_count, f_official
-
-	## Fitnesses
-	def plot_fitness(self,t,fitness):
-		for a in range(fitness.shape[1]):
-			plt.plot(t,fitness[:,a]/np.mean(fitness[:,a]))
-		plt.ylabel("Fitness")
-		plt.xlabel("Time [s]")
-		plt.show()
-
-	## Correlation
-	def plot_correlation(self,fitness):
-		for a in range(1,fitness.shape[1]):
-			plt.plot(fitness[:,0],fitness[:,a],'*')
-			c = np.corrcoef(fitness[:,0],fitness[:,a])[0,1]
-			print("Cov 0:", str(a), " = ", str(c))
-		plt.ylabel("Local Fitness")
-		plt.xlabel("Global Fitness")
-		plt.show()
+		return states_count, fitness
