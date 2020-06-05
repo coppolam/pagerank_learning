@@ -6,7 +6,7 @@ Backend engine for the consensus simulator
 import sys, itertools
 import numpy as np
 from tools import matrixOperations as matop
-from simulators import tools, estimator
+from simulators import estimator
 
 class consensus_simulator:
 	def __init__(self, n=10, m=2, d=0.2):
