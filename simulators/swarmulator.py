@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import concurrent.futures
-import tools.fileHandler as fh
+from tools import fileHandler as fh
 
 class swarmulator:
 	'''Python API class for Swarmulator. Allows to interact with swarmulator via Python'''

@@ -13,7 +13,7 @@ matplotlib.rc('text', usetex=True)
 
 from simulators import consensus as sim
 from tools import matrixOperations as matop
-import pagerank_optimization as opt
+from classes import pagerank_optimization as opt
 
 folder = sys.argv[1]
 

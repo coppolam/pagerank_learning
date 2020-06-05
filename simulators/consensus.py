@@ -3,11 +3,10 @@
 Backend engine for the consensus simulator
 @author: Mario Coppola, 2020
 """
-import itertools
+import sys, itertools
 import numpy as np
 from tools import matrixOperations as matop
 from simulators import tools, estimator
-import sys
 
 class consensus_simulator:
 	def __init__(self, n=10, m=2, d=0.2):

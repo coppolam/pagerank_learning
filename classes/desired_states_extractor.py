@@ -5,11 +5,9 @@ Optimize a behavior based on the PageRank function
 """
 import torch
 import numpy as np
-import simplenetwork
-from tools import matrixOperations as matop
-import evolution
-import simulator
 from tqdm import tqdm
+from tools import matrixOperations as matop
+from classes import simplenetwork, evolution, simulator
 
 class desired_states_extractor:
 	def __init__(self):
