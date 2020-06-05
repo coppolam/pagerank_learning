@@ -18,14 +18,16 @@ if __name__ == "__main__":
 	parser.add_argument('-evaluation', type=str, help="Load from file or re-run", default=None)
 	args = parser.parse_args()
 
+	print("Reading log")
 	extractor = desired_states_extractor.desired_states_extractor()
 	s, f = extractor.extract_states(args.file)
+	
 	print("Making the NN model")
 	model,loss_history = extractor.make_model(s, f)
 	plt.plot(range(len(loss_history)),loss_history); plt.show()
 
 	if args.evaluation is not None:
-    	print("Evaluating against validation set")
+		print("Evaluating against validation set")
 		sc, fc = extractor.extract_states(args.evaluation)
 		extractor.evaluate_model(model, sc, fc)
 
