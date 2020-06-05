@@ -1,7 +1,7 @@
 import random, sys, pickle, argparse, os
 import numpy as np
 from tools import fileHandler as fh
-import evolution
+from classes import evolution
 from simulators import swarmulator
 
 ## Run as

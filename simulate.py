@@ -5,7 +5,7 @@ Simulate the aggregation and optimize the behavior
 """
 import argparse
 import sys
-import simulator
+from classes import simulator
 
 ###########################
 #  Input argument parser  #

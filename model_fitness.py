@@ -6,8 +6,9 @@ File to extract desired states
 
 import pickle, sys, os, argparse
 import numpy as np
-import desired_states_extractor
 import matplotlib.pyplot as plt
+
+from classes import desired_states_extractor
 
 if __name__ == "__main__":
 	###########################

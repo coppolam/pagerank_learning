@@ -10,7 +10,6 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            // "args" : ["pfsm_exploration","particle_oriented","-id","3","-n","50"]
             "args" : ["data/learning_data_aggregation_particle/learning_data_aggregation_particle_t10000_r30_id1.npz"]            ]
         }
     ]

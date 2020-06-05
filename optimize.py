@@ -8,9 +8,8 @@ import pickle, sys, matplotlib, os, argparse
 import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
 import numpy as np
-import simulator
-import evolution
-import desired_states_extractor
+
+from classes import simulator, evolution, desired_states_extractor
 
 sim = simulator.simulator()
 

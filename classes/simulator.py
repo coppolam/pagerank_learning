@@ -4,7 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-import pagerank_optimization as opt
+from classes import pagerank_optimization as opt
 from simulators import swarmulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop

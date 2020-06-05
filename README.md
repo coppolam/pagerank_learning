@@ -12,3 +12,5 @@ Main scripts
  - plot
 
 
+Install requirements
+sudo pip3 install -r requirements.txt

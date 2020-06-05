@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Optimize a behavior based on the PageRank function
+@author: Mario Coppola, 2020
+"""
 import torch
 import numpy as np
 import simplenetwork
