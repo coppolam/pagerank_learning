@@ -18,20 +18,21 @@ def optimize(file,p0,des):
 	sim.disp()
 	return sim.optimize(p0,des)
 	
-def plot_benchmark(loadfile):
+def plot_benchmark(file):
 	## Plot
-	data = np.load(loadfile)
+	data = np.load(file)
 	alpha = 0.5
 	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
 	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')
 	if "f_s" in data.files: plt.hist(data["f_s"].astype(float), alpha=alpha, label='$\pi*$')
 	plt.legend()
 
-	## Save to "figures" subfolder with the same name
-	folder = os.path.dirname(loadfile) + "figures/"
-	directory = os.path.dirname(folder)
-	if not os.path.exists(directory): os.makedirs(directory)
-	plt.savefig(folder+"%s.pdf"%loadfile)
+	plt.figure(figsize=(16,9))
+	plt.xlabel("Fitness [-]")
+	plt.ylabel("Frequency")
+	folder = os.path.dirname(file) + "figures/"
+	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
+	plt.savefig(folder+"%s.pdf"%file)
 	plt.clf()
 
 if __name__ == "__main__":
@@ -90,4 +91,5 @@ if __name__ == "__main__":
 		# Save
 		folder = os.path.dirname(args.file)
 		filename = os.path.basename(args.file)
-		data_validation = np.savez(folder + "benchmark_%s"%filename,f_0=f_0,f_n=f_n,p_0=p_0,p_n=p_n)
+		data = np.savez(folder + "benchmark_%s"%filename, f_0=f_0, f_n=f_n, p_0=p_0, p_n=p_n)
+		plot_benchmark(folder + "benchmark_%s"%filename)

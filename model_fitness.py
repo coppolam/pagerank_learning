@@ -25,13 +25,31 @@ if __name__ == "__main__":
 	
 	print("Making the NN model")
 	model,loss_history = extractor.make_model(s, f)
-	plt.plot(range(len(loss_history)),loss_history); plt.show()
 
+	# Figure
+	plt.figure(figsize=(16,9))
+	plt.plot(range(len(loss_history)),loss_history);
+	folder = os.path.dirname(args.file) + "figures/"
+	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
+	plt.savefig(folder+"%s.pdf"%args.file)
+	plt.clf()
+	
 	if args.evaluation is not None:
 		print("Evaluating against validation set")
 		sc, fc = extractor.extract_states(args.evaluation)
-		extractor.evaluate_model(model, sc, fc)
-
+		error = extractor.evaluate_model(model, sc, fc)
+		plt.figure(figsize=(16,9))
+		plt.plot(range(len(error)),error);
+		plt.savefig(folder+"%s_validation_error.pdf"%args.file)
+		plt.xlabel("Time [s]")
+		plt.ylabel("Error [-]")
+		plt.clf()
+		plt.figure(figsize=(16,9))
+		plt.hist(error, bins='auto', label='Original')
+		plt.xlabel("Error [-]")
+		plt.ylabel("Frequency")
+		plt.savefig(folder+"%s_validation_histogram.pdf"%args.file)
+		
 	print("Extractig desired states")
 	des = extractor.get_des()
 	print(des)
