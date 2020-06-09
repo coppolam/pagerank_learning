@@ -3,15 +3,16 @@
 Collection of graph tools based on the networkx package to simplify certain operations
 @author: Mario Coppola, 2020
 """
+import matplotlib.pyplot as plt
 from networkx.drawing.nx_agraph import to_agraph
 import networkx as nx
 
 # Draw graph together with edge labels, takes a networkx graph as input
-def print_graph(G,name):
-    A = to_agraph(G)
-    A.layout('dot')
-    A.draw(name)  # Output a figure of the graph
-
+def print_graph(G,name="graph.eps"):
+    A = nx.drawing.nx_agraph.to_agraph(G)
+    A.layout("circo")
+    A.draw(name)
+    
 # Make a digraph together with edge weights, if given
 def make_digraph(s,t,w=None):
     G = nx.OrderedMultiDiGraph()

@@ -27,28 +27,28 @@ if __name__ == "__main__":
 	model,loss_history = extractor.make_model(s, f)
 
 	# Figure
-	plt.figure(figsize=(16,9))
+	plt.figure(figsize=(6,3))
 	plt.plot(range(len(loss_history)),loss_history);
-	folder = os.path.dirname(args.file) + "figures/"
+	folder = os.path.dirname(args.file) + "/figures/"
 	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
-	plt.savefig(folder+"%s.pdf"%args.file)
+	plt.savefig(folder+"%s.pdf"%os.path.basename(args.file))
 	plt.clf()
 	
 	if args.evaluation is not None:
 		print("Evaluating against validation set")
 		sc, fc = extractor.extract_states(args.evaluation)
 		error = extractor.evaluate_model(model, sc, fc)
-		plt.figure(figsize=(16,9))
+		plt.figure(figsize=(6,3))
 		plt.plot(range(len(error)),error);
-		plt.savefig(folder+"%s_validation_error.pdf"%args.file)
+		plt.savefig(folder+"%s_validation_error.pdf"%os.path.basename(args.file))
 		plt.xlabel("Time [s]")
 		plt.ylabel("Error [-]")
 		plt.clf()
-		plt.figure(figsize=(16,9))
+		plt.figure(figsize=(6,3))
 		plt.hist(error, bins='auto', label='Original')
 		plt.xlabel("Error [-]")
 		plt.ylabel("Frequency")
-		plt.savefig(folder+"%s_validation_histogram.pdf"%args.file)
+		plt.savefig(folder+"%s_validation_histogram.pdf"%os.path.basename(args.file))
 		
 	print("Extractig desired states")
 	des = extractor.get_des()

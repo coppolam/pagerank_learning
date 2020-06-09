@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args" : ["data/learning_data_aggregation_particle/learning_data_aggregation_particle_t10000_r30_id1.npz"]            ]
+            "args" : ["data/learning_data_pfsm_exploration_particle_oriented/learning_data_pfsm_exploration_particle_oriented_t10000_r40_id1.npz"]
         }
     ]
 }

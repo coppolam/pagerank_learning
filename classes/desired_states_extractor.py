@@ -29,7 +29,7 @@ class desired_states_extractor:
 		y_pred = []
 		for element in x:
 			in_tensor = torch.tensor([element]).float()
-			y_pred = np.append(y_pred,network(in_tensor).item())
+			y_pred = np.append(y_pred,network.network(in_tensor).item())
 		error = y_pred - y
 		return error
 
