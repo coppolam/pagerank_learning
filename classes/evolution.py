@@ -7,8 +7,8 @@ import random, sys, pickle, matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from deap import base, creator, tools
-matplotlib.rc('text', usetex=True)
 from tqdm import tqdm
+matplotlib.rc('text', usetex=True)
 
 class evolution:
 	'''Wrapper around the DEAP package to run an evolutionary process with just a few commands'''
@@ -60,17 +60,22 @@ class evolution:
 
 	def plot_evolution(self,figurename=None):
 		'''Plot the evolution outcome'''
-		plt.style.use('seaborn-whitegrid')
+		plt.rc('text', usetex=True)
+		plt.rc('font', family='serif')
+		plt.figure(figsize=(6,3))
 		plt.plot(range(1, len(self.stats)+1), [ s['mu'] for s in self.stats ])
-		plt.title('Average fitness per iteration')
 		plt.xlabel('Iterations')
 		plt.ylabel('Fitness')
+		plt.gcf().subplots_adjust(bottom=0.15)
 		plt.fill_between(range(1, len(self.stats)+1),
 					[ s['mu']-s['std'] for s in self.stats ],
 					[ s['mu']+s['std'] for s in self.stats ],
 					color='gray', alpha=0.2)
 		plt.xlim(0,len(self.stats))
-		plt.savefig(figurename) if figurename is not None else plt.show()
+		if figurename is not None:
+			plt.savefig(figurename)
+		else:
+			plt.show()
 
 	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
 		'''Run the evolution. Use checkpoint="filename.pkl" to save the status to a file after each generation, just in case.'''

@@ -3,11 +3,12 @@
 Optimize a behavior based on the PageRank function
 @author: Mario Coppola, 2020
 """
-import torch
+import torch, os
 import numpy as np
 from tqdm import tqdm
 from tools import matrixOperations as matop
 from classes import simplenetwork, evolution, simulator
+from tools import fileHandler as fh
 
 class desired_states_extractor:
 	def __init__(self):
@@ -27,18 +28,26 @@ class desired_states_extractor:
 	
 	def evaluate_model(self,network,x,y):
 		y_pred = []
-		for element in x:
+		for element in tqdm(x):
 			in_tensor = torch.tensor([element]).float()
 			y_pred = np.append(y_pred,network.network(in_tensor).item())
 		error = y_pred - y
 		return error
 
-	def extract_states(self,file):
-		sim = simulator.simulator()
-		sim.load(file)
-		local_states, fitness = sim.extract()
-		self.dim = local_states.shape[1]
-		return matop.normalize_rows(local_states), fitness
+	def extract_states(self,file,pkl=False):
+		if pkl is False or os.path.exists(file+".pkl") is False:
+			sim = simulator.simulator()
+			sim.load(file)
+			time, local_states, fitness = sim.extract()
+			s = matop.normalize_rows(local_states)
+			fh.save_pkl([time,s,fitness],file+".pkl")
+		else:
+			data = fh.load_pkl(file+".pkl")
+			time = data[0]
+			s = data[1]
+			fitness = data[2]
+		self.dim = s.shape[1]
+		return time, s, fitness
 		
 	def _fitness(self,individual):
 		in_tensor = torch.tensor([individual]).float()
@@ -49,17 +58,17 @@ class desired_states_extractor:
 		e = evolution.evolution()
 		e.setup(self._fitness, GENOME_LENGTH=self.dim, POPULATION_SIZE=1000)
 		p = e.evolve(verbose=False, generations=100)
-		return e.get_best()
+		return e
 
-	def run(self,file,verbose=False):
-		if verbose: print("Extracting data from log")
-		s, f = self.extract_states(file)
-		
+	def run(self,file,load=True,verbose=False):
+		t, s, f = self.extract_states(file,pkl=load)
+
 		if verbose: print("Making the NN model")
 		model = self.make_model(s, f)
 		
 		if verbose: print("Optimizing for desired states")
-		des = self.get_des()
+		s = self.get_des()
+		des = s.get_best()
 		
 		if verbose: print("Desired states: " + str(des))
 		

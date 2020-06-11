@@ -3,25 +3,20 @@
 Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
-import argparse
-import sys
+import argparse, sys
 from classes import simulator
 
-###########################
-#  Input argument parser  #
-###########################
+# Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
-parser.add_argument('controller', type=str, help="Controller to use")
-parser.add_argument('agent', type=str, help="Agent to use")
-parser.add_argument('-t', type=int, help="Max time of simulation. Default = 10000s", default=10000)
-parser.add_argument('-n', type=int, help="Size of swarm. Default = 30", default=30)
-parser.add_argument('-animate', type=bool, help="Turn on/off animation", default=False)
-parser.add_argument('-id', type=int, help="Sim ID", default=None)
+parser.add_argument('controller', type=str, help="(str) Controller to use")
+parser.add_argument('agent', type=str, help="(str) Agent to use")
+parser.add_argument('-t', type=int, help="(int) Max time of simulation, default = 10000s", default=10000)
+parser.add_argument('-n', type=int, help="(int) Size of swarm to simulate, default = 30", default=30)
+parser.add_argument('-animate', type=bool, help="(bool) If True, the animation will also run, default = False", default=False)
+parser.add_argument('-id', type=int, help="(int) Simulation log ID", default=None)
 args = parser.parse_args()
 
-#########################################
-#  Ad-hoc settings for each controller  #
-#########################################
+# Ad-hoc baseline settings for each controller
 if args.controller == "aggregation":
 	policy = ""
 	fitness = "aggregation_clusters"
@@ -45,11 +40,8 @@ elif args.controller == "forage":
 else:
     ValueError("Unknown inputs!")
 	
-############
-#   RUN    #
-############
 # Load and build
-sim = simulator.simulator(savefolder="data/learning_data_%s_%s/"%(args.controller,args.agent)) # Load high level simulator interface, connected to swarmulator
+sim = simulator.simulator(savefolder="data/%s_%s/"%(args.controller,args.agent)) # Load high level simulator interface, connected to swarmulator
 sim.make(args.controller, args.agent, animation=args.animate) # Build
 
 # Run

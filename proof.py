@@ -1,17 +1,17 @@
 import numpy as np
 import argparse
+from classes import simulator
+from classes import pagerank_optimization as pr
 
 # Args
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('file', type=str, help="Simulation file to use")
 args = parser.parse_args()
 
-## 
-from classes import simulator
+# Import simulator API 
 sim = simulator.simulator()
 sim.load(args.file)
 
-from classes import pagerank_optimization as pr
 
 # Calculate predicted H1
 # if args.controller == "aggregation":
@@ -53,5 +53,3 @@ G2 = nx.Digraph(sim.E)
 # e.g. aggregation
 # desired states with no neighbors cannot coexist with
 # desired state with neighbors
-
-# graph.print_graph(G1)

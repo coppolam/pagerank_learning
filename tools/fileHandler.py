@@ -46,11 +46,9 @@ def get_latest_file(path):
 	latest_file = max(list_of_files, key=os.path.getctime)
 	return latest_file
 
-def save_pkl(var,filename):
-	with open(name, "wb") as cp_file:
-		pickle.dump(var, cp_file)
+def save_pkl(var,name):
+	with open(name, "wb") as cp_file: pickle.dump(var, cp_file)
 
-def load_pkl(filename):
-	with open(filename, "rb") as cp_file:
-		data = pickle.load(cp_file)
+def load_pkl(name):
+	with open(name, "rb") as cp_file: data = pickle.load(cp_file)
 	return data

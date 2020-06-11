@@ -49,7 +49,7 @@ class simulator:
 			self.A.append(fh.read_matrix(self.logs_folder,"A_"+self.sim.run_id+"_"+str(i)))
 		self.E = fh.read_matrix(self.logs_folder,"E_"+self.sim.run_id)
 		self.log = self.sim.load(file=self.logs_folder+"log_"+self.sim.run_id+".txt")
-		save_filename = self.savefolder+"learning_data_"+filename_ext
+		save_filename = self.savefolder+filename_ext
 		np.savez(save_filename, H=self.H, A=self.A, E=self.E, log=self.log)
 		print("Saved to %s"%save_filename)
 
@@ -58,7 +58,6 @@ class simulator:
 		self.H = data['H'].astype(float)
 		self.E = data['E'].astype(float)
 		self.A = data['A'].astype(float)
-		self.save_id = file[0:file.find('_learning_data')]
 		self.log = data['log'].astype(float)
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
@@ -146,4 +145,4 @@ class simulator:
 				if r < self.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
 					states_count[a,r] = np.count_nonzero(states[a] == r)
 			a += 1
-		return states_count, fitness
+		return t, states_count, fitness
