@@ -14,7 +14,6 @@ plt.rc('font', family='serif')
 from classes import simulator, evolution, desired_states_extractor
 
 def plot_benchmark(file):
-	## Plot
 	data = np.load(file)
 	alpha = 0.5
 	plt.figure(figsize=(6,3))
@@ -32,9 +31,7 @@ def plot_benchmark(file):
 	plt.clf()
 
 if __name__ == "__main__":
-	###########################
-	#  Input argument parser  #
-	###########################
+	# Input argument parser
 	parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 	parser.add_argument('file', type=str, help="(str) Relative path to simulation file to use")
 	parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
@@ -45,13 +42,10 @@ if __name__ == "__main__":
 	parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
 	parser.add_argument('-observe', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
 	args = parser.parse_args()
-
 	folder = os.path.dirname(args.file)
 	filename_raw = os.path.splitext(os.path.basename(args.file))[0]
 
-	###########################
-	#     Default values      #
-	###########################
+	# Default values for each controller
 	if args.controller == "aggregation":
 		fitness = "aggregation_clusters"
 		p_0 = np.ones((8,1))/2 # all = 1/2
@@ -67,9 +61,7 @@ if __name__ == "__main__":
 	else:
 		ValueError("Unknown controller!")
 
-	############################
-	#  Optimization procedure  #
-	############################
+	# Optimization procedure
 	## Step 1: Get the desired states
 	des = desired_states_extractor.desired_states_extractor().run(args.file,verbose=True)
 
@@ -79,18 +71,18 @@ if __name__ == "__main__":
 	# sim.disp()
 	p_n =  sim.optimize(p_0,des)
 
-	#############
-	# Benchmark #
-	#############
+	# Benchmark, either fully (if observe = False) or visually (if observe = True)
 	if args.observe:
     	# Just do one run and observe what happens visually
-		sim.observe(args.controller, args.agent, p_n, robots=args.n)
+		sim.observe(args.controller, args.agent, p_n, fitness, robots=args.n)
 	else: 
 		# Run a proper benchmark against unoptimized
-		f_0 = sim.benchmark(args.controller, args.agent, p_0, fitness,robots=args.n,runs=args.runs,time_limit=args.t)
-		f_n = sim.benchmark(args.controller, args.agent, p_n, fitness,robots=args.n,runs=args.runs,time_limit=args.t)
+		f_0 = sim.benchmark(args.controller, args.agent, p_0, fitness, robots=args.n, runs=args.runs, time_limit=args.t)
+		f_n = sim.benchmark(args.controller, args.agent, p_n, fitness, robots=args.n, runs=args.runs, time_limit=args.t)
 
-		# # Save
+		# Save evaluation data
 		data = np.savez(folder + "/benchmark_%s.npz"%filename_raw, f_0=f_0, f_n=f_n, p_0=p_0, p_n=p_n)
+		
+		# Plot evaluation data
 		plot_benchmark(folder + "/benchmark_%s.npz"%filename_raw)
 		print("Done")

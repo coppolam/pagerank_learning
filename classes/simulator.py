@@ -79,15 +79,15 @@ class simulator:
 		for i,a in enumerate(self.A): print("A%i:"%i); print(a);
 
 	def benchmark(self, controller, agent, policy, fitness, robots=30, 
-		time_limit=1000, realtimefactor=300, environment="square",runs=100):
+		time_limit=1000, realtimefactor=300, environment="square", runs=100):
 		'''Perform many runs of the simulator to observe what happens'''
 		
-		#### Save policy file to test ####
+		# Save policy file to test
 		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
 		if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 		else: fh.save_to_txt(policy, policy_file)
 
-		#### Build with correct settings ####
+		# Build with correct settings
 		self.sim.make(controller=controller, agent=agent, clean=True, animation=False, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
@@ -97,34 +97,34 @@ class simulator:
 		self.sim.runtime_setting("pr_states", str(0)) # Don't run pr estimator
 		self.sim.runtime_setting("pr_actions", str(0)) # Don't run pr estimator
 
-		#### Run (in batches for speed) ####
+		# Run (in batches for speed)
 		f = []
 		for i in tqdm(range(0,round(runs/5))):
 			f = np.append(f,self.sim.batch_run(robots,5))
 			print(f)
 		return f
 
-	def observe(self, controller, agent, policy, clean=True, robots=30, 
+	def observe(self, controller, agent, policy, fitness, robots=30, 
 		time_limit=0, realtimefactor=300, environment="square"):
 		'''Launch a single run of the simulator with animation to observe what happens'''
 
-		#### Save policy file to test ####
+		# Save policy file to test
 		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
 		if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 		else: fh.save_to_txt(policy, policy_file)
 
-		#### Build with correct settings ####
+		# Build with correct settings
 		self.sim.make(controller,agent,clean=True, animation=True, logger=False, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
 		self.sim.runtime_setting("policy", policy_file) # Use random policy
+		self.sim.runtime_setting("fitness", fitness)
 		self.sim.runtime_setting("pr_states", str(0)) # Don't run pr estimator
 		self.sim.runtime_setting("pr_actions", str(0)) # Don't run pr estimator
 
+		# Run
 		self.sim.run(robots)
-		# log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt") # Latest
-		# return log
 	
 	def extract(self):
 		''' Extract data from the log file that has already been loaded using the load method'''
