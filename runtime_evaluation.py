@@ -9,44 +9,46 @@ from simulators import swarmulator
 sim = swarmulator.swarmulator(verbose=False)
 	
 def wall_clock_test(n,m):
+	sim.make(clean=True,verbose=False);
+	print("Wall-clock test (single simulation mode)")
 	t = np.zeros([n,m])
-	for i in tqdm(range(1,n+1)): # Itarate over number of robots
+	for i in tqdm(range(1,n+1)): # Iterate over number of robots
 		for j in range(0,m): # Do multiple runs to average out
 			tic = time.time()    
 			f = sim.run(i) # Launch simulation run
 			toc = time.time()
-			t[i-1,j] = toc-tic
+			t[i-1,j] = toc-tic # Runtime
 	return t
 
-def wall_clock_batch_test(n,m,batch):
+def wall_clock_batch_test(n,m,batchsize):
+	sim.make(clean=True,verbose=False);
+	print("Wall-clock test (batch simulation mode)")
 	t = np.zeros([n,m])
-	for i in tqdm(range(1,n+1)): # Itarate over number of robots
+	for i in tqdm(range(1,n+1)): # Iterate over number of robots
 		for j in range(0,m): # Do multiple runs to average out
 			tic = time.time()
-			f = sim.batch_run(i,batch) # Launch batch
+			f = sim.batch_run(i,batchsize) # Launch batch
 			toc = time.time()
-			t[i-1,j] = (toc-tic)
+			t[i-1,j] = toc-tic # Runtime
 	return t
 
-def run(n,m,batch,filename=None):
+def run(n,m,batch,filename):
 	# Test wall-clock time for single runs without animation
-	sim.make(clean=True); t = wall_clock_test(n,m)
+	t = wall_clock_test(n,m)
 
 	# Test wall-clock time for batch runs, without animation
-	sim.make(clean=True); t_batch = wall_clock_batch_test(n,m,batch)
+	t_batch = wall_clock_batch_test(n,m,batch)
 
 	# Save
-	if filename is not None: np.savez(filename, t=t,t_batch=t_batch)
-	print("Finished everything")
+	if filename is not None: np.savez(filename, t=t, t_batch=t_batch)
 
 def load(filename):
-	##### Plot results of time tests #####
 	data = np.load(filename+".npz")
 	t = data['t'].astype(float)
 	t_batch = data['t_batch'].astype(float)
 	return t, t_batch
 
-def plot(filename,figurename=None):
+def plot_evaluationtime(filename,figurename=None):
 	plt.clf()
 	t, t_batch = load(filename)
 	tmean = t.mean(axis=1)
@@ -68,7 +70,7 @@ def plot(filename,figurename=None):
 	plt.legend(loc="upper left")
 	plt.savefig(figurename) if figurename is not None else plt.show()
 
-def plot_rtfactor(filename,tl,figurename=None):
+def plot_realtimefactor(filename,tl,figurename=None):
 	plt.clf()
 	t, t_batch = load(filename)
 	tmean = t.mean(axis=1)/tl
@@ -91,22 +93,25 @@ def plot_rtfactor(filename,tl,figurename=None):
 	plt.savefig(figurename) if figurename is not None else plt.show()
 
 if __name__ == "__main__":
-	##### Primary input parameters -- Test parameters #####
+	# Primary input parameters -- Test parameters
 	n = 50 # Max number of robots
 	m = 5 # Re-runs to average out
 	batch = 5 # Number of batch runs
 	rtfactor = 300 # Desired realtime factor (0 = #nosleep)
 	tl = 200 # Length of simulation
-	folder = "data/time/"
+	folder = "data/time/" # Folder where data is saved
 	filename = (folder+"time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,rtfactor,tl))
-	print("Writing to " + filename)
-	##### Secondary input parameters -- Swarmulator configuration #####
+	
+	# Secondary input parameters -- Swarmulator configuration
 	sim.runtime_setting("simulation_updatefreq", str("20"))
 	sim.runtime_setting("environment", "square")
 	sim.runtime_setting("animation_updatefreq", str("25"))
 	sim.runtime_setting("simulation_realtimefactor", str(rtfactor))
 	sim.runtime_setting("time_limit", str(tl))
 
-	# run(n,m,batch,filename)
-	plot(filename,folder+"runtime_comparison.pdf")
-	plot_rtfactor(filename,tl)
+	# Run
+	run(n,m,batch,filename)
+
+	# Plot
+	plot_evaluationtime(filename,folder+"runtime_comparison.pdf")
+	plot_realtimefactor(filename,tl)
