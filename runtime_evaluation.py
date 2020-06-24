@@ -1,11 +1,10 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.rc('text', usetex=True)
-from tqdm import tqdm
 import time
-
+from tqdm import tqdm
 from simulators import swarmulator
+matplotlib.rc('text', usetex=True)
 sim = swarmulator.swarmulator(verbose=False)
 	
 def wall_clock_test(n,m):
@@ -79,14 +78,8 @@ def plot_realtimefactor(filename,tl,figurename=None):
 	tmean_batch = (t_batch.mean(axis=1)/batchsize)/tl
 	plt.plot(range(1,t.shape[0]+1),1/tmean,color='blue',label="Single")
 	plt.plot(range(1,t_batch.shape[0]+1),1/tmean_batch,color='orange',label="Batch (5)")
-	plt.fill_between(range(1, len(tmean)+1),
-		1/tmean.min(axis=1),
-		1/tmean.max(axis=1),
-		color='blue', alpha=alpha)
-	plt.fill_between(range(1, len(tmean)+1),
-		1/t_batch.min(axis=1),
-		1/t_batch.max(axis=1),
-		color='orange', alpha=alpha)
+	plt.fill_between(range(1, len(tmean)+1), 1/tmean.min(axis=1), 1/tmean.max(axis=1), color='blue', alpha=alpha)
+	plt.fill_between(range(1, len(tmean)+1), 1/t_batch.min(axis=1), 1/t_batch.max(axis=1),color='orange', alpha=alpha)
 	plt.xlabel("Number of robots")
 	plt.ylabel("Wall-clock time [s]")
 	plt.legend(loc="upper left")

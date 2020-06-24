@@ -14,9 +14,10 @@ def round_to_multiple(a, mult, floor=True):
 def normalize_rows(mat,axis=1):
 	'''Normalzies the rows of a matrix'''
 	row_sums = np.sum(mat, axis=axis)
-	if not np.isscalar(row_sums):
-		mat = np.divide(mat,row_sums[:,np.newaxis], out=np.zeros_like(mat), where=row_sums[:,np.newaxis]!=0)
-	else: mat = np.divide(mat,row_sums)
+	if np.any(row_sums>0):
+		if not np.isscalar(row_sums):
+			mat = np.divide(mat,row_sums[:,np.newaxis], out=np.zeros_like(mat), where=row_sums[:,np.newaxis]!=0)
+		else: mat = np.divide(mat,row_sums)
 	return mat
 
 def pagerank(G, pr=None, tol=1e-8):

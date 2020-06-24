@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simulate the aggregation and optimize the behavior
+Loop the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
@@ -13,7 +13,9 @@ plt.rc('font', family='serif')
 
 from classes import simulator, evolution, desired_states_extractor
 from scipy.special import softmax
-
+from tools import fileHandler as fh
+from tools import matrixOperations as matop
+	
 def plot_benchmark(file):
 	data = np.load(file)
 	alpha = 0.5
@@ -31,6 +33,13 @@ def plot_benchmark(file):
 	plt.savefig(folder+"%s.pdf"%filename_raw)
 	plt.clf()
 
+def save_policy(sim,policy):
+	policy_filename = "conf/state_action_matrices/aggregation_policy_loop.txt"
+	policy_file = sim.sim.path + "/" + policy_filename
+	if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
+	else: fh.save_to_txt(policy, policy_file)
+	return policy_filename
+
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
@@ -40,6 +49,7 @@ parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", de
 parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
 parser.add_argument('-animate', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
+parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=20)
 parser.add_argument('-log', type=int, help="(int) If set, logs one run for the indicated amount of time, default = None", default=None)
 args = parser.parse_args()
 
@@ -70,24 +80,17 @@ sim = simulator.simulator(savefolder="data/%s_%s/loop_%i/"%(args.controller,args
 sim.make(args.controller, args.agent, animation=args.animate, verbose=False) # Build
 des_nn = desired_states_extractor.desired_states_extractor()
 
-n = 20 # Number of iterations
-for i in range(n):
+for i in range(args.iterations):
 	print("Iteration %i"%i)
-	policy = softmax(policy,axis=1)
+	# policy = softmax(policy, axis=1)
+	policy_filename = save_policy(sim, policy)
 
-	# Save policy file to test
-	from tools import fileHandler as fh
-	policy_filename = "conf/state_action_matrices/aggregation_policy_loop.txt"
-	policy_file = sim.sim.path + "/" + policy_filename
-	if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
-	else: fh.save_to_txt(policy, policy_file)
-	
 	# Run
 	sim.run(time_limit=args.t, robots=args.n, environment="square", policy=	policy_filename, 
 		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
 	# Save data
-	filename_ext = ("%s_%s_t%i_r%i_id%s_%i" % (args.controller, args.agent, args.t, args.n, sim.run_id, i))
+	filename_ext = "%s_%s_t%i_r%i_id%s_%i" % (args.controller, args.agent, args.t, args.n, sim.run_id, i)
 	learning_file = sim.save_learning_data(filename_ext=filename_ext)
 
 	# Optimization procedure
@@ -95,24 +98,14 @@ for i in range(n):
 	des = des_nn.run(learning_file+".npz",load=False,verbose=True)
 
 	## Step 2: PageRank optimize
-	sim.load(learning_file+".npz") if i == 0 else sim.load_update(learning_file+".npz",i)
+	sim.load(learning_file+".npz") # if i == 0 else sim.load_update(learning_file+".npz",i)
 	policy = sim.optimize(policy, des)
-	print("Optimal Policy")
-	print(policy)
+	print("Optimal policy")
+	matop.pretty_print(policy)
 
-# Test
-sim.make(args.controller, args.agent, animation=True, verbose=False) # Build
-
-print("Final",i)
+sim.make(args.controller, args.agent, animation=True, verbose=False)
+print("Final")
 print(policy)
-
-# Save policy file to test
-from tools import fileHandler as fh
-policy_filename = "conf/state_action_matrices/aggregation_policy_loop.txt"
-policy_file = sim.sim.path + "/" + policy_filename
-if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
-else: fh.save_to_txt(policy, policy_file)
-
-# Observe
+policy_filname = save_policy(sim, policy)
 sim.run(time_limit=0, robots=args.n, environment="square", policy=policy_filename, 
 	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)

@@ -10,21 +10,19 @@ from tools import matrixOperations as matop
 from classes import simplenetwork, evolution, simulator
 from tools import fileHandler as fh
 import scipy
+from scipy.special import softmax
 
 class desired_states_extractor:
-	def __init__(self):
+	def __init__(self): 
 		self.network = None
-		pass
 
 	def make_model(self,x,y):
-		''' Generate a model using stochastic gradient descent'''
+		''' Generate and/or train model using stochastic gradient descent'''
 		if self.network is None:
-			print("Creating the NN")
+			print("Model does not exist, generating the NN")
 			self.network = simplenetwork.simplenetwork(x.shape[1])
-		i = 0
 		loss_history = []
-		# We learn using stochastic (inceremental) gradient descent.
-		# This is because the  
+		i = 0
 		for element in tqdm(y):
 			in_tensor = torch.tensor([x[i]]).float()
 			out_tensor = torch.tensor([[element]]).float()
@@ -60,7 +58,6 @@ class desired_states_extractor:
 		
 	def _fitness(self,individual):
 		'''Fitness function'''
-		# individual = matop.normalize_rows(individual)
 		in_tensor = torch.tensor([individual]).float()
 		f = self.network.network(in_tensor).item()
 		return f, 
@@ -74,12 +71,14 @@ class desired_states_extractor:
 	def run(self,file,load=True,verbose=False):
 		t, s, f = self.extract_states(file, pkl=load)
 
-		if verbose: print("Making the NN model")
+		if verbose: print("Training the NN model")
 		model = self.make_model(s, f)
 		
 		if verbose: print("Optimizing for desired states")
-		des = self.get_des().get_best()
-		
+		e = self.get_des()
+		des = e.get_best()
+		e.plot_evolution("%s_evo_des.pdf"%file)
+
 		if verbose: print("Desired states: " + str(des))
 		
 		return des

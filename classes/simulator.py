@@ -66,7 +66,7 @@ class simulator:
 		self.E = data['E'].astype(float)
 		self.A = data['A'].astype(float)
 		self.log = data['log'].astype(float)
-		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
+		print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def load_update(self,file,i):
 		data = np.load(file)
@@ -78,13 +78,16 @@ class simulator:
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
+		policy = opt.main(p0, des, self.H, self.A, self.E)
+		
+		# For analysis/debug purposes, show states that have not been visited
 		temp = self.H + self.E
 		empty_cols = np.where(~temp.any(axis=0))[0]
 		empty_rows = np.where(~temp.any(axis=1))[0]
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
-		self.result, policy, self.empty_states = opt.main(p0, des, self.H, self.A, self.E)
-		print("\nUnknown states: \t" + str(self.empty_states))
+		print("\nUnknown states: \t" + str(empty_states))
 		np.set_printoptions(threshold=sys.maxsize)
+		
 		return policy
 
 	def disp(self):

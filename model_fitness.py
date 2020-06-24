@@ -26,9 +26,8 @@ print("Reading log")
 extractor = desired_states_extractor.desired_states_extractor()
 t, s, f = extractor.extract_states(args.file,pkl=args.load)
 
-# Make the NN model
 print("Making the NN model")
-model,loss_history = extractor.make_model(s, f)
+model,loss_history = extractor.make_model(s, f) # Train the model
 
 # Print figure of learning performance
 plt.figure(figsize=(6,3))
@@ -81,6 +80,7 @@ if args.evaluation is not None:
 print("Extracting desired states")
 e = extractor.get_des()
 des = e.get_best()
+
 e.plot_evolution(figurename=folder+"%s_evo_des.pdf"%os.path.basename(filename_raw))
 
 # Print output
