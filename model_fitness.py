@@ -17,7 +17,7 @@ from tools import fileHandler as fh
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('file', type=str, help="(str) Relative path to npz log file used for analysis", default=None)
 parser.add_argument('-evaluation', type=str, help="(str) Relative path to npz log file used for evaluation, default = None", default=None)
-parser.add_argument('-load', type=bool, help="(bool) If True, attemps to load the pre-processed pkl alternative log file, which saves time, default = True", default=True)
+parser.add_argument('-load', type=bool, help="(bool) If True, attemps to load the pre-processed pkl alternative log file, which saves time, default = False", default=False)
 args = parser.parse_args()
 filename_raw = os.path.splitext(args.file)[0]
 
@@ -43,9 +43,21 @@ plt.clf()
 
 # Evaluate against validation dataset, if indicated
 if args.evaluation is not None:
-	print("Evaluating against validation set")
+	print("Loading validation set")
 	tc, sc, fc = extractor.extract_states(args.evaluation,args.load)
-	error = extractor.evaluate_model(model, sc, fc)
+	print("Evaluating against validation set")
+	error, y_pred = extractor.evaluate_model(model, sc, fc)
+
+	# Plot figure of error over time in validation dataset
+	plt.figure(figsize=(6,3))
+	plt.plot(t,f);
+	plt.plot(tc,fc);
+	plt.plot(tc,y_pred);
+	plt.xlabel("Time [s]")
+	plt.ylabel("Fitness [-]")
+	plt.gcf().subplots_adjust(bottom=0.15)
+	plt.savefig(folder+"%s_validation_comparison.pdf"%os.path.basename(filename_raw))
+	plt.clf()
 
 	# Plot figure of error over time in validation dataset
 	plt.figure(figsize=(6,3))

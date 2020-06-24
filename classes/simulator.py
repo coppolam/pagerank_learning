@@ -43,14 +43,21 @@ class simulator:
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
 	def save_learning_data(self,filename_ext=None):
-		self.H = fh.read_matrix(self.logs_folder,"H_"+self.sim.run_id)
-		self.A = []
+		H = fh.read_matrix(self.logs_folder,"H_"+self.sim.run_id)
+		A = []
 		for i in range(len(glob.glob(self.logs_folder+"A_"+self.sim.run_id+"_*"))):
-			self.A.append(fh.read_matrix(self.logs_folder,"A_"+self.sim.run_id+"_"+str(i)))
-		self.E = fh.read_matrix(self.logs_folder,"E_"+self.sim.run_id)
-		self.log = self.sim.load(file=self.logs_folder+"log_"+self.sim.run_id+".txt")
+			A.append(fh.read_matrix(self.logs_folder,"A_"+self.sim.run_id+"_"+str(i)))
+		E = fh.read_matrix(self.logs_folder,"E_"+self.sim.run_id)
+		log = self.sim.load(file=self.logs_folder+"log_"+self.sim.run_id+".txt")
 		save_filename = self.savefolder+filename_ext
-		np.savez(save_filename, H=self.H, A=self.A, E=self.E, log=self.log)
+		np.savez(save_filename, H=H, A=A, E=E, log=log)
+		print("Saved to %s"%save_filename)
+		return save_filename
+
+	def save_log(self,filename_ext=None):
+		self.log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt")
+		save_filename = self.savefolder+filename_ext
+		np.savez(save_filename, log=self.log)
 		print("Saved to %s"%save_filename)
 
 	def load(self,file):
@@ -61,6 +68,15 @@ class simulator:
 		self.log = data['log'].astype(float)
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
+	def load_update(self,file,i):
+		data = np.load(file)
+		gamma = 0.9
+		self.H = gamma*self.H + data['H'].astype(float)
+		self.E = gamma*self.E + data['E'].astype(float)
+		Am = data['A'].astype(float)
+		for i in range(0,self.A.shape[0]): self.A[i] = gamma*self.A[i] + Am[i]
+		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
+
 	def optimize(self, p0, des):
 		temp = self.H + self.E
 		empty_cols = np.where(~temp.any(axis=0))[0]
@@ -68,8 +84,6 @@ class simulator:
 		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
 		self.result, policy, self.empty_states = opt.main(p0, des, self.H, self.A, self.E)
 		print("\nUnknown states: \t" + str(self.empty_states))
-		print("Final fitness: \t" + str(self.result.fun))
-		print("Policy: \n" + str(policy))
 		np.set_printoptions(threshold=sys.maxsize)
 		return policy
 
@@ -114,7 +128,7 @@ class simulator:
 		else: fh.save_to_txt(policy, policy_file)
 
 		# Build with correct settings
-		self.sim.make(controller,agent,clean=True, animation=True, logger=False, verbose=True)
+		self.sim.make(controller,agent,clean=True, animation=True, logger=True, verbose=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
@@ -125,6 +139,7 @@ class simulator:
 
 		# Run
 		self.sim.run(robots)
+		return True
 	
 	def extract(self):
 		''' Extract data from the log file that has already been loaded using the load method'''

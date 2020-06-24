@@ -41,6 +41,7 @@ if __name__ == "__main__":
 	parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 	parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
 	parser.add_argument('-observe', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
+	parser.add_argument('-log', type=int, help="(int) If set, logs one run for the indicated amount of time, default = None", default=None)
 	args = parser.parse_args()
 	folder = os.path.dirname(args.file)
 	filename_raw = os.path.splitext(os.path.basename(args.file))[0]
@@ -64,17 +65,22 @@ if __name__ == "__main__":
 	# Optimization procedure
 	## Step 1: Get the desired states
 	des = desired_states_extractor.desired_states_extractor().run(args.file,verbose=True)
-
 	## Step 2: PageRank optimize
 	sim = simulator.simulator()
 	sim.load(args.file)
 	# sim.disp()
 	p_n =  sim.optimize(p_0,des)
-
+	print(p_n)
 	# Benchmark, either fully (if observe = False) or visually (if observe = True)
 	if args.observe:
     	# Just do one run and observe what happens visually
 		sim.observe(args.controller, args.agent, p_n, fitness, robots=args.n)
+	elif args.log is not None:
+		sim.observe(args.controller, args.agent, p_n, fitness, robots=args.n, time_limit=args.log)
+
+		# Save data
+		filename_ext = ("log_%s_%s_t%i_r%i_id%s" % (args.controller, args.agent, args.t, args.n, str(args.id)))
+		sim.save_log(filename_ext=filename_ext)
 	else: 
 		# Run a proper benchmark against unoptimized
 		f_0 = sim.benchmark(args.controller, args.agent, p_0, fitness, robots=args.n, runs=args.runs, time_limit=args.t)
