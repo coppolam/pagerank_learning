@@ -72,6 +72,8 @@ elif args.controller == "pfsm_exploration_mod":
 elif args.controller == "forage":
 	fitness = "food"
 	policy = np.ones((16,1))/2 # all = 1/2
+	pr_states = 16
+	pr_actions = 1
 else:
 	ValueError("Unknown controller!")
 
@@ -82,7 +84,7 @@ des_nn = desired_states_extractor.desired_states_extractor()
 
 for i in range(args.iterations):
 	print("Iteration %i"%i)
-	# policy = softmax(policy, axis=1)
+	# policy = softmax(policy, axis=1)/2
 	policy_filename = save_policy(sim, policy)
 
 	# Run
@@ -98,7 +100,8 @@ for i in range(args.iterations):
 	des = des_nn.run(learning_file+".npz",load=False,verbose=True)
 
 	## Step 2: PageRank optimize
-	sim.load(learning_file+".npz") # if i == 0 else sim.load_update(learning_file+".npz",i)
+	sim.load(learning_file+".npz") if i == 0 else sim.load_update(learning_file+".npz",i)
+	sim.disp()
 	policy = sim.optimize(policy, des)
 	print("Optimal policy")
 	matop.pretty_print(policy)

@@ -16,7 +16,11 @@ class simplenetwork:
 		model = torch.nn.Sequential(
 			torch.nn.Linear(D_in, H),
 			torch.nn.ReLU(),
-			torch.nn.Linear(H, D_out))
+
+			torch.nn.Linear(H, 100),
+			torch.nn.ReLU(),
+			
+			torch.nn.Linear(100, D_out))
 		return model
 
 	def run(self,x,y):

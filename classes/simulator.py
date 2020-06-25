@@ -70,15 +70,16 @@ class simulator:
 
 	def load_update(self,file,i):
 		data = np.load(file)
-		gamma = 0.9
+		gamma = 0.5
 		self.H = gamma*self.H + data['H'].astype(float)
 		self.E = gamma*self.E + data['E'].astype(float)
 		Am = data['A'].astype(float)
-		for i in range(0,self.A.shape[0]): self.A[i] = gamma*self.A[i] + Am[i]
+		for i in range(self.A.shape[0]): self.A[i] = gamma*self.A[i] + Am[i]
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
-		policy = opt.main(p0, des, self.H, self.A, self.E)
+		Anew = self.A.deepcopy()
+		policy = opt.main(p0, des, self.H, Anew, self.E)
 		
 		# For analysis/debug purposes, show states that have not been visited
 		temp = self.H + self.E

@@ -48,7 +48,7 @@ def objective_function(pol, pol0, des, alpha, H, b0, A, E):
 	sys.stdout.write(p)
 	sys.stdout.flush()
 
-	return 1 / (f + 1) # Trick scipy into maximizing
+	return -f #1 / (f + 1) # Trick scipy into maximizing
 
 def optimize(pol0, des, alpha, H, b0, A, E):
 	# Bind probabilistic policy

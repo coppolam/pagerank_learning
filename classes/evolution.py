@@ -72,10 +72,8 @@ class evolution:
 					[ s['mu']+s['std'] for s in self.stats ],
 					color='gray', alpha=0.2)
 		plt.xlim(0,len(self.stats))
-		if figurename is not None:
-			plt.savefig(figurename)
-		else:
-			plt.show()
+		if figurename is not None: plt.savefig(figurename)
+		else: plt.show()
 
 	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
 		'''Run the evolution. Use checkpoint="filename.pkl" to save the status to a file after each generation, just in case.'''
