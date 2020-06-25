@@ -64,11 +64,13 @@ if __name__ == "__main__":
 
 	# Optimization procedure
 	## Step 1: Get the desired states
-	des = desired_states_extractor.desired_states_extractor().run(args.file,verbose=True)
+	# des = desired_states_extractor.desired_states_extractor().run(args.file,verbose=True)
+	des = np.ones(16)
+	des[0] = 0
 	## Step 2: PageRank optimize
 	sim = simulator.simulator()
-	sim.load(args.file)
-	# sim.disp()
+	sim.load(args.file, policy=p_0)
+	sim.disp()
 	p_n =  sim.optimize(p_0,des)
 	print(p_n)
 	# Benchmark, either fully (if observe = False) or visually (if observe = True)

@@ -10,8 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            // "args" : ["data/pfsm_exploration_particle_oriented/pfsm_exploration_particle_oriented_t10000_r40_id1.npz"]
-            "args": ["aggregation","particle"]
+            "args" : ["data/pfsm_exploration_particle_oriented/pfsm_exploration_particle_oriented_t10000_r40_id1.npz", "pfsm_exploration", "particle_oriented"]
+            // "args": ["aggregation","particle","-n","5"]
         }
     ]
 }

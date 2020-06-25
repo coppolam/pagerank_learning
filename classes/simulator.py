@@ -60,21 +60,24 @@ class simulator:
 		np.savez(save_filename, log=self.log)
 		print("Saved to %s"%save_filename)
 
-	def load(self,file):
+	def load(self,file,policy=None):
 		data = np.load(file)
+		self.A = data['A'].astype(float)
 		self.H = data['H'].astype(float)
 		self.E = data['E'].astype(float)
-		self.A = data['A'].astype(float)
 		self.log = data['log'].astype(float)
 		print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
-	def load_update(self,file,i):
+	def load_update(self,file,policy):
 		data = np.load(file)
-		gamma = 1.0
-		self.H = gamma*self.H + data['H'].astype(float)
-		self.E = gamma*self.E + data['E'].astype(float)
+		b0 = opt.update_b(self.A, policy)
+		discount = 0.9
+		# policy factor
+		gamma = np.divide(self.H,b0,where=b0!=0)*self.H
+		self.H = discount*self.H + gamma*data['H'].astype(float)
+		self.E = discount*self.E + gamma*data['E'].astype(float)
 		Am = data['A'].astype(float)
-		for i in range(self.A.shape[0]): self.A[i] = gamma*self.A[i] + Am[i]
+		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + gamma*Am[i]
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
