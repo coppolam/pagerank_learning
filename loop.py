@@ -61,9 +61,9 @@ if args.controller == "aggregation":
 	pr_actions = 1
 elif args.controller == "pfsm_exploration":
 	fitness = "aggregation_clusters"
-	policy = np.ones((16,8))/8 # all = 1/8
+	policy = np.ones((16,9))/9 # all = 1/8
 	pr_states = 16
-	pr_actions = 8
+	pr_actions = 9
 elif args.controller == "pfsm_exploration_mod":
 	fitness = "aggregation_clusters"
 	policy = np.ones((16,8))/8 # all 1/8
@@ -84,7 +84,8 @@ des_nn = desired_states_extractor.desired_states_extractor()
 
 for i in range(args.iterations):
 	print("Iteration %i"%i)
-	# policy = softmax(policy, axis=1)/2
+	# policy = softmax(policy, axis=1)
+	policy = matop.normalize_rows(policy + 0.1)
 	policy_filename = save_policy(sim, policy)
 
 	# Run
@@ -102,13 +103,13 @@ for i in range(args.iterations):
 	## Step 2: PageRank optimize
 	sim.load(learning_file+".npz") if i == 0 else sim.load_update(learning_file+".npz",i)
 	sim.disp()
-	policy = sim.optimize(policy, des)
+	policy_n = sim.optimize(policy, des)
 	print("Optimal policy")
-	matop.pretty_print(policy)
+	print(policy_n)
 
 sim.make(args.controller, args.agent, animation=True, verbose=False)
 print("Final")
-print(policy)
-policy_filname = save_policy(sim, policy)
+print(policy_n)
+policy_filname = save_policy(sim, policy_n)
 sim.run(time_limit=0, robots=args.n, environment="square", policy=policy_filename, 
 	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)

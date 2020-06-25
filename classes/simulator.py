@@ -70,7 +70,7 @@ class simulator:
 
 	def load_update(self,file,i):
 		data = np.load(file)
-		gamma = 0.5
+		gamma = 1.0
 		self.H = gamma*self.H + data['H'].astype(float)
 		self.E = gamma*self.E + data['E'].astype(float)
 		Am = data['A'].astype(float)
