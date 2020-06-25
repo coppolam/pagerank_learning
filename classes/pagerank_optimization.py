@@ -70,15 +70,16 @@ def main(pol0, des, H, A, E):
 	alpha = r / (1 + r)
 
 	# Normalize
-	for i in range(0,A.shape[0]): A[i] = matop.normalize_rows(A[i])
+	An = np.copy(A) # Doing this to avoid rewriting A
+	for i in range(0,A.shape[0]): An[i] = matop.normalize_rows(An[i])
 	H = matop.normalize_rows(H)
 	E = matop.normalize_rows(E)
 
 	# Get b0
-	b0 = update_b(A, pol0) # b0 holds the total # of transitions weighted by the policy pol0
+	b0 = update_b(An, pol0) # b0 holds the total # of transitions weighted by the policy pol0
 
 	#### Optimize using pagerank fitness ####
-	result = optimize(pol0, des, alpha, H, b0, A, E)
+	result = optimize(pol0, des, alpha, H, b0, An, E)
 
 	#### Extract output ####
 	policy = result.x

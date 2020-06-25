@@ -78,8 +78,7 @@ class simulator:
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
-		Anew = self.A.deepcopy()
-		policy = opt.main(p0, des, self.H, Anew, self.E)
+		policy = opt.main(p0, des, self.H, self.A, self.E)
 		
 		# For analysis/debug purposes, show states that have not been visited
 		temp = self.H + self.E
