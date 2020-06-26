@@ -63,25 +63,21 @@ class simulator:
 	def load(self,file,policy=None):
 		data = np.load(file)
 		self.A = data['A'].astype(float)
-		self.H = data['H'].astype(float)
+		self.H = np.sum(self.A, axis=0)
 		self.E = data['E'].astype(float)
 		self.log = data['log'].astype(float)
 		print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def load_update(self,file,policy):
 		data = np.load(file)
-		b0 = opt.update_b(self.A, policy)
 		discount = 0.9
-		# policy factor
-		gamma = np.divide(self.H,b0,where=b0!=0)*self.H
-		self.H = discount*self.H + gamma*data['H'].astype(float)
-		self.E = discount*self.E + gamma*data['E'].astype(float)
 		Am = data['A'].astype(float)
-		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + gamma*Am[i]
+		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + Am[i]
+		self.E = discount*self.E + data['E'].astype(float)
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
-		policy = opt.main(p0, des, self.H, self.A, self.E)
+		policy = opt.main(p0, des, self.A, self.E)
 		
 		# For analysis/debug purposes, show states that have not been visited
 		temp = self.H + self.E

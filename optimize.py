@@ -64,9 +64,8 @@ if __name__ == "__main__":
 
 	# Optimization procedure
 	## Step 1: Get the desired states
-	# des = desired_states_extractor.desired_states_extractor().run(args.file,verbose=True)
-	des = np.ones(16)
-	des[0] = 0
+	des = desired_states_extractor.desired_states_extractor().run(args.file,verbose=True)
+
 	## Step 2: PageRank optimize
 	sim = simulator.simulator()
 	sim.load(args.file, policy=p_0)

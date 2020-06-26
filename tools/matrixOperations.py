@@ -12,7 +12,7 @@ def round_to_multiple(a, mult, floor=True):
 	return a * mult
 
 def normalize_rows(mat,axis=1):
-	'''Normalzies the rows of a matrix'''
+	'''Normalizies the rows of a matrix'''
 	row_sums = np.sum(mat, axis=axis)
 	if np.any(row_sums>0):
 		if not np.isscalar(row_sums):
@@ -20,17 +20,19 @@ def normalize_rows(mat,axis=1):
 		else: mat = np.divide(mat,row_sums)
 	return mat
 
-def pagerank(G, pr=None, tol=1e-8):
+def pagerank(G, pr=None, tol=1e-8, maxiter=5000):
 	'''Iterative procedure to solve for the PageRank vector'''
 	G = normalize_rows(G)
 	if pr is None:  # Initialize PageRank vector
 		n = G.shape[0]    		
 		pr = 1 / n * np.ones((1, n))
 	residual = 1 # Initialize residual
-	while residual >= tol:
+	i = 0
+	while residual >= tol and i < maxiter:
 		pr_previous = pr
 		pr = np.matmul(pr,G) # Pagerank formula
 		residual = np.linalg.norm(np.subtract(pr,pr_previous))
+		i += 1
 	
 	return normalize_rows(np.asarray(pr))
 
