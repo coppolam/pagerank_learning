@@ -27,7 +27,7 @@ extractor = desired_states_extractor.desired_states_extractor()
 t, s, f = extractor.extract_states(args.file,pkl=args.load)
 
 print("Making the NN model")
-model,loss_history = extractor.make_model(s, f) # Train the model
+model,loss_history = extractor.train_model(s, f) # Train the model
 
 # Print figure of learning performance
 plt.figure(figsize=(6,3))

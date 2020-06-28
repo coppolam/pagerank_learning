@@ -11,19 +11,22 @@ from classes import simplenetwork, evolution, simulator
 from tools import fileHandler as fh
 import scipy
 from scipy.special import softmax
+import matplotlib.pyplot as plt
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 
 class desired_states_extractor:
 	def __init__(self): 
 		self.network = None
 
-	def make_model(self,x,y):
+	def train_model(self,x,y):
 		''' Generate and/or train model using stochastic gradient descent'''
 		if self.network is None:
 			print("Model does not exist, generating the NN")
 			self.network = simplenetwork.simplenetwork(x.shape[1])
 		loss_history = []
 		i = 0
-		for element in tqdm(y):
+		for element in y:
 			in_tensor = torch.tensor([x[i]]).float()
 			out_tensor = torch.tensor([[element]]).float()
 			_,loss = self.network.run(in_tensor,out_tensor)
@@ -65,15 +68,18 @@ class desired_states_extractor:
 	def get_des(self):
 		e = evolution.evolution()
 		e.setup(self._fitness, GENOME_LENGTH=self.dim, POPULATION_SIZE=1000)
-		e.evolve(verbose=False, generations=30)
+		e.evolve(verbose=False, generations=50)
 		return e
 
 	def run(self,file,load=True,verbose=False):
 		t, s, f = self.extract_states(file, pkl=load)
 
 		if verbose: print("Training the NN model")
-		model = self.make_model(s, f)
 		
+		n = 5 # Experience replay
+		for i in tqdm(range(n)): model = self.train_model(s, f)
+		fh.save_pkl(model,file+"_model.pkl")
+
 		if verbose: print("Optimizing for desired states")
 		e = self.get_des()
 		des = e.get_best()
