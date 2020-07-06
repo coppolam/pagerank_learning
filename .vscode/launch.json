@@ -12,7 +12,8 @@
             "console": "integratedTerminal",
             // "args": ["data/forage_particle_oriented/loop_1/forage_particle_oriented_t500_r30_id1_0.npz","-evaluation","data/forage_particle_oriented/loop_1/forage_particle_oriented_t500_r30_id1_2.npz"]
             // "args" : ["data/pfsm_exploration_particle_oriented/pfsm_exploration_particle_oriented_t10000_r40_id1.npz", "pfsm_exploration", "particle_oriented"]
-            "args": ["aggregation"]
+            // "args": ["aggregation"]
+            "args": ["forage","-iterations","50","-id","10","-t 100"]
         }
     ]
 }

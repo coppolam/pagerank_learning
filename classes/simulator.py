@@ -4,7 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from classes import pagerank_optimization as opt
+from classes import pagerank_evolve as opt
 from simulators import swarmulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
@@ -70,14 +70,15 @@ class simulator:
 
 	def load_update(self,file,policy):
 		data = np.load(file)
-		discount = 0.9
+		discount = 1.0
 		Am = data['A'].astype(float)
 		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + Am[i]
 		self.E = discount*self.E + data['E'].astype(float)
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
-		policy = opt.main(p0, des, self.A, self.E)
+		e = opt.pagerank_evolve(self.H,self.A,self.E,des)
+		policy = e.main(p0)
 		
 		# For analysis/debug purposes, show states that have not been visited
 		temp = self.H + self.E

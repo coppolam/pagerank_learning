@@ -68,6 +68,7 @@ elif args.controller == "dispersion":
 	pr_actions = 1
 elif args.controller == "pfsm_exploration":
 	fitness = "aggregation_clusters"
+	agent = "particle_oriented"
 	policy = np.ones((16,8))/8 # all = 1/8
 	pr_states = 16
 	pr_actions = 8
@@ -97,9 +98,13 @@ else:
 sim = simulator.simulator(savefolder="data/%s_%s/loop_%i/"%(args.controller,agent,args.id)) # Load high level simulator interface, connected to swarmulator
 sim.make(args.controller, agent, animation=args.animate, verbose=False) # Build
 des_nn = desired_states_extractor.desired_states_extractor()
-
+# policy_new = None
 for i in range(args.iterations):
 	print("Iteration %i"%i)
+	# if policy_new is not None:
+	# 	policy = 0.5*policy + policy_new;
+	# 	policy = policy/policy.max()
+	print(policy)
 	policy_filename = save_policy(sim, policy)
 
 	# Run
@@ -116,9 +121,9 @@ for i in range(args.iterations):
 
 	## Step 2: PageRank optimize
 	sim.load(learning_file+".npz",policy=policy) if i == 0 else sim.load_update(learning_file+".npz",policy)
+	# sim.disp()
 	policy = sim.optimize(policy, des)
 	print("Optimal policy")
-	print(policy)
 
 sim.make(args.controller, agent, animation=True, verbose=False)
 print("Final")
