@@ -68,23 +68,30 @@ class desired_states_extractor:
 	def get_des(self):
 		e = evolution.evolution()
 		e.setup(self._fitness, GENOME_LENGTH=self.dim, POPULATION_SIZE=1000)
-		e.evolve(verbose=False, generations=50)
-		return e
+		e.evolve(verbose=False, generations=100)
+		des = e.get_best()
+		e.plot_evolution()#"%s_evo_des.pdf"%file)
+		return des
 
 	def run(self,file,load=True,verbose=False):
 		t, s, f = self.extract_states(file, pkl=load)
 
 		if verbose: print("Training the NN model")
 		
-		n = 5 # Experience replay
-		for i in tqdm(range(n)): model = self.train_model(s, f)
+		# n = 5 # Experience replay
+		# for i in tqdm(range(n)): 
+		model = self.train_model(s, f)
 		fh.save_pkl(model,file+"_model.pkl")
 
 		if verbose: print("Optimizing for desired states")
-		e = self.get_des()
-		des = e.get_best()
-		e.plot_evolution("%s_evo_des.pdf"%file)
-
+		des = self.get_des()
+		
 		if verbose: print("Desired states: " + str(des))
 		
 		return des
+
+	def train(self,file,load=True,verbose=False):
+		t, s, f = self.extract_states(file, pkl=load)
+		if verbose: print("Training the NN model")
+		model = self.train_model(s, f)
+		fh.save_pkl(model,file+"_model.pkl")

@@ -58,7 +58,7 @@ if __name__ == "__main__":
 		p_0 = np.ones((16,8))/8 # all 1/8
 	elif args.controller == "forage":
 		fitness = "food"
-		p_0 = np.ones((16,1))/2 # all = 1/2
+		p_0 = np.ones((30,1))/2 # all = 1/2
 	else:
 		ValueError("Unknown controller!")
 
@@ -68,10 +68,10 @@ if __name__ == "__main__":
 
 	## Step 2: PageRank optimize
 	sim = simulator.simulator()
-	sim.load(args.file, policy=p_0)
+	sim.load(args.file)
 	sim.disp()
-	p_n =  sim.optimize(p_0,des)
-	print(p_n)
+	p_n = sim.optimize(p_0,des)
+
 	# Benchmark, either fully (if observe = False) or visually (if observe = True)
 	if args.observe:
     	# Just do one run and observe what happens visually

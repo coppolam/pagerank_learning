@@ -1,40 +1,19 @@
 #!/usr/bin/env python3
 """
-Loop the aggregation and optimize the behavior
+Loop the simulator and gather data on the behavior
 @author: Mario Coppola, 2020
 """
 
-import pickle, sys, matplotlib, os, argparse
+import os, argparse
 import numpy as np
-import matplotlib.pyplot as plt
-matplotlib.rc('text', usetex=True)
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
-
-from classes import simulator, evolution, desired_states_extractor
-from scipy.special import softmax
+from tqdm import tqdm
+from classes import simulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-	
-def plot_benchmark(file):
-	data = np.load(file)
-	alpha = 0.5
-	plt.figure(figsize=(6,3))
-	if "f_0" in data.files: plt.hist(data["f_0"].astype(float), alpha=alpha, label='$\pi_0$')
-	if "f_n" in data.files: plt.hist(data["f_n"].astype(float), alpha=alpha, label='$\pi_n$')
-	if "f_s" in data.files: plt.hist(data["f_s"].astype(float), alpha=alpha, label='$\pi*$')
-	plt.legend()
-	plt.xlabel("Fitness [-]")
-	plt.ylabel("Frequency")
-	plt.gcf().subplots_adjust(bottom=0.15)
-	folder = os.path.dirname(file) + "/figures/"
-	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
-	filename_raw = os.path.splitext(os.path.basename(file))[0]
-	plt.savefig(folder+"%s.pdf"%filename_raw)
-	plt.clf()
+import parameters
 
 def save_policy(sim,policy):
-	policy_filename = "conf/state_action_matrices/aggregation_policy_loop.txt"
+	policy_filename = "conf/state_action_matrices/loop_policy_loop.txt"
 	policy_file = sim.sim.path + "/" + policy_filename
 	if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 	else: fh.save_to_txt(policy, policy_file)
@@ -43,91 +22,33 @@ def save_policy(sim,policy):
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
-parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 500s", default=500)
-parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
-parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
-parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
-parser.add_argument('-animate', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
-parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=20)
-parser.add_argument('-log', type=int, help="(int) If set, logs one run for the indicated amount of time, default = None", default=None)
+parser.add_argument('-t', type=int, default=200, help="(int) Simulation time during benchmark, default = 200s")
+parser.add_argument('-n', type=int, default=30, help="(int) Max size of swarm, default = 30")
+parser.add_argument('-id', type=int, default=np.random.randint(1000), help="(int) ID of run, default = random")
+parser.add_argument('-animate', type=bool, default=False, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False")
+parser.add_argument('-iterations', type=int, default=500, help="(int) Number of iterations")
 args = parser.parse_args()
 
-# Default values for each controller
-if args.controller == "aggregation":
-	fitness = "aggregation_clusters"
-	agent = "particle"
-	policy = np.ones((8,1))/2 # all = 1/2
-	pr_states = 8
-	pr_actions = 1
-elif args.controller == "dispersion":
-	args.controller = "aggregation"
-	agent = "particle"
-	fitness = "dispersion_clusters"
-	policy = np.ones((8,1))/2 # all = 1/2
-	pr_states = 8
-	pr_actions = 1
-elif args.controller == "pfsm_exploration":
-	fitness = "aggregation_clusters"
-	agent = "particle_oriented"
-	policy = np.ones((16,8))/8 # all = 1/8
-	pr_states = 16
-	pr_actions = 8
-elif args.controller == "pfsm_dispersion":
-	args.controller = "pfsm_exploration"
-	agent = "particle_oriented"
-	fitness = "dispersion_clusters"
-	policy = np.ones((16,8))/8 # all = 1/8
-	pr_states = 16
-	pr_actions = 8
-elif args.controller == "pfsm_exploration_mod":
-	fitness = "aggregation_clusters"
-	agent = "particle_oriented"
-	policy = np.ones((16,8))/8 # all 1/8
-	pr_states = 16
-	pr_actions = 8
-elif args.controller == "forage":
-	fitness = "food"
-	agent = "particle_oriented"
-	policy = np.ones((30,1))/2 # all = 1/2
-	pr_states = 30
-	pr_actions = 1
-else:
-	ValueError("Unknown controller!")
+# Simulation parameters
+fitness, controller, agent, pr_states, pr_actions = parameters.get(args.controller)
 
 # Load and build
-sim = simulator.simulator(savefolder="data/%s_%s/loop_%i/"%(args.controller,agent,args.id)) # Load high level simulator interface, connected to swarmulator
-sim.make(args.controller, agent, animation=args.animate, verbose=False) # Build
-des_nn = desired_states_extractor.desired_states_extractor()
-# policy_new = None
-for i in range(args.iterations):
-	print("Iteration %i"%i)
-	# if policy_new is not None:
-	# 	policy = 0.5*policy + policy_new;
-	# 	policy = policy/policy.max()
-	print(policy)
+sim = simulator.simulator(savefolder="data/%s/loop_%i/"%(controller,args.id))
+sim.make(controller, agent, animation=args.animate, verbose=False)
+
+for i in tqdm(range(args.iterations)):
+    # Random policy
+	policy = np.random.rand(pr_states,pr_actions)
+	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
+	if pr_actions > 1: policy = matop.normalize_rows(policy) # Normalize rows
+	print(policy)	
 	policy_filename = save_policy(sim, policy)
 
 	# Run
-	sim.run(time_limit=args.t, robots=args.n, environment="square", policy=	policy_filename, 
+	sim.run(time_limit=args.t, robots=np.random.randint(1,args.n), 
+		environment="square", policy=policy_filename, 
 		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
-	# Save data
-	filename_ext = "%s_%s_t%i_r%i_id%s_%i" % (args.controller, agent, args.t, args.n, sim.run_id, i)
+	# Save
+	filename_ext = "%s_t%i_r%i_id%s_%i" % (args.controller, args.t, args.n, sim.run_id, i)
 	learning_file = sim.save_learning_data(filename_ext=filename_ext)
-
-	# Optimization procedure
-	## Step 1: Get the desired states
-	des = des_nn.run(learning_file+".npz",load=False,verbose=True)
-
-	## Step 2: PageRank optimize
-	sim.load(learning_file+".npz",policy=policy) if i == 0 else sim.load_update(learning_file+".npz",policy)
-	# sim.disp()
-	policy = sim.optimize(policy, des)
-	print("Optimal policy")
-
-sim.make(args.controller, agent, animation=True, verbose=False)
-print("Final")
-print(policy)
-policy_filname = save_policy(sim, policy)
-sim.run(time_limit=0, robots=args.n, environment="square", policy=policy_filename, 
-	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)

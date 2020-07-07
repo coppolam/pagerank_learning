@@ -4,7 +4,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from classes import pagerank_evolve as opt
+from classes import pagerank_evolve as evo
+from classes import pagerank_optimization as opt
 from simulators import swarmulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
@@ -60,7 +61,7 @@ class simulator:
 		np.savez(save_filename, log=self.log)
 		print("Saved to %s"%save_filename)
 
-	def load(self,file,policy=None):
+	def load(self,file):
 		data = np.load(file)
 		self.A = data['A'].astype(float)
 		self.H = np.sum(self.A, axis=0)
@@ -68,18 +69,19 @@ class simulator:
 		self.log = data['log'].astype(float)
 		print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
-	def load_update(self,file,policy):
+	def load_update(self,file):
 		data = np.load(file)
 		discount = 1.0
 		Am = data['A'].astype(float)
 		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + Am[i]
 		self.E = discount*self.E + data['E'].astype(float)
+		self.H = np.sum(self.A, axis=0)
 		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
-		e = opt.pagerank_evolve(self.H,self.A,self.E,des)
-		policy = e.main(p0)
-		
+		# e = evo.pagerank_evolve(des, self.A, self.E)
+		# policy = e.main(p0)
+		policy = opt.main(p0, des, self.A, self.E)
 		# For analysis/debug purposes, show states that have not been visited
 		temp = self.H + self.E
 		empty_cols = np.where(~temp.any(axis=0))[0]

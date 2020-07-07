@@ -12,7 +12,7 @@ from scipy.special import softmax
 from classes import evolution
 
 class pagerank_evolve:
-	def __init__(self,H,A,E,des):
+	def __init__(self,des,A,E):
 		# Calculate estimated alpha using ratio of H to E for each row
 		## Solve for alpha as follows
 		## Use: r = H/E = alpha/(1-alpha) (based on alpha = probability of H, (1-alpha) = probability of E)
@@ -47,7 +47,7 @@ class pagerank_evolve:
 		# Reshape policy vector to the right matrix dimensions
 		cols = self.A.shape[0]
 		pol = np.reshape(pol,(len(pol)//cols,cols)) # Resize policy
-		if cols > 1: pol = matop.normalize_rows(pol)
+		if cols > 1: pol = matop.normalize_rows(pol+0.001)
 		
 		# Update model based on new policy
 		return self._update_b(pol)
@@ -65,8 +65,8 @@ class pagerank_evolve:
 	def _optimize(self, policy):
 		e = evolution.evolution()
 		e.setup(self._fitness, GENOME_LENGTH=policy.size, POPULATION_SIZE=20)
-		e.evolve(verbose=False, generations=50, population=None)
-		# e.plot_evolution()
+		e.evolve(verbose=False, generations=1000, population=None)
+		e.plot_evolution()
 		return e.get_best()
 
 	def main(self, policy0):
