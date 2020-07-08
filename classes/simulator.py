@@ -61,22 +61,22 @@ class simulator:
 		np.savez(save_filename, log=self.log)
 		print("Saved to %s"%save_filename)
 
-	def load(self,file):
+	def load(self,file,verbose=True):
 		data = np.load(file)
 		self.A = data['A'].astype(float)
 		self.H = np.sum(self.A, axis=0)
 		self.E = data['E'].astype(float)
 		self.log = data['log'].astype(float)
-		print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
+		if verbose: print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
-	def load_update(self,file):
+	def load_update(self,file,verbose=True):
 		data = np.load(file)
 		discount = 1.0
 		Am = data['A'].astype(float)
 		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + Am[i]
 		self.E = discount*self.E + data['E'].astype(float)
 		self.H = np.sum(self.A, axis=0)
-		print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
+		if verbose: print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def optimize(self, p0, des):
 		# e = evo.pagerank_evolve(des, self.A, self.E)
@@ -157,7 +157,7 @@ class simulator:
 		a = 0
 		states = np.zeros([t.size,robots])
 		states_count = np.zeros([t.size,self.H.shape[0]])
-		for step in tqdm(t): # Extract what is relevant from each log 
+		for step in t: # Extract what is relevant from each log 
 			d = self.log[np.where(self.log[:,time_column] == step)]
 			fitness[a] = d[:,5].astype(float).mean()
 			states[a] = d[0:robots,4].astype(int)

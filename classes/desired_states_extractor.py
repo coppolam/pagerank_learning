@@ -37,11 +37,12 @@ class desired_states_extractor:
 	def evaluate_model(self,network,x,y):
 		'''Evaluate the model against validation data'''
 		y_pred = []
-		for element in tqdm(x):
+		for element in x:
 			in_tensor = torch.tensor([element]).float()
 			y_pred = np.append(y_pred,network.network(in_tensor).item())
 		error = y_pred - y
-		return error, y_pred
+		corr = np.corrcoef(y_pred,y)
+		return error, corr, y_pred
 
 	def extract_states(self,file,pkl=False):
 		'''Extract the inputs needed to maximize output'''
@@ -73,25 +74,17 @@ class desired_states_extractor:
 		e.plot_evolution()#"%s_evo_des.pdf"%file)
 		return des
 
-	def run(self,file,load=True,verbose=False):
+	def run(self,file,load=True,verbose=False, replay=1):
 		t, s, f = self.extract_states(file, pkl=load)
-
 		if verbose: print("Training the NN model")
-		
-		# n = 5 # Experience replay
-		# for i in tqdm(range(n)): 
-		model = self.train_model(s, f)
-		fh.save_pkl(model,file+"_model.pkl")
-
+		for i in range(replay): self.train_model(s, f)
 		if verbose: print("Optimizing for desired states")
 		des = self.get_des()
-		
 		if verbose: print("Desired states: " + str(des))
-		
 		return des
 
-	def train(self,file,load=True,verbose=False):
+	def train(self, file, load=True, verbose=False, replay=1):
 		t, s, f = self.extract_states(file, pkl=load)
 		if verbose: print("Training the NN model")
-		model = self.train_model(s, f)
-		fh.save_pkl(model,file+"_model.pkl")
+		for i in range(replay): model = self.train_model(s, f)
+		return model
