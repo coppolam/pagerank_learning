@@ -27,8 +27,9 @@ args = parser.parse_args()
 dse = desired_states_extractor.desired_states_extractor()
 nets = []
 filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
-if args.debug: i = 0
-if args.train:
+if args.debug:
+    i = 0
+if args.train is False:
 	for filename in tqdm(sorted(filelist_training)):
 		model = dse.train(args.folder_training+filename)
 		nets.append(copy.deepcopy(model))
