@@ -7,7 +7,7 @@ import torch, os
 import numpy as np
 from tqdm import tqdm
 from tools import matrixOperations as matop
-from classes import simplenetwork, evolution, simulator
+from classes import network, evolution, simulator
 from tools import fileHandler as fh
 import scipy
 from scipy.special import softmax
@@ -23,7 +23,7 @@ class desired_states_extractor:
 		''' Generate and/or train model using stochastic gradient descent'''
 		if self.network is None:
 			print("Model does not exist, generating the NN")
-			self.network = simplenetwork.simplenetwork(x.shape[1])
+			self.network = network.network(x.shape[1])
 		loss_history = []
 		i = 0
 		for element in y:
@@ -45,6 +45,7 @@ class desired_states_extractor:
 		return error, corr, y_pred
 
 	def load_model(self,modelsfile):
+		'''Load the latest model from the trained pkl file'''
 		m = fh.load_pkl(modelsfile)
 		self.network = m[-1][0] # last model
 
@@ -71,6 +72,7 @@ class desired_states_extractor:
 		return f, 
 
 	def get_des(self,dim=None):
+		'''Runs an evolutionary optimization to extract the states that maximize the fitness''' 
 		e = evolution.evolution()
 		if dim is None: d = self.dim
 		else: d = dim
@@ -81,6 +83,7 @@ class desired_states_extractor:
 		return des
 
 	def run(self,file,load=True,verbose=False, replay=1):
+		'''Runs everything'''
 		t, s, f = self.extract_states(file, pkl=load)
 		if verbose: print("Training the NN model")
 		for i in range(replay): self.train_model(s, f)
@@ -90,6 +93,7 @@ class desired_states_extractor:
 		return des
 
 	def train(self, file, load=True, verbose=False, replay=1):
+		'''Trains a model based on an npz simulation log file'''
 		t, s, f = self.extract_states(file, pkl=load)
 		if verbose: print("Training the NN model")
 		for i in range(replay): model = self.train_model(s, f)

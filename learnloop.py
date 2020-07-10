@@ -66,16 +66,15 @@ dse.load_model("data/%s/models.pkl"%controller)
 des = dse.get_des(dim=pr_states)
 print(des)
 
+# Initialize policy
 policy = np.random.rand(pr_states,pr_actions)
+
 for i in range(args.iterations):
-	print("Iteration %i"%i)
-	# if policy_new is not None:
-	# 	policy = 0.5*policy + policy_new;
-	# 	policy = policy/policy.max()
 	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
 	if pr_actions > 1: policy = matop.normalize_rows(policy) # Normalize rows
-	print(policy)
 	policy_filename = save_policy(sim, policy)
+	print("Iteration %i"%i)
+	print(policy)
 
 	# Run
 	sim.run(time_limit=args.t, robots=args.n, environment="square", policy=	policy_filename, 

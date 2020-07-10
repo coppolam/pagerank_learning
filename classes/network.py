@@ -5,14 +5,16 @@ Optimize a behavior based on the PageRank function
 """
 import torch
 
-class simplenetwork:
-	def __init__(self,D_in):
+class network:
+	def __init__(self,D_in,lr=1e-5):
+		'''Initialization function. Set here the hyperparameters'''
 		self.network = self.initialize(D_in, 200, 1)
 		self.loss_fn = torch.nn.MSELoss(reduction='sum')
-		self.optimizer = torch.optim.Adam(self.network.parameters(), lr=1e-5)
-		# (Note: Adam optimizer works well, SGD unstablish with 1e-4 learning rate)
+		self.optimizer = torch.optim.Adam(self.network.parameters(), lr=lr)
+		# (Practical note: Adam optimizer works well, SGD unstablish with 1e-4 learning rate)
 
 	def initialize(self, D_in, H, D_out):
+		'''Initializes the network'''
 		model = torch.nn.Sequential(
 			torch.nn.Linear(D_in, H),
 			torch.nn.ReLU (),
@@ -22,6 +24,7 @@ class simplenetwork:
 		return model
 
 	def run(self,x,y):
+		'''Runs the network with some new x and y data and optimizes it'''
 		y_pred = self.network(x)
 		loss = self.loss_fn(y_pred, y)
 		self.optimizer.zero_grad()
@@ -30,5 +33,5 @@ class simplenetwork:
 		return y_pred, loss
 
 	def get(self):
+		'''Returns the current network'''
 		return self.network
-		

@@ -44,6 +44,7 @@ class simulator:
 		self.sim.run(robots,run_id=self.run_id) # Run it, and receive the fitness
 
 	def save_learning_data(self,filename_ext=None):
+		'''Save the models from a log file'''
 		H = fh.read_matrix(self.logs_folder,"H_"+self.sim.run_id)
 		A = []
 		for i in range(len(glob.glob(self.logs_folder+"A_"+self.sim.run_id+"_*"))):
@@ -62,6 +63,7 @@ class simulator:
 		print("Saved to %s"%save_filename)
 
 	def load(self,file,verbose=True):
+		'''Load the model from a swarmulator log file'''
 		data = np.load(file)
 		self.A = data['A'].astype(float)
 		self.H = np.sum(self.A, axis=0)
@@ -70,36 +72,39 @@ class simulator:
 		if verbose: print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
 	def load_update(self,file,verbose=True):
+		'''Load the model from a swarmulator log file on top of the existing one'''
 		data = np.load(file)
-		discount = 1.0
+		discount = 0.8
 		Am = data['A'].astype(float)
 		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + Am[i]
 		self.E = discount*self.E + data['E'].astype(float)
 		self.H = np.sum(self.A, axis=0)
 		if verbose: print("Loaded %s (from %s)" %(file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
-	def optimize(self, p0, des):
-		# e = evo.pagerank_evolve(des, self.A, self.E)
-		# policy = e.main(p0)
+	def optimize(self, p0, des, debug=True):
+		'''Optimize  the policy based on the desired states'''
 		policy = opt.main(p0, des, self.A, self.E)
-		# For analysis/debug purposes, show states that have not been visited
-		temp = self.H + self.E
-		empty_cols = np.where(~temp.any(axis=0))[0]
-		empty_rows = np.where(~temp.any(axis=1))[0]
-		empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
-		print("\nUnknown states: \t" + str(empty_states))
-		np.set_printoptions(threshold=sys.maxsize)
 		
+		# For analysis/debug purposes, show states that have not been visited
+		if debug is True:
+			temp = self.H + self.E
+			empty_cols = np.where(~temp.any(axis=0))[0]
+			empty_rows = np.where(~temp.any(axis=1))[0]
+			empty_states = np.intersect1d(empty_cols,empty_rows,assume_unique=True)
+			print("\nUnknown states: \t" + str(empty_states))
+			np.set_printoptions(threshold=sys.maxsize)
+	
 		return policy
 
 	def disp(self):
+		'''Display the model to the terminal'''
 		print("H:"); print(self.H)
 		print("E:"); print(self.E)
 		for i,a in enumerate(self.A): print("A%i:"%i); print(a);
 
 	def benchmark(self, controller, agent, policy, fitness, robots=30, 
 		time_limit=1000, realtimefactor=300, environment="square", runs=100):
-		'''Perform many runs of the simulator to observe what happens'''
+		'''Perform many runs of the simulator to benchmark the behavior'''
 		
 		# Save policy file to test
 		policy_file = self.sim.path + "/conf/state_action_matrices/aggregation_policy_benchmark.txt"
@@ -148,21 +153,18 @@ class simulator:
 	
 	def extract(self):
 		''' Extract data from the log file that has already been loaded using the load method'''
-
 		time_column = 0
 		id_column = 1
 		t = np.unique(self.log[:,time_column])
 		robots = int(self.log[:,id_column].max())
 		fitness = np.zeros(t.shape)
-		a = 0
 		states = np.zeros([t.size,robots])
 		states_count = np.zeros([t.size,self.H.shape[0]])
-		for step in t: # Extract what is relevant from each log 
+		for a, step in enumerate(t): # Extract what is relevant from each log 
 			d = self.log[np.where(self.log[:,time_column] == step)]
 			fitness[a] = d[:,5].astype(float).mean()
 			states[a] = d[0:robots,4].astype(int)
 			for r in np.arange(0,np.max(states[a])+1).astype(int):
 				if r < self.H.shape[0]: # Guard for max state in case inconsistent with Swarmulator
 					states_count[a,r] = np.count_nonzero(states[a] == r)
-			a += 1
 		return t, states_count, fitness
