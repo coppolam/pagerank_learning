@@ -7,7 +7,7 @@ matplotlib.rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-mode = 2
+mode = 3
 
 filename = []
 name = []
@@ -26,8 +26,8 @@ elif mode == 2:
 	name.append("pfsm exploration mod 1")
 	name.append("pfsm exploration mod 2")
 elif mode == 3:
-	filename.append("data/aggregation/validation_forage_1_1.pkl")
-	filename.append("data/aggregation/validation_forage_2_1.pkl")
+	filename.append("data/forage/validation_forage_1_1.pkl")
+	filename.append("data/forage/validation_forage_2_1.pkl")
 	name.append("forage 1")
 	name.append("forage 2")
 else:

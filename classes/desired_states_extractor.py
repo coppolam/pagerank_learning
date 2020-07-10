@@ -44,6 +44,10 @@ class desired_states_extractor:
 		corr = np.corrcoef(y_pred,y)
 		return error, corr, y_pred
 
+	def load_model(self,modelsfile):
+		m = fh.load_pkl(modelsfile)
+		self.network = m[-1][0] # last model
+
 	def extract_states(self,file,pkl=False):
 		'''Extract the inputs needed to maximize output'''
 		if pkl is False or os.path.exists(file+".pkl") is False:
@@ -66,12 +70,14 @@ class desired_states_extractor:
 		f = self.network.network(in_tensor).item()
 		return f, 
 
-	def get_des(self):
+	def get_des(self,dim=None):
 		e = evolution.evolution()
-		e.setup(self._fitness, GENOME_LENGTH=self.dim, POPULATION_SIZE=1000)
+		if dim is None: d = self.dim
+		else: d = dim
+		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=1000)
 		e.evolve(verbose=False, generations=100)
 		des = e.get_best()
-		e.plot_evolution()#"%s_evo_des.pdf"%file)
+		# e.plot_evolution()#"%s_evo_des.pdf"%file)
 		return des
 
 	def run(self,file,load=True,verbose=False, replay=1):

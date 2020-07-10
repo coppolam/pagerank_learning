@@ -13,7 +13,7 @@ from scipy.special import softmax
 def update_b(A,pol):
 	b = np.zeros(A[0].shape)
 	for i, p in enumerate(pol.T): # Iterate over each action (columns of pol)
-		b += A[i] * p[:,np.newaxis] # [:,np.newaxis] makes p vertical
+		b += matop.normalize_rows(A[i] * p[:,np.newaxis]) # [:,np.newaxis] makes p vertical
 	# Matrix b holds the cumulative probability of the transition happening for a current policy
 	# This is the probability of the action being taken times the 
 	# probability of the state transition caused by the action, and then the sum of that
@@ -23,7 +23,7 @@ def update_b(A,pol):
 	# where e00 is a state transition from state 0 to state 0
 	# and a0... aN are the actions 0 to N
 	# In essence b[0,0] = P(e00), given that the actions are independent at the local level
-	return b
+	return matop.normalize_rows(b)
 
 def update_H(A, pol):	
 	# Reshape policy vector to the right matrix dimensions
