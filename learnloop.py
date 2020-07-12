@@ -89,7 +89,7 @@ for i in range(args.iterations):
 	des = dse.run(learning_file+".npz", load=False, verbose=True)
 
 	## Step 2: PageRank optimize
-	sim.load(learning_file+".npz") if i == 0 else sim.load_update(learning_file+".npz")
+	sim.load(learning_file+".npz") if i == 0 else sim.load_update(learning_file+".npz",discount=0.8)
 	policy = sim.optimize(policy, des)
 	print("Optimal policy")
 

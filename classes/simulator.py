@@ -1,12 +1,9 @@
 import datetime, time, subprocess, sys, random, glob, os
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from classes import pagerank_evolve as evo
-from classes import pagerank_optimization as opt
 from simulators import swarmulator
+from classes import pagerank_optimization as opt
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 
@@ -71,10 +68,9 @@ class simulator:
 		self.log = data['log'].astype(float)
 		if verbose: print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
-	def load_update(self,file,verbose=True):
+	def load_update(self,file,discount=1.0,verbose=True):
 		'''Load the model from a swarmulator log file on top of the existing one'''
 		data = np.load(file)
-		discount = 0.8
 		Am = data['A'].astype(float)
 		for i in range(self.A.shape[0]): self.A[i] = discount*self.A[i] + Am[i]
 		self.E = discount*self.E + data['E'].astype(float)

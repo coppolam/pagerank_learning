@@ -5,10 +5,10 @@ Simulate the aggregation and optimize the behavior
 """
 import random, sys, pickle, matplotlib
 import numpy as np
-import matplotlib.pyplot as plt
-from deap import base, creator, tools
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
+from deap import base, creator, tools
 
 class evolution:
 	'''Wrapper around the DEAP package to run an evolutionary process with just a few commands'''
@@ -89,8 +89,8 @@ class evolution:
 		# Evolve!
 		g = len(self.stats) # Number of generations
 		gmax = len(self.stats) + generations
-		for g in tqdm(range(gmax)):
-		# while g < gmax:
+		# for g in tqdm(range(generations)):
+		while g < gmax:
 			# Offspring
 			offspring = self.toolbox.select(pop, len(pop))
 			offspring = list(map(self.toolbox.clone, offspring))

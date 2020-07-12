@@ -8,7 +8,6 @@ import scipy.optimize
 import numpy as np
 from tools import matrixOperations as matop
 np.set_printoptions(suppress=True) # Avoid scientific notation
-from scipy.special import softmax
 from classes import evolution
 
 class pagerank_evolve:

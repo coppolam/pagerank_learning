@@ -3,18 +3,16 @@ import numpy as np
 from tools import fileHandler as fh
 from classes import evolution
 from simulators import swarmulator
+import parameters
 
 ## Run as
 # python3 main_standard_evolution.py CONTROLLER AGENT
 # Example:
 # python3 main_standard_evolution.py aggregation particle
 
-#####################
-#  Argument parser  #
-#####################
+# Argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
-parser.add_argument('agent', type=str, help="Agent to use")
 parser.add_argument('-gen', type=int, help="Max generations", default=100)
 parser.add_argument('-batchsize', type=int, help="Batch size", default=3)
 parser.add_argument('-resume', type=bool, help="Resume after quitting", default=False)
@@ -22,14 +20,14 @@ parser.add_argument('-plot', type=str, help="", default=None)
 parser.add_argument('-id', type=int, help="Evo ID", default=1)
 args = parser.parse_args()
 
-folder = "data/evolution_%s_%s/" % (args.controller,args.agent)
+fitness, controller, agent, pr_states, _ = parameters.get(args.controller)
+
+folder = "data/evolution_%s/" % (controller)
 directory = os.path.dirname(folder)
 if not os.path.exists(directory): os.makedirs(directory)
 
-######################
-#  Fitness function  #
-######################
-def fitness(individual):
+# Fitness function
+def fitnessfunction(individual):
 	### Set the policy file that swarmulator reads
 	policy_file = "../swarmulator/conf/state_action_matrices/policy_evolved_temp.txt"
 	if args.controller=="pfsm_exploration":
@@ -38,41 +36,30 @@ def fitness(individual):
 	sim.runtime_setting("policy", policy_file) # Use random policy
 
 	### Run swarmulator in batches
-	f = sim.batch_run((10,20),args.batchsize) # Run with 10-20 agents, 5 times
+	f = sim.batch_run((10,30),args.batchsize) # Run with 10-20 agents
+	print(f)
 	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
 
-########################
-#  Load evolution API  #
-########################
 
+# Load evolution API
 e = evolution.evolution()
-e.setup(fitness, GENOME_LENGTH=8, POPULATION_SIZE=100)
+e.setup(fitnessfunction, GENOME_LENGTH=pr_states, POPULATION_SIZE=100)
 
-### Plot file from file args.plot
+# Plot file from file args.plot
 if args.plot is not None:
 	e.load(args.plot)
 	e.plot_evolution()
 	exit()
 	
-#####################
-#  Swarmulator API  #
-#####################
+# Swarmulator API
 sim = swarmulator.swarmulator(verbose=False)
-sim.make(controller=args.controller, agent=args.agent, clean=True, logger=False, verbose=False)
-sim.runtime_setting("time_limit", str("100"))
+sim.make(controller=controller, agent=agent, animation=False, clean=True, logger=False, verbose=False)
+sim.runtime_setting("time_limit", str("500"))
 sim.runtime_setting("simulation_realtimefactor", str("300"))
 sim.runtime_setting("environment", "square")
-filename = folder + "evo_run_%s_%s_%i" % (args.controller, args.agent, args.id)
+filename = folder + "evo_run_%s_%i" % (controller, args.id)
 
-if args.controller == "aggregation":
-	fitness = "aggregation_clusters"
-elif args.controller == "pfsm_exploration":
-	fitness = "aggregation_clusters"
-elif args.controller == "forage":
-	fitness = "food"
-else:
-	ValueError("Uknown inputs!")
-
+# Simulation parameters
 sim.runtime_setting("fitness", fitness)
 
 ### Resume evolution from file args.resume

@@ -6,14 +6,9 @@ Optimize a behavior based on the PageRank function
 import torch, os
 import numpy as np
 from tqdm import tqdm
+from classes import simplenetwork, evolution, simulator
 from tools import matrixOperations as matop
-from classes import network, evolution, simulator
 from tools import fileHandler as fh
-import scipy
-from scipy.special import softmax
-import matplotlib.pyplot as plt
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
 
 class desired_states_extractor:
 	def __init__(self): 
@@ -23,7 +18,7 @@ class desired_states_extractor:
 		''' Generate and/or train model using stochastic gradient descent'''
 		if self.network is None:
 			print("Model does not exist, generating the NN")
-			self.network = network.network(x.shape[1])
+			self.network = simplenetwork.simplenetwork(x.shape[1])
 		loss_history = []
 		i = 0
 		for element in y:
