@@ -61,10 +61,16 @@ class desired_states_extractor:
 		return time, s, fitness
 		
 	def _fitness(self,individual):
+		# individual = matop.normalize_rows(individual,axis=0)
 		'''Fitness function'''
 		in_tensor = torch.tensor([individual]).float()
 		f = self.network.network(in_tensor).item()
 		return f, 
+
+	# def _constraint(self,individual):
+	# 	'''Feasibility function for the individual. Returns True if feasible False otherwise.'''
+	# 	if np.sum(individual) < 1: return True
+	# 	return False
 
 	def get_des(self,dim=None):
 		'''Runs an evolutionary optimization to extract the states that maximize the fitness''' 
@@ -72,7 +78,7 @@ class desired_states_extractor:
 		if dim is None: d = self.dim
 		else: d = dim
 		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=1000)
-		e.evolve(verbose=False, generations=100)
+		e.evolve(verbose=True, generations=100)
 		des = e.get_best()
 		# e.plot_evolution()#"%s_evo_des.pdf"%file)
 		return des

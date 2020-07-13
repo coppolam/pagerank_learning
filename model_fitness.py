@@ -78,10 +78,10 @@ if args.evaluation is not None:
 
 # Extract desired states
 print("Extracting desired states")
-e = extractor.get_des()
-des = e.get_best()
-
-e.plot_evolution(figurename=folder+"%s_evo_des.pdf"%os.path.basename(filename_raw))
+des = extractor.get_des()
 
 # Print output
+from tools import matrixOperations as matop
+des = matop.normalize_rows(des,axis=0)
 print(des)
+print(np.sum(des))
