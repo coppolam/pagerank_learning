@@ -36,7 +36,9 @@ def fitnessfunction(individual):
 	sim.runtime_setting("policy", policy_file) # Use random policy
 
 	### Run swarmulator in batches
-	f = sim.batch_run((10,30),args.batchsize) # Run with 10-20 agents
+	f = []
+	for i in range(args.batchsize): f = np.append(f,sim.run(10,20))
+	# f = sim.batch_run((10,30),args.batchsize) # Run with 10-20 agents
 	print(f)
 	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
 

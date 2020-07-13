@@ -62,7 +62,7 @@ class swarmulator:
 		pipe = "/tmp/swarmulator_" + str(self.run_id)
 		self._launch(n,run_id=self.run_id)
 		f = self._get_fitness(pipe)
-		return f
+		return float(f)
 
 	def load(self,file=None):
 		'''Loads the log of a swarmulator run. If id is not specified, it will take the most recent log'''
