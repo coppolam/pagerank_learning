@@ -4,26 +4,20 @@ Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-import pickle, sys, matplotlib, os, argparse
+import pickle, argparse
 import numpy as np
-import matplotlib.pyplot as plt
-matplotlib.rc('text', usetex=True)
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
 import parameters
-from classes import simulator, evolution, desired_states_extractor
+from classes import simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
+
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
-parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 100s", default=500)
+parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 500s", default=500)
 parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 20", default=20)
 parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 20", default=20)
 parser.add_argument('-iterations', type=int, help="(int) Evaluation runs, default = 100", default=100)
-parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
-parser.add_argument('-observe', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
-parser.add_argument('-log', type=int, help="(int) If set, logs one run for the indicated amount of time, default = None", default=None)
 args = parser.parse_args()
 
 # Simulation parameters
@@ -43,4 +37,4 @@ for j in range(args.iterations):
 	f.append(sim.benchmark(controller, agent, policy, fitness, 
 		robots=args.n, runs=args.runs, time_limit=args.t, make=False))
 
-fh.save_pkl(f,"benchmark_random_%s.npz"%controller)
+fh.save_pkl(f,"data/%s/benchmark_random_%s.pkl"%(controller,controller))

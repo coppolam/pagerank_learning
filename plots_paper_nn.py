@@ -7,36 +7,42 @@ matplotlib.rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-mode = 3
+# Input argument parser
+parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
+parser.add_argument('controller', type=str, help="(str) Controller", default=None)
+args = parser.parse_args()
 
 filename = []
 name = []
-if mode == 1:
+if args.controller == "aggregation":
 	filename.append("data/aggregation/validation_aggregation_1_1.pkl")
 	filename.append("data/aggregation/validation_aggregation_2_1.pkl")
-	name.append("aggregation 1")
-	name.append("aggregation 2")
-elif mode == 2:
+	name.append("Aggregation 1")
+	name.append("Aggregation 2")
+elif args.controller == "pfsm_exploration":
 	filename.append("data/pfsm_exploration/validation_pfsm_exploration_1_1.pkl")
 	filename.append("data/pfsm_exploration/validation_pfsm_exploration_2_1.pkl")
 	filename.append("data/pfsm_exploration/validation_pfsm_exploration_mod_1_1.pkl")
 	filename.append("data/pfsm_exploration/validation_pfsm_exploration_mod_2_1.pkl")
-	name.append("pfsm exploration 1")
-	name.append("pfsm exploration 2")
-	name.append("pfsm exploration mod 1")
-	name.append("pfsm exploration mod 2")
-elif mode == 3:
+	name.append("Oriented 1")
+	name.append("Oriented 2")
+	name.append("Oriented mod 1")
+	name.append("Oriented mod 2")
+elif args.controller == "forage":
 	filename.append("data/forage/validation_forage_1_1.pkl")
-	# filename.append("data/forage/validation_forage_2_1.pkl")
-	name.append("forage 1")
-	# name.append("forage 2")
+	filename.append("data/forage/validation_forage_2_1.pkl")
+	name.append("Forage 1")
+	name.append("Forage 2")
 else:
 	print("No valid mode!!!!")
 
 def process(file):
-	a = []
-	for e in file: a.append(np.nanmean(e))
-	return a
+	m = []
+	s = []
+	for e in file:
+		m.append(np.nanmean(e))
+		s.append(np.nanstd(e))
+	return m, s
 
 # Load files and data
 file, data = [], []
@@ -44,7 +50,13 @@ for f in filename:file.append(fh.load_pkl(f))
 for f in file: data.append(process(f))
 
 # Plot
-for i,d in enumerate(data): plt.plot(d,label=name[i])
+for i,d in enumerate(data):
+	plt.plot(d[0],label=name[i])
+	plt.fill_between(range(len(d[0])),
+	np.array(d[0]) - np.array(d[1]), 
+	np.array(d[0]) + np.array(d[1]),
+	alpha=0.2)
+
 plt.xlabel("Epoch")
 plt.ylabel("Correlation")
 plt.legend()

@@ -14,6 +14,7 @@ import parameters
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
 parser.add_argument('-gen', type=int, help="Max generations", default=100)
+parser.add_argument('-t', type=int, help="Time", default=200)
 parser.add_argument('-batchsize', type=int, help="Batch size", default=3)
 parser.add_argument('-resume', type=bool, help="Resume after quitting", default=False)
 parser.add_argument('-plot', type=str, help="", default=None)
@@ -22,7 +23,7 @@ args = parser.parse_args()
 
 fitness, controller, agent, pr_states, _ = parameters.get(args.controller)
 
-folder = "data/evolution_%s/" % (controller)
+folder = "data/%s/" % (controller)
 directory = os.path.dirname(folder)
 if not os.path.exists(directory): os.makedirs(directory)
 
@@ -37,11 +38,9 @@ def fitnessfunction(individual):
 
 	### Run swarmulator in batches
 	f = []
-	for i in range(args.batchsize): f = np.append(f,sim.run(10,20))
-	# f = sim.batch_run((10,30),args.batchsize) # Run with 10-20 agents
+	f = sim.batch_run((10,20),args.batchsize) # Run with 10-20 agents
 	print(f)
 	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
-
 
 # Load evolution API
 e = evolution.evolution()
@@ -56,10 +55,10 @@ if args.plot is not None:
 # Swarmulator API
 sim = swarmulator.swarmulator(verbose=False)
 sim.make(controller=controller, agent=agent, animation=False, clean=True, logger=False, verbose=False)
-sim.runtime_setting("time_limit", str("500"))
+sim.runtime_setting("time_limit", str(args.t))
 sim.runtime_setting("simulation_realtimefactor", str("300"))
 sim.runtime_setting("environment", "square")
-filename = folder + "evo_run_%s_%i" % (controller, args.id)
+filename = folder + "evolution_%s_t%i_%i" % (controller, args.t, args.id)
 
 # Simulation parameters
 sim.runtime_setting("fitness", fitness)
