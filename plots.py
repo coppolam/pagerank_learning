@@ -20,6 +20,7 @@ a = []
 for e in v: a.append(np.nanmean(e))
 
 print(a)
+
 # Plot
 plt.plot(a)
 plt.show()

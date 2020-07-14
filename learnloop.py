@@ -44,12 +44,13 @@ def save_policy(sim,policy):
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
+parser.add_argument('folder_training', type=str, help="(str) Controller to use during evaluation")
 parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 500s", default=500)
-parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
-parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
+parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=20)
+parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=20)
 parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
 parser.add_argument('-animate', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
-parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=20)
+parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=1)
 parser.add_argument('-log', type=int, help="(int) If set, logs one run for the indicated amount of time, default = None", default=None)
 args = parser.parse_args()
 
@@ -68,6 +69,12 @@ print(des)
 
 # Initialize policy
 policy = np.random.rand(pr_states,pr_actions)
+filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
+
+v = []
+for j, filename in enumerate(sorted(filelist_training)):
+	if j == 0: sim.load(args.folder_training+filename,verbose=False)
+	else: sim.load_update(args.folder_training+filename)
 
 for i in range(args.iterations):
 	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
@@ -89,13 +96,13 @@ for i in range(args.iterations):
 	des = dse.run(learning_file+".npz", load=False, verbose=True)
 
 	## Step 2: PageRank optimize
-	sim.load(learning_file+".npz") if i == 0 else sim.load_update(learning_file+".npz",discount=0.8)
+	# sim.load(learning_file+".npz") if i == 0 else 
+	sim.load_update(learning_file+".npz",discount=1.0)
 	policy = sim.optimize(policy, des)
 	print("Optimal policy")
 
-sim.make(controller, agent, animation=True, verbose=False)
-print("Final")
 print(policy)
-policy_filname = save_policy(sim, policy)
-sim.run(time_limit=0, robots=args.n, environment="square", policy=policy_filename, 
-	pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
+f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.runs, time_limit=args.t, make=True)
+
+import plots_paper_benchmark as b
+b.benchmark("data/forage/benchmark_random_forage.npz",new=f)

@@ -27,9 +27,9 @@ elif mode == 2:
 	name.append("pfsm exploration mod 2")
 elif mode == 3:
 	filename.append("data/forage/validation_forage_1_1.pkl")
-	filename.append("data/forage/validation_forage_2_1.pkl")
+	# filename.append("data/forage/validation_forage_2_1.pkl")
 	name.append("forage 1")
-	name.append("forage 2")
+	# name.append("forage 2")
 else:
 	print("No valid mode!!!!")
 

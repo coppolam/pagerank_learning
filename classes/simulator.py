@@ -99,7 +99,7 @@ class simulator:
 		for i,a in enumerate(self.A): print("A%i:"%i); print(a);
 
 	def benchmark(self, controller, agent, policy, fitness, robots=30, 
-		time_limit=1000, realtimefactor=300, environment="square", runs=100):
+		time_limit=1000, realtimefactor=300, environment="square", runs=100, make=True):
 		'''Perform many runs of the simulator to benchmark the behavior'''
 		
 		# Save policy file to test
@@ -108,7 +108,8 @@ class simulator:
 		else: fh.save_to_txt(policy, policy_file)
 
 		# Build with correct settings
-		self.sim.make(controller=controller, agent=agent, clean=True, animation=False, logger=False, verbose=False)
+		if make == True:
+			self.sim.make(controller=controller, agent=agent, clean=True, animation=False, logger=False, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
