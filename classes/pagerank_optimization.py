@@ -37,16 +37,12 @@ def update_H(A, policy):
 	if A.shape[0] > 1: H = matop.normalize_rows(H) # Normalize for multiple actions
 	return H
 
-def fitness(pr,des):
-	'''PageRank based fitness function'''
-	return np.average(pr,axis=1,weights=des)/pr.mean()
-
 def objective_function(pol, des, alpha, A, E):
-	'''Objective function'''	
+	'''Objective function'''
 	H1 = update_H(A, pol) # Update H with new policy
 	G = np.diag(alpha).dot(H1) + np.diag(1-alpha).dot(E) # Google matrix
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
-	f = fitness(pr, des) # Get pagerank fitness
+	f = np.average(pr,axis=1,weights=des)/pr.mean() # Get pagerank fitness
 	
 	# Display progress to terminal
 	p = "\r Fitness \t max:f=%.10f" % -f

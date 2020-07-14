@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simulate the aggregation and optimize the behavior
+Generate benchmark performance with random policies
 @author: Mario Coppola, 2020
 """
 
@@ -14,16 +14,15 @@ from tools import fileHandler as fh
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
-parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 500s", default=500)
-parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 20", default=20)
-parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 20", default=20)
+parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 200s", default=200)
+parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
+parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 parser.add_argument('-iterations', type=int, help="(int) Evaluation runs, default = 100", default=100)
 args = parser.parse_args()
 
 # Simulation parameters
 fitness, controller, agent, pr_states, pr_actions = parameters.get(args.controller)
 
-## Step 2: PageRank optimize
 sim = simulator.simulator()
 sim.make(controller, agent, clean=True, animation=False, logger=False, verbose=False)
 
@@ -37,4 +36,4 @@ for j in range(args.iterations):
 	f.append(sim.benchmark(controller, agent, policy, fitness, 
 		robots=args.n, runs=args.runs, time_limit=args.t, make=False))
 
-fh.save_pkl(f,"data/%s/benchmark_random_%s.pkl"%(controller,controller))
+fh.save_pkl(f,"data/%s/benchmark_random_%s_t%i_r%i_runs%i.pkl"%(controller,controller,args.t,args.n,args.runs))

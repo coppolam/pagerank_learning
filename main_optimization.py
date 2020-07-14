@@ -4,15 +4,9 @@ Loop the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
 
-import pickle, sys, matplotlib, os, argparse
+import pickle, os, argparse
 import numpy as np
-import matplotlib.pyplot as plt
-matplotlib.rc('text', usetex=True)
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
-
 from classes import simulator, evolution, desired_states_extractor
-from scipy.special import softmax
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 import parameters
@@ -33,11 +27,10 @@ parser.add_argument('controller', type=str, help="(str) Controller to use during
 parser.add_argument('folder_training', type=str, help="(str) Controller to use during evaluation")
 parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 500s", default=500)
 parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=20)
-parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=20)
+parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
 parser.add_argument('-animate', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
 parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=1)
-parser.add_argument('-log', type=int, help="(int) If set, logs one run for the indicated amount of time, default = None", default=None)
 args = parser.parse_args()
 
 # Simulation parameters
@@ -95,7 +88,7 @@ while i < args.iterations:
 # Benchmark final controller
 print("----------Benchmarking-----------")
 f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.runs, time_limit=args.t, make=True)
-fh.save_pkl(f,"data/%s/benchmark_optimized_%s.pkl"%(controller,controller))
+fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i.pkl"%(controller,controller,args.t,args.n,args.runs))
 
 # Plot
 import plots_paper_benchmark as b

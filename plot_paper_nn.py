@@ -3,9 +3,7 @@ import argparse
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.rc('text', usetex=True)
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
+from tools import prettyplot as pp
 
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
@@ -34,7 +32,7 @@ elif args.controller == "forage":
 	name.append("Forage 1")
 	name.append("Forage 2")
 else:
-	print("No valid mode!!!!")
+	print("Not a valid mode!!!!")
 
 def process(file):
 	m = []
@@ -50,15 +48,14 @@ for f in filename:file.append(fh.load_pkl(f))
 for f in file: data.append(process(f))
 
 # Plot
+plt = pp.setup()
 for i,d in enumerate(data):
 	plt.plot(d[0],label=name[i])
 	plt.fill_between(range(len(d[0])),
-	np.array(d[0]) - np.array(d[1]), 
-	np.array(d[0]) + np.array(d[1]),
-	alpha=0.2)
+	np.array(d[0]) - np.array(d[1]), np.array(d[0]) + np.array(d[1]), alpha=0.2)
 
 plt.xlabel("Epoch")
 plt.ylabel("Correlation")
 plt.legend()
-plt.gcf().subplots_adjust(bottom=0.15)
+plt = pp.adjust(plt)
 plt.show()
