@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+File to evaluate and plot the runtime of swarmulator
+@author: Mario Coppola, 2020
+"""
+
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt

@@ -4,16 +4,12 @@ Train and validate the data gathered from the loop.py script
 @author: Mario Coppola, 2020
 """
 
-import pickle, sys, matplotlib, os, argparse, copy
+import pickle, os, argparse, copy
 from tqdm import tqdm
 import numpy as np
 from classes import simulator, desired_states_extractor
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-import matplotlib.pyplot as plt
-matplotlib.rc('text', usetex=True)
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
 
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('folder_training', type=str, help="(str) Training data folder")

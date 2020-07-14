@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Plot the benchmark results against the optimized ones
+@author: Mario Coppola, 2020
+"""
+
 from tools import fileHandler as fh
 import argparse, os
 import numpy as np

@@ -1,14 +1,17 @@
+#!/usr/bin/env python3
+"""
+Perform evolution for a given behavior
+	Run as: python3 main_standard_evolution.py CONTROLLER [-opt]
+	Example: python3 main_standard_evolution.py aggregation [-opt]
+@author: Mario Coppola, 2020
+"""
+
 import random, sys, pickle, argparse, os
 import numpy as np
 from tools import fileHandler as fh
 from classes import evolution
 from simulators import swarmulator
 import parameters
-
-## Run as
-# python3 main_standard_evolution.py CONTROLLER AGENT
-# Example:
-# python3 main_standard_evolution.py aggregation particle
 
 # Argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')

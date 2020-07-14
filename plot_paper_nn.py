@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Plot comparisons of the correlation between the trained NN and the validations sets
+@author: Mario Coppola, 2020
+"""
 from tools import fileHandler as fh
 import argparse
 import numpy as np
