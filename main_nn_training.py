@@ -11,36 +11,30 @@ from classes import simulator, desired_states_extractor
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 
+# Input arguments
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
-parser.add_argument('folder_training', type=str, help="(str) Training data folder")
-parser.add_argument('folder_validation', type=str, help="(str) Validation data folder")
-parser.add_argument('savefolder', type=str, help="(str) Save folder")
-parser.add_argument('-train', type=bool, default=True, help="(bool) Train, defualt True")
-parser.add_argument('-validate', type=bool, default=True, help="(bool) Validate, default True")
-parser.add_argument('-debug', type=bool, default=False, help="(bool) Debug (only 10 iterations), default False")
+parser.add_argument('folder_training', type=str, help="(str) Training data folder", default=None)
+parser.add_argument('folder_validation', type=str, help="(str) Validation data folder", default=None)
+parser.add_argument('savefolder', type=str, help="(str) Save folder", default=None)
+parser.add_argument('-train', action='store_true', help="(bool) Train flag to true")
+parser.add_argument('-validate', action='store_true', help="(bool) Validate flag to true")
 args = parser.parse_args()
 
-# Train the networks
+# Train the network
 dse = desired_states_extractor.desired_states_extractor()
 nets = []
 filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
-if args.debug:
-    i = 0
-if args.train is True:
+if args.train:
 	for filename in tqdm(sorted(filelist_training)):
 		model = dse.train(args.folder_training+filename)
 		nets.append(copy.deepcopy(model))
-		if args.debug:
-			i += 1
-			if i > 20: break
 	fh.save_pkl(nets,args.savefolder+"/models.pkl")
 else:
 	nets = fh.load_pkl(args.savefolder+"/models.pkl")
 
-# Validates
+# Validate against validation set
 filelist_validation = [f for f in os.listdir(args.folder_validation+"/") if f.endswith('.npz')]
 v = []
-if args.debug: i = 0
 if args.validate:
 	for model in tqdm(nets):
 		e = []
@@ -49,9 +43,7 @@ if args.validate:
 			_, corr, _ = dse.evaluate_model(model[0], s, f)
 			e.append(np.mean(corr))
 		v.append(e)
-		if args.debug:
-			i += 1
-			if i > 20: break
 
+# Save
 vname = os.path.basename(os.path.dirname(args.folder_validation))
 fh.save_pkl(v,args.savefolder + "/validation_" + vname + ".pkl")

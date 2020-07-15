@@ -25,28 +25,28 @@ parser.add_argument('controller', type=str, help="(str) Controller to use during
 parser.add_argument('-t', type=int, default=200, help="(int) Simulation time during benchmark, default = 200s")
 parser.add_argument('-n', type=int, default=30, help="(int) Max size of swarm, default = 30")
 parser.add_argument('-id', type=int, default=np.random.randint(1000), help="(int) ID of run, default = random")
-parser.add_argument('-animate', type=bool, default=False, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False")
 parser.add_argument('-iterations', type=int, default=500, help="(int) Number of iterations")
+parser.add_argument('-environment', type=str, default="square20", help="(str) Controller to use during evaluation")
+parser.add_argument('-animate', action='store_true', help="(bool) Animate flag to true")
 args = parser.parse_args()
 
 # Simulation parameters
 fitness, controller, agent, pr_states, pr_actions = parameters.get(args.controller)
 
 # Load and build
-sim = simulator.simulator(savefolder="data/%s/loop_%i/"%(controller,args.id))
+sim = simulator.simulator(savefolder="data/%s/data_%i/"%(controller,args.id))
 sim.make(controller, agent, animation=args.animate, verbose=False)
 
 for i in tqdm(range(args.iterations)):
-    # Random policy
+	# Random policy
 	policy = np.random.rand(pr_states,pr_actions)
 	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
 	if pr_actions > 1: policy = matop.normalize_rows(policy) # Normalize rows
-	print(policy)	
 	policy_filename = save_policy(sim, policy)
 
 	# Run
 	sim.run(time_limit=args.t, robots=np.random.randint(1,args.n), 
-		environment="square", policy=policy_filename, 
+		environment=args.environment, policy=policy_filename, 
 		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
 	# Save

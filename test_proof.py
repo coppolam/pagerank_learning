@@ -1,53 +1,58 @@
 import numpy as np
 import argparse
 from classes import simulator
-from classes import pagerank_optimization as pr
+import test_learnmodel as l
+from tools import matrixOperations as matop
+from classes import pagerank_optimization as propt
 
 # Args
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('file', type=str, help="Simulation file to use")
 args = parser.parse_args()
 
-# Import simulator API 
+# Load simulator model
 sim = simulator.simulator()
-sim.load(args.file)
+sim = l.learn_model(sim, args.file, discount=1.0)
 
+A = sim.A
+E = sim.E
+H = np.sum(A, axis=0)
 
-# Calculate predicted H1
-# if args.controller == "aggregation":
-#     fitness = "aggregation_clusters"
-#     pol0 = np.ones((8,1))/2 # all = 1/2
-# elif args.controller == "pfsm_exploration":
-#     fitness = "aggregation_clusters"
-#     pol0 = np.ones((16,8))/8 # all = 1/8
-# elif args.controller == "pfsm_exploration_mod":
-#     fitness = "aggregation_clusters"
-#     pol0 = np.ones((16,8))/8 # all 1/8
-# elif args.controller == "forage":
-#     fitness = "food"
-#     pol0 = np.ones((16,1))/2 # all = 1/2
-# else:    
-#     ValueError("Unknown controller!")
-des = np.ones((1,16))
-pol0 = np.ones((16,8))/8 # all = 1/8
-pol  = sim.optimize(pol0,des)
+with np.errstate(divide='ignore',invalid='ignore'):
+	r = H.sum(axis=1) / E.sum(axis=1)
+	r = np.nan_to_num(r) # Remove NaN Just in case
+	alpha = r / (1 + r)
 
-b0 = pr.update_b(sim.A,pol0)
-b1 = pr.update_b(sim.A,pol)
+G = np.diag(alpha).dot(H) + np.diag(1-alpha).dot(E) # Google matrix
 
-H1 = np.divide(b1, b0, where=b0!=0) * sim.H
-
-import networkx as nx
-from tools import graph
-
-G1 = nx.DiGraph(H1)
-G2 = nx.Digraph(sim.E)
+print(H)
+print(sim.E)
+pr0 = matop.pagerank(G)
 
 # Can agents always become active and go to any state on their own
 
+# debug des and policy aggregation
+des = np.array([0,1,1,1,1,1,1,1])
+policy = np.array([1,0,0,0,0,0,0,0])
+
+H1 = propt.update_H(A, policy)
+G = np.diag(alpha).dot(H1) + np.diag(1-alpha).dot(E) # Google matrix
+pr1 = matop.pagerank(G)
+
+f0 = propt.pagerankfitness(pr0,des)
+f1 = propt.pagerankfitness(pr1,des)
+
+print(f0,pr0)
+print(f1,pr1)
+
+import matplotlib
+import matplotlib.pyplot as plt
+plt.bar(range(pr0[0].size),pr0[0],alpha=0.5)
+plt.bar(range(pr1[0].size),pr1[0],alpha=0.5)
+plt.show()
+
 
 # Is there always at least one simplicial agent in the swarm? 
-
 
 # Can the desired states coexist
 # e.g. aggregation

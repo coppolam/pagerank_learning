@@ -8,7 +8,6 @@ import scipy.optimize
 import numpy as np
 from tools import matrixOperations as matop
 np.set_printoptions(suppress=True) # Avoid scientific notation
-from scipy.special import softmax
 
 def reshape_policy(A, pol):
 	'''Reshape the stochastic policy to the correct dimensions'''
@@ -37,12 +36,15 @@ def update_H(A, policy):
 	if A.shape[0] > 1: H = matop.normalize_rows(H) # Normalize for multiple actions
 	return H
 
+def pagerankfitness(pr,des):
+	return np.average(pr,axis=1,weights=des)/pr.mean() # Get pagerank fitness
+
 def objective_function(pol, des, alpha, A, E):
 	'''Objective function'''
 	H1 = update_H(A, pol) # Update H with new policy
 	G = np.diag(alpha).dot(H1) + np.diag(1-alpha).dot(E) # Google matrix
 	pr = matop.pagerank(G) # Evaluate pagerank vector 
-	f = np.average(pr,axis=1,weights=des)/pr.mean() # Get pagerank fitness
+	f = pagerankfitness(pr,des)
 	
 	# Display progress to terminal
 	p = "\r Fitness \t max:f=%.10f" % -f

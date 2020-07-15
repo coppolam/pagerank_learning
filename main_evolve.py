@@ -72,8 +72,7 @@ if args.resume is True:
 	p = e.evolve(verbose=True, generations=args.gen, checkpoint=filename, population=e.pop)
 
 ### Just run normally
-else:
-    p = e.evolve(verbose=True, generations=args.gen, checkpoint=filename)
+else: p = e.evolve(verbose=True, generations=args.gen, checkpoint=filename)
 
 ### Save
 e.save(filename)

@@ -30,8 +30,8 @@ parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark
 parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
 parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
-parser.add_argument('-animate', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
 parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=1)
+parser.add_argument('-animate', action='store_true', help="(bool) Animate flag to true")
 args = parser.parse_args()
 
 # Simulation parameters

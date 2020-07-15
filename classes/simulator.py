@@ -23,7 +23,7 @@ class simulator:
 		''' Build simulator'''
 		self.sim.make(controller=controller, agent=agent, clean=clean, animation=animation, logger=logger, verbose=verbose) # Build (if already built, you can skip this)
 		
-	def run(self, pr_states=0, pr_actions=0, policy="", fitness="", logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=300, environment="square", run_id=None):
+	def run(self, pr_states=0, pr_actions=0, policy="", fitness="", logger_updatefreq=2, robots=30, time_limit=10000, realtimefactor=300, environment="square20", run_id=None):
 		''' Run simulator with specified settings '''
 		subprocess.call("cd " + self.logs_folder + " && rm *.csv", shell=True)
 		self.sim.runtime_setting("time_limit", str(time_limit))
