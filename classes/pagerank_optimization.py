@@ -53,7 +53,7 @@ def objective_function(pol, des, alpha, A, E):
 
 def optimize(pol0, des, alpha, A, E):
 	'''Optimization function'''
-	ll = 0.001 # Lower limit
+	ll = 0.0 # Lower limit
 	ul = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),ul*np.ones(pol0.size))) # Bind values
 	return scipy.optimize.minimize(objective_function, pol0, bounds=bounds, args=(des, alpha, A, E))

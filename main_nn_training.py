@@ -26,7 +26,7 @@ nets = []
 filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
 if args.debug:
     i = 0
-if args.train is False:
+if args.train is True:
 	for filename in tqdm(sorted(filelist_training)):
 		model = dse.train(args.folder_training+filename)
 		nets.append(copy.deepcopy(model))

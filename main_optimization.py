@@ -26,8 +26,8 @@ def save_policy(sim,policy,pr_actions):
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
 parser.add_argument('folder_training', type=str, help="(str) Controller to use during evaluation")
-parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 500s", default=500)
-parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=20)
+parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 200s", default=200)
+parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
 parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
 parser.add_argument('-animate', type=bool, help="(bool) If True, does not do a benchmark but only shows a swarm with the optimized controller, default = False", default=False)
@@ -92,5 +92,5 @@ f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.r
 fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i.pkl"%(controller,controller,args.t,args.n,args.runs))
 
 # Plot
-import plots_paper_benchmark as b
+import plot_paper_benchmark as b
 b.benchmark("data/%s/benchmark_random_%s.pkl"%(controller,controller),new=f)
