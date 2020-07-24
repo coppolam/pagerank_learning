@@ -24,8 +24,10 @@ parser.add_argument('-plot', type=str, help="", default=None)
 parser.add_argument('-id', type=int, help="Evo ID", default=1)
 args = parser.parse_args()
 
+# Load parameters
 fitness, controller, agent, pr_states, _ = parameters.get(args.controller)
 
+# Set up directory
 folder = "data/%s/" % (controller)
 directory = os.path.dirname(folder)
 if not os.path.exists(directory): os.makedirs(directory)

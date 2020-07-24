@@ -54,6 +54,7 @@ class simulator:
 		return save_filename
 
 	def save_log(self,filename_ext=None):
+		'''Save a logfile'''
 		self.log = self.sim.load(file=self.logs_folder+"log_"+str(self.sim.run_id)+".txt")
 		save_filename = self.savefolder+filename_ext
 		np.savez(save_filename, log=self.log)
@@ -99,7 +100,7 @@ class simulator:
 		for i,a in enumerate(self.A): print("A%i:"%i); print(a);
 
 	def benchmark(self, controller, agent, policy, fitness, robots=30, 
-		time_limit=1000, realtimefactor=300, environment="square", runs=100, make=True):
+		time_limit=1000, realtimefactor=300, environment="square20", runs=100, make=True):
 		'''Perform many runs of the simulator to benchmark the behavior'''
 		
 		# Save policy file to test

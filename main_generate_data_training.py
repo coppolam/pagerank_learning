@@ -13,7 +13,8 @@ from tools import matrixOperations as matop
 import parameters
 
 def save_policy(sim,policy):
-	policy_filename = "conf/state_action_matrices/loop_policy_loop.txt"
+	'''Function to save the policy and use it in swarmulator'''
+	policy_filename = "conf/state_action_matrices/training_policy.txt"
 	policy_file = sim.sim.path + "/" + policy_filename
 	if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
 	else: fh.save_to_txt(policy, policy_file)

@@ -12,8 +12,9 @@ from tools import matrixOperations as matop
 import matplotlib.pyplot as plt
 from tools import prettyplot
 
-def evaluate_model_values(f,a=0):
-	sim = simulator.simulator()
+sim = simulator.simulator()
+	
+def evaluate_model_values(f, a=0):
 	filelist = [f for f in os.listdir(f) if f.endswith('.npz')]
 	v = []
 	for j, filename in tqdm(enumerate(sorted(filelist))):
@@ -24,7 +25,7 @@ def evaluate_model_values(f,a=0):
 	data = np.array(v).T
 	return data
 
-def learn_model(sim,f,discount=1.0):
+def learn_model(sim, f, discount=1.0):
 	filelist = [f for f in os.listdir(f) if f.endswith('.npz')]
 	v = []
 	for j, filename in tqdm(enumerate(sorted(filelist))):
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 	parser.add_argument('folder_training', type=str, help="(str) Training data folder")
 	args = parser.parse_args()
 
-	data = learn_model(args.folder_training)
+	data = evaluate_model_values(args.folder_training)
 	for d in data:
 		plt.plot(d)
 	plt.show()

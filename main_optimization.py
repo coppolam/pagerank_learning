@@ -30,8 +30,10 @@ parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark
 parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
 parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
 parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=1)
-parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=1)
+parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=0)
+parser.add_argument('-environment', type=str, help="(int) Number of iterations", default="square20")
 parser.add_argument('-animate', action='store_true', help="(bool) Animate flag to true")
+parser.add_argument('-observe', action='store_true', help="(bool) Animate flag to true")
 args = parser.parse_args()
 
 # Simulation parameters
@@ -43,11 +45,11 @@ sim.make(controller, agent, animation=args.animate, verbose=False) # Build
 
 # Desired states
 dse = desired_states_extractor.desired_states_extractor()
-dse.load_model("data/%s/models.pkl"%controller)
+dse.load_model("data/%s/models.pkl"%controller,modelnumber=499)
 des = dse.get_des(dim=pr_states)
 
 # Initial policy to optimize from
-policy = np.random.rand(pr_states,pr_actions)
+policy = np.random.rand(pr_states,pr_actions)\
 
 # Load model
 filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
@@ -62,21 +64,21 @@ policy = sim.optimize(policy, des)
 print(des)
 print(policy)
 
-# Perform additional iterations
+# Perform additional iterations, if you want (not done by default)
 i = 0
 while i < args.iterations:
-	print("Iteration %i"%i)
+	print("\nIteration %i\n"%i)
 	policy_filename = save_policy(sim, policy, pr_actions)
 
 	# Run simulation
-	sim.run(time_limit=args.t, robots=args.n, environment="square", policy=policy_filename, 
+	sim.run(time_limit=args.t, robots=args.n, environment="square20", policy=policy_filename, 
 		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
 	# Save data
 	logname = "%s_%s_t%i_r%i_id%s_%i"%(controller, agent, args.t, args.n, sim.run_id, i)
 	logfile = sim.save_learning_data(filename_ext=logname)
 
-	# Optimization procedure
+	# Optimization
 	des = dse.run(logfile+".npz", load=False, verbose=False) # Update desired states 
 	sim.load_update(logfile+".npz",discount=1.0) # Update model
 	policy = sim.optimize(policy, des) # Optimize again
@@ -86,11 +88,17 @@ while i < args.iterations:
 	print(des)
 	print(policy)
 	
-# Benchmark final controller
-print("----------Benchmarking-----------")
-f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.runs, time_limit=args.t, make=True)
-fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i.pkl"%(controller,controller,args.t,args.n,args.runs))
+# Check out the result, either visually or benchmarking with many simulations (default=benchmark)
+if args.observe:
+	# Run simulation with animation=on so that you can see what's happening in a sample run
+	policy_filename = save_policy(sim, policy, pr_actions)
+	sim.make(controller, agent, animation=True, verbose=False) # Build
+	sim.run(time_limit=0, robots=args.n, environment=args.environment, policy=policy_filename, 
+		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
-# Plot
-import plot_paper_benchmark as b
-b.benchmark("data/%s/benchmark_random_%s.pkl"%(controller,controller),new=f)
+else:
+	# Benchmark final controller and save the results
+	print("\n\nBenchmarking\n")
+	f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.runs, 
+			environment=args.environment, time_limit=args.t, make=True)
+	fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i_id%i.pkl"%(controller,controller,args.t,args.n,args.runs,args.id))

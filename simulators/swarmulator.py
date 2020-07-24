@@ -40,7 +40,7 @@ class swarmulator:
 				os.remove(filePath)
 			except OSError:
 				print("Error while deleting file")
-    		
+
 	def _launch(self, n, run_id):
 		'''Launches an instance of a swarmulator simulation'''
 		cmd = "cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &"

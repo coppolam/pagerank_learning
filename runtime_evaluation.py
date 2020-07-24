@@ -14,6 +14,7 @@ matplotlib.rc('text', usetex=True)
 sim = swarmulator.swarmulator(verbose=False)
 	
 def wall_clock_test(n,m):
+	'''Test the wall clock time of single runs'''
 	sim.make(clean=True,verbose=False);
 	print("Wall-clock test (single simulation mode)")
 	t = np.zeros([n,m])
@@ -26,6 +27,7 @@ def wall_clock_test(n,m):
 	return t
 
 def wall_clock_batch_test(n,m,batchsize):
+	'''Test the wall clock time of batch (parallel) runs'''
 	sim.make(clean=True,verbose=False);
 	print("Wall-clock test (batch simulation mode)")
 	t = np.zeros([n,m])

@@ -20,13 +20,11 @@ class desired_states_extractor:
 			print("Model does not exist, generating the NN")
 			self.network = simplenetwork.simplenetwork(x.shape[1])
 		loss_history = []
-		i = 0
-		for element in y:
+		for i, element in enumerate(y):
 			in_tensor = torch.tensor([x[i]]).float()
 			out_tensor = torch.tensor([[element]]).float()
 			_,loss = self.network.run(in_tensor,out_tensor)
 			loss_history = np.append(loss_history,loss.item())
-			i += 1
 		return self.network, loss_history
 	
 	def evaluate_model(self,network,x,y):
@@ -39,10 +37,10 @@ class desired_states_extractor:
 		corr = np.corrcoef(y_pred,y)
 		return error, corr, y_pred
 
-	def load_model(self,modelsfile):
+	def load_model(self,modelsfile,modelnumber=-1):
 		'''Load the latest model from the trained pkl file'''
 		m = fh.load_pkl(modelsfile)
-		self.network = m[-1][0] # last model
+		self.network = m[modelnumber][0] # default = -1, last model in the list
 
 	def extract_states(self,file,pkl=False):
 		'''Extract the inputs needed to maximize output'''
@@ -65,14 +63,9 @@ class desired_states_extractor:
 		'''Fitness function'''
 		in_tensor = torch.tensor([individual]).float()
 		f = self.network.network(in_tensor).item()
-		return f, 
+		return f,
 
-	# def _constraint(self,individual):
-	# 	'''Feasibility function for the individual. Returns True if feasible False otherwise.'''
-	# 	if np.sum(individual) < 1: return True
-	# 	return False
-
-	def get_des(self,dim=None):
+	def get_des(self,dim=None,plot=False):
 		'''Runs an evolutionary optimization to extract the states that maximize the fitness''' 
 		e = evolution.evolution()
 		if dim is None: d = self.dim
@@ -80,7 +73,7 @@ class desired_states_extractor:
 		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=1000)
 		e.evolve(verbose=True, generations=100)
 		des = e.get_best()
-		# e.plot_evolution()#"%s_evo_des.pdf"%file)
+		if plot: e.plot_evolution("%s_evo_des.pdf"%file)
 		return des
 
 	def run(self,file,load=True,verbose=False, replay=1):

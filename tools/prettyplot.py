@@ -10,9 +10,10 @@ import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
+matplotlib.rcParams.update({'font.size': 22})
 
 def setup():
-	plt.figure(figsize=(6,3))
+	plt.figure(figsize=(12,6))
 	return plt
 
 def adjust(plt):

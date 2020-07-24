@@ -4,7 +4,7 @@ Plot comparisons of the correlation between the trained NN and the validations s
 @author: Mario Coppola, 2020
 """
 from tools import fileHandler as fh
-import argparse
+import argparse, os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ elif args.controller == "pfsm_exploration":
 	filename.append(df+"pfsm_exploration_2_1.pkl")
 	# Files where it evaluates against different dynamics
 	filename.append(df+"pfsm_exploration_mod_1_1.pkl")
-	# filename.append(df+"pfsm_exploration_mod_2_1.pkl")
+	filename.append(df+"pfsm_exploration_mod_2_1.pkl")
 	name.append("Oriented 1")
 	name.append("Oriented 2")
 	name.append("Oriented mod 1")
@@ -42,8 +42,8 @@ elif args.controller == "pfsm_exploration_mod":
 	filename.append(df+"pfsm_exploration_mod_1_1.pkl")
 	filename.append(df+"pfsm_exploration_mod_2_1.pkl")
 	# Files where it evaluates against different dynamics
-	# filename.append(df+"pfsm_exploration_mod_pfsm_exploration_1_1.pkl")
-	# filename.append(df+"pfsm_exploration_mod_pfsm_exploration_2_1.pkl")
+	filename.append(df+"pfsm_exploration_1_1.pkl")
+	filename.append(df+"pfsm_exploration_2_1.pkl")
 	name.append("Oriented mod 1")
 	name.append("Oriented mod 2")
 	name.append("Oriented 1")
@@ -81,4 +81,14 @@ plt.xlabel("Epoch")
 plt.ylabel("Correlation")
 plt.legend()
 plt = pp.adjust(plt)
-plt.show()
+
+# Save or show
+fname = "nn_correlation_%s.png"%args.controller
+if fname is not None:
+	folder = "figures/"
+	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
+	filename_raw = os.path.splitext(os.path.basename(fname))[0]
+	plt.savefig(folder+"%s.png"%filename_raw)
+else:
+	plt.show()
+

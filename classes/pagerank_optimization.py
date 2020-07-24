@@ -72,7 +72,7 @@ def main(pol0, des, A, E):
 		r = H.sum(axis=1) / E.sum(axis=1)
 	r = np.nan_to_num(r) # Remove NaN Just in case
 	alpha = r / (1 + r)
-
+	
 	# Normalize
 	An = np.copy(A) # Doing this to avoid rewriting A
 	for i in range(0,A.shape[0]): An[i] = matop.normalize_rows(An[i])
