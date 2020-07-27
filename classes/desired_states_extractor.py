@@ -65,13 +65,13 @@ class desired_states_extractor:
 		f = self.network.network(in_tensor).item()
 		return f,
 
-	def get_des(self,dim=None,plot=False):
+	def get_des(self,dim=None,plot=False,popsize=1000,gens=100):
 		'''Runs an evolutionary optimization to extract the states that maximize the fitness''' 
 		e = evolution.evolution()
 		if dim is None: d = self.dim
 		else: d = dim
-		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=1000)
-		e.evolve(verbose=True, generations=100)
+		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=popsize)
+		e.evolve(verbose=True, generations=gens)
 		des = e.get_best()
 		if plot: e.plot_evolution("%s_evo_des.pdf"%file)
 		return des
