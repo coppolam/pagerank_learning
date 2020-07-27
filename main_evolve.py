@@ -12,19 +12,20 @@ from tools import fileHandler as fh
 from classes import evolution
 from simulators import swarmulator
 import parameters
+from tools import matrixOperations as matop
 
 # Argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
 parser.add_argument('-generations', type=int, help="Max generations", default=50)
-parser.add_argument('-psize', type=int, help="Population size", default=100)
+parser.add_argument('-pop', type=int, help="Population size", default=100)
 parser.add_argument('-t', type=int, help="Time", default=200)
 parser.add_argument('-nmin', type=int, help="Time", default=10)
 parser.add_argument('-nmax', type=int, help="Time", default=20)
-parser.add_argument('-batchsize', type=int, help="Batch size", default=5)
+parser.add_argument('-reruns', type=int, help="Batch size", default=5)
 parser.add_argument('-plot', type=str, help="", default=None)
 parser.add_argument('-environment', type=str, help="environment", default="square20")
-parser.add_argument('-id', type=int, help="Evo ID", default=1)
+parser.add_argument('-id', type=int, help="Evo ID", default=np.random.randint(0,10000))
 parser.add_argument('-resume', action='store_true', help="(bool) Animate flag to true")
 args = parser.parse_args()
 
@@ -38,25 +39,29 @@ if not os.path.exists(directory): os.makedirs(directory)
 
 # Fitness function
 def fitnessfunction(individual):
-	### Set the policy file that swarmulator reads
+	'''Fitness function that evaluates the average performance of the individuals'''
+	
+	# Set the policy file that swarmulator reads
 	policy_file = "../swarmulator/conf/state_action_matrices/policy_evolved_temp.txt"
-	if args.controller=="pfsm_exploration":
+	if pr_actions > 1: # Reshape and normalize along rows
 		individual = np.reshape(individual,(pr_states,pr_actions))
+		individual = matop.normalize_rows(individual)
 	fh.save_to_txt(individual, policy_file)
 	sim.runtime_setting("policy", policy_file) # Use random policy
 
-	### Run swarmulator in batches
+	# Run swarmulator in batches
 	f = []
-	for i in range(args.batchsize):
-		robots = np.random.randint(args.nmin,args.nmax,1)
-		f = np.append(f,sim.run(robots[0]))
-	# f = sim.batch_run((args.nmin,args.nmax),args.batchsize) # Run with 10-20 agents
-	print(f)
+	for i in range(args.reruns):
+		robots = np.random.randint(args.nmin,args.nmax) # Random number of robots within bounds
+		f = np.append(f,sim.run(robots)) # Simulate
+	# f = sim.batch_run((args.nmin,args.nmax),args.reruns) # Run with 10-20 agents
+	
+	print(f) # Just to keep track
 	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
 
 # Load evolution API
 e = evolution.evolution()
-e.setup(fitnessfunction, GENOME_LENGTH=pr_states*pr_actions, POPULATION_SIZE=args.psize)
+e.setup(fitnessfunction, GENOME_LENGTH=pr_states*pr_actions, POPULATION_SIZE=args.pop)
 
 # Plot file from file args.plot
 if args.plot is not None:
