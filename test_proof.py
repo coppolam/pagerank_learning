@@ -7,6 +7,8 @@ import parameters
 from classes import simulator, evolution, desired_states_extractor
 import matplotlib
 import matplotlib.pyplot as plt
+import conditions
+import networkx as nx
 
 # Args
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
@@ -26,7 +28,7 @@ dse = desired_states_extractor.desired_states_extractor()
 dse.load_model("data/%s/models.pkl"%controller)
 des = dse.get_des(dim=pr_states,gens=10,popsize=100)
 
-# # Optimize policy
+# Optimize policy
 policy = np.random.rand(pr_states,pr_actions)
 policy = sim.optimize(policy, des)
 
@@ -52,42 +54,14 @@ f1 = propt.objective_function(policy, des, alpha, A, E)
 
 # Diff plot of pagerank values
 plt.bar(range(pr0[0].size),pr1[0]-pr0[0],alpha=0.5)
-plt.show()
+# plt.show()
 
 # Plot of absolute pagerank values
 plt.bar(range(pr0[0].size),pr0[0],alpha=0.5)
 plt.bar(range(pr0[0].size),pr1[0],alpha=0.5)
-plt.show()
+# plt.show()
 
 # Is there always at least one simplicial agent in the swarm? 
-import networkx as nx
-
-G1 = nx.from_numpy_matrix(H)
-G2 = nx.from_numpy_matrix(E)
-
-def condition_1(G,des):
-	'''All des states can be reached via H'''
-	# Check
-	for node in range(len(G.nodes)):
-		for d in des:
-			if nx.has_path(G,node,d[0]) is False:
-				return False # Counterexample found
-	return True
-
-
-def condition_2(G,static,active):
-	'''Static states that are not desired can become active via the environment (Matrix E)'''
-	
-	# Check
-	counterexampleflag = False
-	for s in static:
-		for a in active:
-			if nx.has_path(G,s,a[0]) is False:
-				print("Counterexample found for path %i to %i"%(s, a[0]))
-				counterexampleflag = True
-	if counterexampleflag: return False
-	return True
-
 
 print("\n------- MODEL -------")
 print("H matrix:\n",H)
@@ -97,26 +71,18 @@ print("\nalpha vector:\n",alpha)
 print("\n------- POLICY -------")
 print(policy)
 
-# Ignore unknown nodes with no information
-d = list(nx.isolates(G1))
-G1.remove_nodes_from(d)
-des = np.delete(des,d)
-a = 1 if pr_actions > 1 else 0
-policy = np.delete(policy,d,axis=a)
-static = np.argwhere(np.array(np.sum(policy,axis=a))<0.001)
-active = np.argwhere(np.array(np.sum(policy,axis=a))>0.001)
-happy = np.argwhere(np.array(des)>0.1)
-static_unhappy = np.setdiff1d(static,happy)
 
-c1 = condition_1(G1,happy)
-c2 = condition_2(G2,static_unhappy,active)
+c = conditions.verification(H,E,policy,des)
+c.verify()
+c.disp()
 
 print("\n------- STATS -------")
-print("Original fitness = ",f0)
-print("New fitness = ",f1)
+print("Original fitness =",f0[0])
+print("New fitness =",f1[0])
 print("Static states:\n",static.T[0])
 print("Active states:\n",active.T[0])
 print("Happy states:\n",happy.T[0])
 print("Static and unhappy states:\n",static_unhappy.T)
 print("Condition 1:",c1)
 print("Condition 2:",c2)
+print("Condition 3:",c3)
