@@ -18,7 +18,7 @@ def plot_benchmark(f):
 def plot_new(f):
 	plt.hist(f, alpha=0.9, label='Optimized policy')
 
-def benchmark(benchmarkfile,new=None,filename=None):
+def benchmark(benchmarkfile,new=None,filename=None,fileformat="pdf"):
 	plt = pp.setup()
 	f = fh.load_pkl(benchmarkfile)
 	fn = fh.load_pkl(new)
@@ -33,17 +33,18 @@ def benchmark(benchmarkfile,new=None,filename=None):
 
 	# Save or show
 	if filename is not None:
-		folder = "figures/"
+		folder = "figures/benchmark/"
 		if not os.path.exists(os.path.dirname(folder)):
 			os.makedirs(os.path.dirname(folder))
 		filename_raw = os.path.splitext(os.path.basename(filename))[0]
-		plt.savefig(folder+"%s.png"%filename_raw)
+		plt.savefig(folder+"%s.%s"%(filename_raw,fileformat))
 	else:
 		plt.show()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 	parser.add_argument('controller', type=str, help="(str) Benchmark fitness logs")
+	parser.add_argument('-format', type=str, help="(str) Controller", default="pdf")
 	args = parser.parse_args()	
 	
 	filename = []
@@ -63,5 +64,5 @@ if __name__ == "__main__":
 	else:
 		print("\n\n\nNot a valid\n\n\n")
 
-	f = "benchmark_%s.png"%args.controller
+	f = "benchmark_%s.%s"%(args.controller,args.format)
 	benchmark(bm,new=om,filename=f)

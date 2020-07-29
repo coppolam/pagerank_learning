@@ -47,7 +47,7 @@ plt.ylabel('Fitness')
 # Save or show
 fname = filelist[0]
 if fname is not None:
-	folder = "figures/"
+	folder = "figures/evolution/"
 	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
 	filename_raw = os.path.splitext(os.path.basename(fname))[0]
 	plt.savefig(folder+"%s.png"%filename_raw)

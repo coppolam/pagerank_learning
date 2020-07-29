@@ -13,6 +13,7 @@ from tools import prettyplot as pp
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) Controller", default=None)
+parser.add_argument('-format', type=str, help="(str) Controller", default="pdf")
 args = parser.parse_args()
 
 # Default character init
@@ -83,12 +84,12 @@ plt.legend()
 plt = pp.adjust(plt)
 
 # Save or show
-fname = "nn_correlation_%s.png"%args.controller
+fname = "nn_correlation_%s.%s"%(args.controller,args.format)
 if fname is not None:
-	folder = "figures/"
+	folder = "figures/nn/"
 	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
 	filename_raw = os.path.splitext(os.path.basename(fname))[0]
-	plt.savefig(folder+"%s.png"%filename_raw)
+	plt.savefig(folder+"%s.%s"%(filename_raw,args.format))
 else:
 	plt.show()
 
