@@ -10,7 +10,7 @@ import numpy as np
 from classes import simulator
 from tools import matrixOperations as matop
 import matplotlib.pyplot as plt
-from tools import prettyplot
+from tools import prettyplot as pp
 
 sim = simulator.simulator()
 	
@@ -35,10 +35,22 @@ def learn_model(sim, f, discount=1.0):
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
+	parser.add_argument('controller', type=str, help="(str) Training data folder")
 	parser.add_argument('folder_training', type=str, help="(str) Training data folder")
+	parser.add_argument('-format', type=str, default="pdf", help="(str) Training data folder")
 	args = parser.parse_args()
 
 	data = evaluate_model_values(args.folder_training)
-	for d in data:
-		plt.plot(d)
-	plt.show()
+	
+	folder = "figures/model/"
+
+	plt = pp.setup()
+	for d in data: plt.plot(d)
+	plt.xlabel("Simulation")
+	plt.ylabel("Probability")
+	plt = pp.adjust(plt)
+
+	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
+	vname = os.path.basename(os.path.dirname(args.folder_training))
+	
+	plt.savefig(folder+"model_%s_%s.%s"%(args.controller,vname,args.format))

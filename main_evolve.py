@@ -52,7 +52,8 @@ def fitnessfunction(individual):
 	# Run swarmulator in batches
 	f = []
 	for i in range(args.reruns):
-		robots = np.random.randint(args.nmin,args.nmax) # Random number of robots within bounds
+		if args.nmin < args.nmax: robots = np.random.randint(args.nmin,args.nmax) # Random number of robots within bounds
+		else: robots = args.nmin
 		f = np.append(f,sim.run(robots)) # Simulate
 	# f = sim.batch_run((args.nmin,args.nmax),args.reruns) # Run with 10-20 agents
 	
