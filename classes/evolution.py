@@ -33,7 +33,7 @@ class evolution:
 		self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 		self.toolbox.register("evaluate", fitness_function_handle)
 		self.toolbox.register("mate", tools.cxUniform, indpb=0.5) # Mating method
-		self.toolbox.register("mutate", tools.mutUniformInt, low=0.0, up=1.0, indpb=0.3) # Mutation method
+		self.toolbox.register("mutate", tools.mutPolynomialBounded, eta=0.3, low=0.0, up=1.0, indpb=0.3) # Mutation method
 		self.toolbox.register("select", tools.selTournament, tournsize=2) # Selection method
 		if constraint is not None: self.toolbox.decorate("evaluate", tools.DeltaPenalty(constraint,0,self.distance))
 		self.stats = [] # Initialize stats vector

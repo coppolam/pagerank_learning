@@ -73,12 +73,12 @@ for f in file: data.append(process(f))
 # Plot
 plt = pp.setup()
 for i,d in enumerate(data):
-	plt.plot(d[0],label=name[i]) # Plot line
-	plt.fill_between(range(len(d[0])),
-		np.array(d[0])-np.array(d[1]),np.array(d[0])+np.array(d[1]),
+	plt.plot(d[0][:499],label=name[i]) # Plot line
+	plt.fill_between(range(len(d[0][:499])),
+		np.array(d[0][:499])-np.array(d[1][:499]),np.array(d[0][:499])+np.array(d[1][:499]),
 		alpha=0.2) # Error margin
 
-plt.xlabel("Epoch")
+plt.xlabel("Simulation")
 plt.ylabel("Correlation")
 plt.legend()
 plt = pp.adjust(plt)

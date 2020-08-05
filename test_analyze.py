@@ -29,7 +29,7 @@ for i, filename in enumerate(filelist_training):
 	plt.plot(tc,fc);
 	plt.plot(tc,y_pred);
 	plt.xlabel("Time [s]")
-	plt.ylabel("Fitness [-]")
+	plt.ylabel("Fitness $F_g$")
 	plt.gcf().subplots_adjust(bottom=0.15)
 	plt.draw()
 	plt.pause(0.001)

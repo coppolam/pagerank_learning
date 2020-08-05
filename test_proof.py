@@ -6,7 +6,7 @@ import networkx as nx
 
 import parameters
 import conditions
-import test_learnmodel as l
+import plot_paper_model as l
 
 from tools import matrixOperations as matop
 from tools import prettyplot as pp
@@ -73,8 +73,8 @@ if not os.path.exists(os.path.dirname(folder)):
 if args.plot:
 	# Plot pagerank
 	plt = pp.setup()
-	plt.bar(np.array(range(prH0[0].size)),prH0[0],alpha=0.5,label="PR(H0)")
-	plt.bar(np.array(range(prE[0].size)),prE[0],alpha=0.5,label="PR(E)")
+	plt.bar(np.array(range(prH0[0].size)),prH0[0],alpha=0.5,label="PR^\pi, H^\pi")
+	plt.bar(np.array(range(prE[0].size)),prE[0],alpha=0.5,label="PR^\pi, E")
 	plt = pp.adjust(plt)
 	plt.xlabel("State [-]")
 	plt.ylabel("PageRank [-]")
@@ -83,7 +83,7 @@ if args.plot:
 
 	# Diff plot of pagerank values
 	plt = pp.setup()
-	plt.bar(range(pr1[0].size),pr1[0]-pr0[0],alpha=0.5,label="PR(G1)-PR(G0)")
+	plt.bar(range(pr1[0].size),pr1[0]-pr0[0],alpha=0.5,label="$PR^\pi-PR^{\pi^\star}$")
 	plt = pp.adjust(plt)
 	plt.xlabel("State [-]")
 	plt.ylabel("PageRank [-]")
@@ -92,8 +92,8 @@ if args.plot:
 
 	# Plot of absolute pagerank values
 	plt = pp.setup()
-	plt.bar(range(pr0[0].size),pr0[0],alpha=0.5,label="PR(G0)")
-	plt.bar(range(pr1[0].size),pr1[0],alpha=0.5,label="PR(G1)")
+	plt.bar(range(pr0[0].size),pr0[0],alpha=0.5,label="$PR^\pi$")
+	plt.bar(range(pr1[0].size),pr1[0],alpha=0.5,label="$PR^{\pi^\star}$")
 	plt.xlabel("State [-]")
 	plt.ylabel("PageRank [-]")
 	plt = pp.adjust(plt)
