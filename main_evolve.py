@@ -68,6 +68,7 @@ e.setup(fitnessfunction, GENOME_LENGTH=pr_states*pr_actions, POPULATION_SIZE=arg
 if args.plot is not None:
 	e.load(args.plot)
 	e.plot_evolution()
+	print(e.get_best())
 	exit()
 	
 # Swarmulator API

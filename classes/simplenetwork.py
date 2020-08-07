@@ -6,12 +6,11 @@ Optimize a behavior based on the PageRank function
 import torch
 
 class simplenetwork:
-	def __init__(self,D_in,lr=1e-6):
+	def __init__(self,D_in,lr=1e-5):
 		'''Initialization function. Set here the hyperparameters'''
 		self.network = self.initialize(D_in, 200, 1)
 		self.loss_fn = torch.nn.MSELoss()
 		self.optimizer = torch.optim.Adam(self.network.parameters(), lr=lr)
-		# (Practical note: Adam optimizer works well, SGD unstablish with 1e-4 learning rate)
 
 	def initialize(self, D_in, H, D_out):
 		'''Initializes the network'''

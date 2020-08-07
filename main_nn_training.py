@@ -19,8 +19,8 @@ parser.add_argument('folder_validation', type=str, help="(str) Validation data f
 parser.add_argument('savefolder', type=str, help="(str) Save folder", default=None)
 parser.add_argument('-id',  type=int, help="Model ID (for save/load)", default=1)
 parser.add_argument('-train', action='store_true', help="(bool) Train flag to true")
-parser.add_argument('-validate', action='store_true', help="(bool) Validate flag to true")
-parser.add_argument('-evaluate', action='store_true', help="(bool) Validate flag to true")
+parser.add_argument('-validate', action='store_true', help="(bool) Validate flag to true (checks all models)")
+parser.add_argument('-evaluate', action='store_true', help="(bool) Evaluate flag to true (checks last model only)")
 args = parser.parse_args()
 
 #Initialize desired states extractor
@@ -32,13 +32,12 @@ filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('
 if args.train:
 	i = 0
 	for filename in tqdm(sorted(filelist_training)):
-		if i == 500: dse.network.optimizer = torch.optim.Adam(dse.network.network.parameters(), lr=1e-7)
 		model = dse.train(args.folder_training+filename)
 		nets.append(copy.deepcopy(model))
 		i += 1
-	fh.save_pkl(nets,"%s/models_id%i.pkl"%(args.savefolder,args.id))
+	fh.save_pkl(nets,"%s/models.pkl"%(args.savefolder))
 else:
-	nets = fh.load_pkl("%s/models_id%i.pkl"%(args.savefolder,args.id))
+	nets = fh.load_pkl("%s/models.pkl"%(args.savefolder))
 
 # Validate against validation set
 filelist_validation = [f for f in os.listdir(args.folder_validation+"/") if f.endswith('.npz')]
@@ -52,6 +51,8 @@ if args.evaluate:
 		_, corr, _ = dse.evaluate_model(model[0], s, f)
 		e.append(np.mean(corr))
 	print(np.mean(e)) # visualize
+	print(model[0].optimizer)
+	print(model[0].network)
 
 # Crosscheck all models against all validation files
 v = []
