@@ -59,7 +59,7 @@ class desired_states_extractor:
 		return time, s, fitness
 		
 	def _fitness(self,individual):
-		individual = matop.normalize_rows(individual,axis=0)
+		# individual = matop.normalize_rows(individual,axis=0)
 		'''Fitness function'''
 		in_tensor = torch.tensor([individual]).float()
 		f = self.network.network(in_tensor).item()

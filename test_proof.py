@@ -19,7 +19,7 @@ parser.add_argument('controller', type=str, help="Controller to use")
 parser.add_argument('training_folder', type=str, help="Training folder to use")
 parser.add_argument('-format', type=str, default="pdf", help="Training folder to use")
 parser.add_argument('-plot', action='store_true', help="(bool) Animate flag to true")
-parser.add_argument('-verbose', action='store_false', help="(bool) Animate flag to true")
+parser.add_argument('-verbose', action='store_true', help="(bool) Animate flag to true")
 args = parser.parse_args()
 
 # Load parameters
@@ -32,7 +32,7 @@ sim = l.learn_model(sim, args.training_folder, discount=1.0)
 # Get desired states
 dse = desired_states_extractor.desired_states_extractor()
 dse.load_model("data/%s/models.pkl"%controller,modelnumber=499)
-des = dse.get_des(dim=pr_states, gens=100, popsize=1000)
+des = dse.get_des(dim=pr_states, gens=100, popsize=100)
 
 # Optimize policy
 policy = np.random.rand(pr_states,pr_actions)
@@ -102,18 +102,18 @@ if args.plot:
 
 if args.verbose:
 	print("\n------- MODEL -------")
-	print("H matrix:\n",H0)
+	print("H0 matrix:\n",H0)
+	print("H1 matrix:\n",H1)
 	print("\nE matrix:\n",sim.E)
 	print("\nalpha vector:\n",alpha)
 
 	print("\n------- POLICY -------")
 	print(policy)
-	c.disp()
 
 	print("\n------- STATS -------")
 	print("Original fitness =",f0[0])
 	print("New fitness =",f1[0])
 
 # Check conditions
-c = conditions.verification(H1,E,policy,des)
+c = conditions.verification(H0,H1,E,policy,des)
 c.verify()

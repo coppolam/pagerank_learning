@@ -34,6 +34,7 @@ parser.add_argument('-iterations', type=int, help="(int) Number of iterations", 
 parser.add_argument('-environment', type=str, help="(int) Number of iterations", default="square20")
 parser.add_argument('-animate', action='store_true', help="(bool) Animate flag to true")
 parser.add_argument('-observe', action='store_true', help="(bool) Animate flag to true")
+parser.add_argument('-log', action='store_true', help="(bool) Animate flag to true")
 args = parser.parse_args()
 
 # Simulation parameters
@@ -49,7 +50,7 @@ dse.load_model("data/%s/models.pkl"%controller,modelnumber=499)
 des = dse.get_des(dim=pr_states)
 
 # Initial policy to optimize from
-policy = np.random.rand(pr_states,pr_actions)\
+policy = np.random.rand(pr_states,pr_actions)
 
 # Load model
 filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
@@ -96,9 +97,17 @@ if args.observe:
 	sim.run(time_limit=0, robots=args.n, environment=args.environment, policy=policy_filename, 
 		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
+# Check out the result, either visually or benchmarking with many simulations (default=benchmark)
+if args.log:
+	# Run simulation with animation=on so that you can see what's happening in a sample run
+	policy_filename = save_policy(sim, policy, pr_actions)
+	sim.make(controller, agent, animation=False, verbose=False, logger=True) # Build
+	sim.run(time_limit=args.t, robots=args.n, environment=args.environment, policy=policy_filename, 
+		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
+	sim.save_log(filename_ext="sample_log")
 else:
 	# Benchmark final controller and save the results
 	print("\n\nBenchmarking\n")
 	f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.runs, 
-			environment=args.environment, time_limit=args.t, make=True)
+			environment=args.environment, time_limit=args.t, make=True, pr_states=pr_states, pr_actions=pr_actions)
 	fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i_id%i.pkl"%(controller,controller,args.t,args.n,args.runs,args.id))

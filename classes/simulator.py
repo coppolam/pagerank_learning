@@ -100,7 +100,7 @@ class simulator:
 		for i,a in enumerate(self.A): print("A%i:"%i); print(a);
 
 	def benchmark(self, controller, agent, policy, fitness, robots=30, 
-		time_limit=1000, realtimefactor=300, environment="square20", runs=100, make=True):
+		time_limit=1000, realtimefactor=300, environment="square20", runs=100, make=True, pr_states=0, pr_actions=0):
 		'''Perform many runs of the simulator to benchmark the behavior'''
 		
 		# Save policy file to test
@@ -110,20 +110,24 @@ class simulator:
 
 		# Build with correct settings
 		if make == True:
-			self.sim.make(controller=controller, agent=agent, clean=True, animation=False, logger=False, verbose=False)
+			self.sim.make(controller=controller, agent=agent, clean=True, animation=False, logger=True, verbose=False)
 		self.sim.runtime_setting("time_limit", str(time_limit))
 		self.sim.runtime_setting("simulation_realtimefactor", str(realtimefactor))
 		self.sim.runtime_setting("environment", environment)
 		self.sim.runtime_setting("policy", policy_file)
 		self.sim.runtime_setting("fitness", fitness)
-		self.sim.runtime_setting("pr_states", str(0)) # Don't run pr estimator
-		self.sim.runtime_setting("pr_actions", str(0)) # Don't run pr estimator
+		self.sim.runtime_setting("pr_states", str(pr_states)) # Don't run pr estimator
+		self.sim.runtime_setting("pr_actions", str(pr_actions)) # Don't run pr estimator
 
-		# Run (in batches for speed)
 		f = []
-		for i in tqdm(range(0,round(runs/5))):
-			f = np.append(f,self.sim.batch_run(robots,5))
+		# for i in tqdm(range(0,round(runs/5))): # Run in batches for speed, uncomment this if you want it
+		# 	f = np.append(f,self.sim.batch_run(robots,5))
+		# 	print(f)
+		for i in range(0,runs): # Run one by one, comment out and uncomment above for batches
+			f = np.append(f, self.sim.run(robots,run_id=self.run_id)) # Run it, and receive the fitness
 			print(f)
+			self.save_log(filename_ext="sample_log_%i"%i)
+
 		return f
 
 	def observe(self, controller, agent, policy, fitness, robots=30, 

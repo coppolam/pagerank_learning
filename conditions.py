@@ -2,69 +2,83 @@ import networkx as nx
 import numpy as np
 
 class verification():
-	def __init__(self,H,E,policy,des):
+	def __init__(self,H0,H1,E,policy,des):
 
-		# Make graphs from adjacency matrices
-		self.GH = nx.from_numpy_matrix(H)
-		self.GE = nx.from_numpy_matrix(E)
-
+		# Make directed graphs from adjacency matrices
+		self.GH0 = nx.from_numpy_matrix(H0,create_using=nx.MultiDiGraph())
+		self.GH = nx.from_numpy_matrix(H1,create_using=nx.MultiDiGraph())
+		self.GE = nx.from_numpy_matrix(E,create_using=nx.MultiDiGraph())
 		# Ignore unknown nodes with no information
-		d = list(nx.isolates(self.GH))
+		d = list(nx.isolates(self.GH0))
+		policy = np.delete(policy,d,axis=0)
 		self.GH.remove_nodes_from(d)
+		self.GE.remove_nodes_from(d)
 		self.des = np.delete(des,d)
-		a = 1 if policy.shape[1] > 1 else 0 # Axis
-		policy = np.delete(policy,d,axis=a)
 
 		# Extract states
-		self.static = np.argwhere(np.array(np.sum(policy,axis=a))<0.001)
-		self.active = np.argwhere(np.array(np.sum(policy,axis=a))>0.001)
-		self.happy = np.argwhere(np.array(self.des)>0.1)
-		self.static_unhappy = np.setdiff1d(self.static,self.happy)
-   
-	def _condition_1(self):
-		'''GS1 (H), shows that all happy states can be reached'''
+		self.static = np.argwhere(np.array(np.sum(policy,axis=1))<0.001).flatten() 
+		self.active = np.argwhere(np.array(np.sum(policy,axis=1))>0.001).flatten() 
+		self.desired = np.argwhere(np.array(self.des)>0.1).flatten()
+		self.static_undesired = np.setdiff1d(self.static,self.desired)
+
+	def _check_to_all(self, G, set1, set2):
+		'''Checks that in graph G, all nodes in set1 have a directed path to all nodes in set2'''
 		counterexampleflag = False
-		for node in range(len(self.GH.nodes)):
-			for d in self.happy:
-				if nx.has_path(self.GH,node,d[0]) is False:
-					print("Counterexample found for path %i to %i"%(s, a[0]))
+		for s1 in set1:
+			for s2 in set2:
+				if nx.has_path(G,s1,s2) is False:
+					print("Counterexample found for path %i to %i"%(s1, s2))
 					counterexampleflag = True
 		if counterexampleflag: return False
 		return True
 
+	def _check_to_any(self, G, set1, set2):
+		'''Checks that in graph G, all nodes in set1 have a directed path to at least one node in set2'''
+		counterexampleflag = False
+		for s1 in set1:
+			foundflag = False
+			for s2 in set2:
+				if nx.has_path(G,s1,s2) is True: 
+					foundflag = True
+					break
+			if foundflag is False:
+				print("Counterexample found for node %i"%(s1))
+				counterexampleflag = True
+		if counterexampleflag: return False
+		return True
+
+	def _condition_1_strong(self):
+		'''GS1 (H), shows that all desired states can be reached from all states'''
+		return self._check_to_all(self.GH,range(len(self.GH.nodes)),self.desired)
+	
+	def _condition_1_weak(self):
+		'''GS1 (H), hows that all desired states can be reached from all states'''
+		return self._check_to_all(self.GH,self.static_undesired,self.desired)
 
 	def _condition_2(self):
 		'''GS2 (E) shows that all static states that are not desired can become active via the environment'''
-		counterexampleflag = False
-		for s in self.static:
-			for a in self.active:
-				if nx.has_path(self.GE,s,a[0]) is False:
-					print("Counterexample found for path %i to %i"%(s, a[0]))
-					counterexampleflag = True
-		if counterexampleflag: return False
-		return True
+		return self._check_to_any(self.GE,self.static,self.active)
 
-	def _condition_3(self):
+	def _condition_3_strong(self):
 		'''GS1 (H) shows that an active simplicial state can transition "freely" to any other state'''
-		counterexampleflag = False
-		for s in self.active:
-			for d in range(len(self.GH.nodes)):
-				if nx.has_path(self.GH,s[0],d) is False:
-					print("Counterexample found for path %i to %i"%(s[0], d))
-					counterexampleflag = True
-		if counterexampleflag: return False
-		return True
+		return self._check_to_all(self.GH,self.active,self.desired)
+
+	def _condition_3_weak(self):
+		'''GS1 (H) shows that an active simplicial state can transition "freely" to any other state'''
+		return self._check_to_any(self.GH,self.active,self.desired)
 
 	def disp(self):
-		print("Static states:\n",self.static.T[0])
-		print("Active states:\n",self.active.T[0])
-		print("Happy states:\n",self.happy.T[0])
-		print("Static and unhappy states:\n",self.static_unhappy.T)
+		print("Static states:\n",self.static)
+		print("Active states:\n",self.active)
+		print("Desired states:\n",self.desired)
 
 	def verify(self):
 		c = []
-		print("Testing Condition 1"); c.append(self._condition_1())
-		print("Testing Condition 2"); c.append(self._condition_2())
-		print("Testing Condition 3"); c.append(self._condition_3())
+		self.disp()
+		print("Checking Proposition 1 (strong)"); c.append(self._condition_1_strong())
+		print("Checking Proposition 1 (weak)"); c.append(self._condition_1_weak())
+		print("Checking Proposition 2, Condition 1"); c.append(self._condition_2())
+		print("Checking Proposition 2, Condition 2 (strong)"); c.append(self._condition_3_strong())
+		print("Checking Proposition 2, Condition 2 (weak)"); c.append(self._condition_3_weak())
 		print("Result:", c)
 		return all(c)

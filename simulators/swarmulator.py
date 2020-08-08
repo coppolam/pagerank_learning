@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import concurrent.futures
 from tools import fileHandler as fh
+from tools import prettyplot as pp
 
 class swarmulator:
 	'''Python API class for Swarmulator. Allows to interact with swarmulator via Python'''
@@ -87,13 +88,29 @@ class swarmulator:
 		if self.verbose: print("Total number of robots: " + str(robots))
 		fig = plt.figure()
 		ax = fig.gca(projection='3d')
-		for x in range(1,robots):
+		for x in range(1,robots+1):
 			d = log[np.where(log[:,id_column] == x)]
 			ax.plot(d[:,time_column],d[:,x_column],d[:,y_column])
 		ax.set_xlabel("Time [s]")
 		ax.set_ylabel("N [m]")
 		ax.set_zlabel("E [m]")
 		plt.show()
+
+	def plot_log_column(self, log=None, file=None, time_column=0, id_column=1, column=2, colname="parameter [-]", show=True, plot=None):
+		'''Visualizes the log of a swarmulator run'''
+		if log is None:
+			if file is None: log = self.load()
+			else: log = self.load(file)
+		robots = int(log[:,id_column].max())
+		if self.verbose: print("Total number of robots: " + str(robots))
+		if plot is None: plt = pp.setup()
+		else: plt = plot
+		d = log[np.where(log[:,id_column] == 1)] # first robot as reference, this value is the same for all robots anyway
+		plt.plot(d[:,time_column],d[:,column])
+		plt.xlabel("Time [s]")
+		plt.ylabel(colname)
+		if show is True: plt.show()
+		return plt
 
 	def runtime_setting(self, setting, value):
 		'''Assigns a value to a runtime setting of conf/parameters.xml'''
