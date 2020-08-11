@@ -110,8 +110,8 @@ if not os.path.exists(os.path.dirname(folder)):
 if args.plot:
 	# Plot pagerank
 	plt = pp.setup()
-	plt.bar(np.array(range(prH0[0].size)),prH0[0],alpha=0.5,label="PR^\pi, H^\pi")
-	plt.bar(np.array(range(prE[0].size)),prE[0],alpha=0.5,label="PR^\pi, E")
+	plt.bar(np.array(range(prH0[0].size)),prH0[0],alpha=0.5,label="$PR^\pi$, $\mathbf{H^\pi}$ only")
+	plt.bar(np.array(range(prE[0].size)),prE[0],alpha=0.5,label="$PR^\pi$, $\mathbf{E}$ only")
 	plt = pp.adjust(plt)
 	plt.xlabel("State [-]")
 	plt.ylabel("PageRank [-]")

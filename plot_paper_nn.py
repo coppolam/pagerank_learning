@@ -25,8 +25,8 @@ if args.controller == "aggregation":
 	filename.append(df+"aggregation_1_1.pkl")
 	filename.append(df+"aggregation_2_1.pkl")
 	# Plot names
-	name.append("Aggregation 1")
-	name.append("Aggregation 2")
+	name.append("VS 1")
+	name.append("VS 2")
 elif args.controller == "pfsm_exploration":
 	# Files where it evaluates against itself
 	filename.append(df+"pfsm_exploration_1_1.pkl")
@@ -34,10 +34,10 @@ elif args.controller == "pfsm_exploration":
 	# Files where it evaluates against different dynamics
 	filename.append(df+"pfsm_exploration_mod_1_1.pkl")
 	filename.append(df+"pfsm_exploration_mod_2_1.pkl")
-	name.append("Oriented 1")
-	name.append("Oriented 2")
-	name.append("Oriented mod 1")
-	name.append("Oriented mod 2")
+	name.append("VS 1, Study Case C1")
+	name.append("VS 2, Study Case C1")
+	name.append("VS 1, Study Case C2")
+	name.append("VS 2, Study Case C2")
 elif args.controller == "pfsm_exploration_mod":
 	# Files where it evaluates against itself
 	filename.append(df+"pfsm_exploration_mod_1_1.pkl")
@@ -45,15 +45,15 @@ elif args.controller == "pfsm_exploration_mod":
 	# Files where it evaluates against different dynamics
 	filename.append(df+"pfsm_exploration_1_1.pkl")
 	filename.append(df+"pfsm_exploration_2_1.pkl")
-	name.append("Oriented mod 1")
-	name.append("Oriented mod 2")
-	name.append("Oriented 1")
-	name.append("Oriented 2")
+	name.append("VS 1, Study Case C2")
+	name.append("VS 2, Study Case C2")
+	name.append("VS 1, Study Case C1")
+	name.append("VS 2, Study Case C1")
 elif args.controller == "forage":
 	filename.append(df+"forage_1_1.pkl")
 	filename.append(df+"forage_2_1.pkl")
-	name.append("Forage 1")
-	name.append("Forage 2")
+	name.append("VS 1")
+	name.append("VS 2")
 else:
 	print("Not a valid mode!!!!")
 
