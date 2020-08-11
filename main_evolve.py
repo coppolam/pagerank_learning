@@ -16,16 +16,16 @@ from tools import matrixOperations as matop
 # Argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
-parser.add_argument('-generations', type=int, help="Max generations", default=50)
-parser.add_argument('-pop', type=int, help="Population size", default=100)
-parser.add_argument('-t', type=int, help="Time", default=200)
-parser.add_argument('-nmin', type=int, help="Time", default=10)
-parser.add_argument('-nmax', type=int, help="Time", default=20)
-parser.add_argument('-reruns', type=int, help="Batch size", default=5)
-parser.add_argument('-plot', type=str, help="", default=None)
-parser.add_argument('-environment', type=str, help="environment", default="square20")
-parser.add_argument('-id', type=int, help="Evo ID", default=np.random.randint(0,10000))
-parser.add_argument('-resume', action='store_true', help="(bool) Animate flag to true")
+parser.add_argument('-generations', type=int, help="Max generations after which the evolution quits, default = 50", default=50)
+parser.add_argument('-pop', type=int, help="Population size used in the evolution, default = 100", default=100)
+parser.add_argument('-t', type=int, help="Time for which each simulation is executed, deafult = 200s", default=200)
+parser.add_argument('-nmin', type=int, help="Minimum number of robots simulated, default = 10", default=10)
+parser.add_argument('-nmax', type=int, help="Maximum number of robots simulated, default = 20", default=20)
+parser.add_argument('-reruns', type=int, help="Number of policy re-evaluations , default = 5", default=5)
+parser.add_argument('-plot', type=str, help="Specify the relative path to a pkl evolution file to plot the evolution.", default=None)
+parser.add_argument('-environment', type=str, help="Environment used in the simulations, default is a square room of size 20 by 20.", default="square20")
+parser.add_argument('-id', type=int, help="ID of evolutionary run, default = random integer", default=np.random.randint(0,10000))
+parser.add_argument('-resume', type=str, help="If specified, it will resume the evolution from a previous pkl checkpoint file", default=None)
 args = parser.parse_args()
 
 # Load parameters
@@ -82,7 +82,7 @@ filename = folder + "evolution_%s_t%i_%i" % (controller, args.t, args.id)
 sim.runtime_setting("fitness", fitness)
 
 # Resume evolution from file args.resume
-if args.resume is True:
+if args.resume is not None:
 	e.load(args.resume)
 	p = e.evolve(verbose=True, generations=args.generations, checkpoint=filename, population=e.pop)
 

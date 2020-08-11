@@ -13,7 +13,7 @@ class neuralnetwork:
 		self.optimizer = torch.optim.Adam(self.network.parameters(), lr=lr)
 
 	def initialize(self, D_in, H, D_out):
-		'''Initializes the network'''
+		'''Initializes the network. Adapt as you see fit.'''
 		model = torch.nn.Sequential(
 			torch.nn.Linear(D_in, H), torch.nn.ReLU (),
 			torch.nn.Linear(H, H), torch.nn.ReLU (),

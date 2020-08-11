@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Generate benchmark performance with random policies
+This file is used to generate benchmark performances featuring random policies.
+The generated data is used for the comparison in Figure 6 of the paper.
+
 @author: Mario Coppola, 2020
 """
 
@@ -16,23 +18,27 @@ parser = argparse.ArgumentParser(description='Simulate a task to gather the data
 parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
 parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 200s", default=200)
 parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
-parser.add_argument('-runs', type=int, help="(int) Evaluation runs, default = 100", default=100)
-parser.add_argument('-iterations', type=int, help="(int) Evaluation runs, default = 100", default=100)
+parser.add_argument('-runs', type=int, help="(int) Evaluation runs per policy, default = 100", default=100)
+parser.add_argument('-iterations', type=int, help="(int) Evaluated random policies, default = 100", default=100)
 args = parser.parse_args()
 
 # Simulation parameters
 fitness, controller, agent, pr_states, pr_actions = parameters.get(args.controller)
 
+# Load and build simulator
 sim = simulator.simulator()
 sim.make(controller, agent, clean=True, animation=False, logger=False, verbose=False)
 
+# Run it
 f = []
 for j in range(args.iterations):
 	print("----------------------- %i ----------------------"%j)
+	# Generate a random policy
 	policy = np.random.rand(pr_states,pr_actions)
 	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
 	if pr_actions > 1: policy = matop.normalize_rows(policy) # Normalize rows
 
+	# Benchmark its performance
 	f.append(sim.benchmark(controller, agent, policy, fitness, 
 		robots=args.n, runs=args.runs, time_limit=args.t, make=False))
 

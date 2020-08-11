@@ -17,7 +17,6 @@ def get_positions(log):
 	p = log[0:robots,(2,3)] # Positions x and y
 	return robots, p
 
-
 def get_distance(p_rel):
 	'''Get the distance from x and y positions'''
 	return np.sqrt(p_rel[:,0]**2+p_rel[:,1]**2)

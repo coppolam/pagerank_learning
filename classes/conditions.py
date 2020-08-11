@@ -3,11 +3,13 @@ import numpy as np
 
 class verification():
 	def __init__(self,H0,H1,E,policy,des):
+		'''Initialize the verifier'''
 
 		# Make directed graphs from adjacency matrices
 		self.GH0 = nx.from_numpy_matrix(H0,create_using=nx.MultiDiGraph())
 		self.GH = nx.from_numpy_matrix(H1,create_using=nx.MultiDiGraph())
 		self.GE = nx.from_numpy_matrix(E,create_using=nx.MultiDiGraph())
+		
 		# Ignore unknown nodes with no information
 		d = list(nx.isolates(self.GH0))
 		policy = np.delete(policy,d,axis=0)
@@ -15,7 +17,7 @@ class verification():
 		self.GE.remove_nodes_from(d)
 		self.des = np.delete(des,d)
 
-		# Extract states
+		# Extract observation sets
 		self.static = np.argwhere(np.array(np.sum(policy,axis=1))<0.001).flatten() 
 		self.active = np.argwhere(np.array(np.sum(policy,axis=1))>0.001).flatten() 
 		self.desired = np.argwhere(np.array(self.des)>0.1).flatten()
@@ -71,11 +73,13 @@ class verification():
 		return self._check_to_any(self.GH,self.active,self.desired)
 
 	def disp(self):
+		'''Print the set of static, active, and desired observations to the terminal'''
 		print("Static states:\n",self.static)
 		print("Active states:\n",self.active)
 		print("Desired states:\n",self.desired)
 
 	def verify(self):
+		'''Verify all conditions and return the result'''
 		c = []
 		self.disp()
 		print("Checking Proposition 1 (strong)"); c.append(self._condition_1_strong())

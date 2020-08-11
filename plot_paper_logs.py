@@ -14,7 +14,6 @@ from classes import evolution
 import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
 
-
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="(str) file", default=None)
@@ -31,16 +30,31 @@ filelist = [f for f in os.listdir(args.folder) if f.startswith('sample_log')] # 
 plt = None # Initialize
 
 # Plot all
-for file in filelist:
-    plt = s.plot_log_column(file=args.folder+file,column=5,colname="Fitness [-]", show=False, plot=plt)
-plt = pp.adjust(plt)
+# for file in filelist:
+#     plt = s.plot_log_column(file=args.folder+file,column=5,colname="Fitness [-]", show=False, plot=plt)
+# plt = pp.adjust(plt)
 
-# Save or show
-fname = "fitness_logs_%s.%s"%(args.controller,args.format)
+# # Save or show
+# fname = "fitness_logs_%s.%s"%(args.controller,args.format)
+# if fname is not None:
+# 	folder = "figures/fitness_logs/"
+# 	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
+# 	filename_raw = os.path.splitext(os.path.basename(fname))[0]
+# 	plt.savefig(folder+"%s.%s"%(filename_raw,args.format))
+# else:
+# 	plt.show()
+
+
+# Plot a single sample trajectory
+plt = s.plot_log(file=args.folder+filelist[3], show = False)
+
+# # Save or show
+fname = "sample_run_%s.%s"%(args.controller,args.format)
 if fname is not None:
-	folder = "figures/fitness_logs/"
+	folder = "figures/sample_runs/"
 	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
 	filename_raw = os.path.splitext(os.path.basename(fname))[0]
 	plt.savefig(folder+"%s.%s"%(filename_raw,args.format))
 else:
 	plt.show()
+

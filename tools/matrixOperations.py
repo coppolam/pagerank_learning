@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Collection of tools for "less standard" math operations
+Collection of tools for "less standard" and/or useful math and matrix operations
 @author: Mario Coppola, 2020
 """
 import numpy as np

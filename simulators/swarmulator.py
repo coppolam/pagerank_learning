@@ -79,7 +79,7 @@ class swarmulator:
 			return -1
 		return log
 
-	def plot_log(self, log=None, file=None, time_column=0, id_column=1, x_column=2, y_column=3):
+	def plot_log(self, log=None, file=None, time_column=0, id_column=1, x_column=2, y_column=3, show=True):
 		'''Visualizes the log of a swarmulator run'''
 		if log is None:
 			if file is None: log = self.load()
@@ -88,13 +88,21 @@ class swarmulator:
 		if self.verbose: print("Total number of robots: " + str(robots))
 		fig = plt.figure()
 		ax = fig.gca(projection='3d')
-		for x in range(1,robots+1):
-			d = log[np.where(log[:,id_column] == x)]
-			ax.plot(d[:,time_column],d[:,x_column],d[:,y_column])
 		ax.set_xlabel("Time [s]")
 		ax.set_ylabel("N [m]")
 		ax.set_zlabel("E [m]")
-		plt.show()
+		ax.xaxis.labelpad=20
+		ax.yaxis.labelpad=20
+		ax.zaxis.labelpad=20
+		ax.set_zlim([-20,20])
+		ax.set_ylim([-20,20])
+		ax.set_xlim([0,200])
+		for x in range(1,robots+1):
+			d = log[np.where(log[:,id_column] == x)]
+			ax.plot(d[:,time_column],d[:,x_column],d[:,y_column])
+			ax.view_init(elev=36., azim=-38.)
+		if show is True: plt.show()
+		return plt
 
 	def plot_log_column(self, log=None, file=None, time_column=0, id_column=1, column=2, colname="parameter [-]", show=True, plot=None):
 		'''Visualizes the log of a swarmulator run'''

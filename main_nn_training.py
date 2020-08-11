@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-Train and validate the data gathered from the loop.py script
+This file uses a spacified training data set to 
+	1) train a model based on the dataset in the folder "folder_training" (argument #1)
+	2) validate the model based on the dataset in the folder "folder_validation" (arguemnt #2)
+The results are saved to the folder "savefolder (argument 3)
+
+The function takes in relative arguments as above.
+
 @author: Mario Coppola, 2020
 """
 
+# Load
 import pickle, os, argparse, copy
 from tqdm import tqdm
 import numpy as np
