@@ -10,7 +10,7 @@ from tqdm import tqdm
 from classes import simulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-import parameters
+from simulators import parameters
 
 def save_policy(sim,policy):
 	'''Function to save the policy and use it in swarmulator'''

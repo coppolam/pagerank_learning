@@ -6,7 +6,7 @@ Generate benchmark performance with random policies
 
 import pickle, argparse
 import numpy as np
-import parameters
+from simulators import parameters
 from classes import simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh

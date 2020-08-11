@@ -10,8 +10,7 @@ import random, sys, pickle, argparse, os
 import numpy as np
 from tools import fileHandler as fh
 from classes import evolution
-from simulators import swarmulator
-import parameters
+from simulators import swarmulator, parameters
 from tools import matrixOperations as matop
 
 # Argument parser

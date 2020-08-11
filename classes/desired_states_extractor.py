@@ -6,7 +6,7 @@ Optimize a behavior based on the PageRank function
 import torch, os
 import numpy as np
 from tqdm import tqdm
-from classes import simplenetwork, evolution, simulator
+from classes import neuralnetwork, evolution, simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
 
@@ -18,7 +18,7 @@ class desired_states_extractor:
 		''' Generate and/or train model using stochastic gradient descent'''
 		if self.network is None:
 			print("Model does not exist, generating the NN")
-			self.network = simplenetwork.simplenetwork(x.shape[1])
+			self.network = neuralnetwork.neuralnetwork(x.shape[1])
 		loss_history = []
 		for i, element in enumerate(y):
 			in_tensor = torch.tensor([x[i]]).float()

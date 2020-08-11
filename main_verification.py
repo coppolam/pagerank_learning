@@ -4,22 +4,35 @@ import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 
-import parameters
-import conditions
-import plot_paper_model as l
-
+from simulators import parameters
+from tools import fileHandler as fh
 from tools import matrixOperations as matop
 from tools import prettyplot as pp
 from classes import pagerank_optimization as propt
-from classes import simulator, evolution, desired_states_extractor
+from classes import simulator, evolution, desired_states_extractor, conditions
+import plot_paper_model as l
+
+def save_policy(sim,policy,pr_actions):
+	'''Save the policy in the correct format for use in Swarmulator'''
+	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
+	if pr_actions > 1: policy = matop.normalize_rows(policy) # Normalize rows
+	policy_filename = "conf/state_action_matrices/aggregation_policy_learnloop.txt"
+	policy_file = sim.sim.path + "/" + policy_filename
+	if policy.shape[1] == 1: fh.save_to_txt(policy.T, policy_file) # Number of columns = 1
+	else: fh.save_to_txt(policy, policy_file)
+	return policy_filename
 
 # Args
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, help="Controller to use")
 parser.add_argument('training_folder', type=str, help="Training folder to use")
+parser.add_argument('-iterations', type=int, help="(int) Number of iterations", default=0)
 parser.add_argument('-format', type=str, default="pdf", help="Training folder to use")
 parser.add_argument('-plot', action='store_true', help="(bool) Animate flag to true")
 parser.add_argument('-verbose', action='store_true', help="(bool) Animate flag to true")
+parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 200s", default=200)
+parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
+parser.add_argument('-id', type=int, help="(int) ID of run, default = 1", default=np.random.randint(1000))
 args = parser.parse_args()
 
 # Load parameters
@@ -37,6 +50,30 @@ des = dse.get_des(dim=pr_states, gens=100, popsize=100)
 # Optimize policy
 policy = np.random.rand(pr_states,pr_actions)
 policy = sim.optimize(policy, des)
+
+# Perform additional iterations, if you want (not done by default)
+i = 0
+while i < args.iterations:
+	print("\nIteration %i\n"%i)
+	policy_filename = save_policy(sim, policy, pr_actions)
+
+	# Run simulation
+	sim.run(time_limit=args.t, robots=args.n, environment="square20", policy=policy_filename, 
+		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
+
+	# Save data
+	logname = "%s_%s_t%i_r%i_id%s_%i"%(controller, agent, args.t, args.n, sim.run_id, i)
+	logfile = sim.save_learning_data(filename_ext=logname)
+
+	# Optimization
+	des = dse.run(logfile+".npz", load=False, verbose=False) # Update desired states 
+	sim.load_update(logfile+".npz",discount=1.0) # Update model
+	policy = sim.optimize(policy, des) # Optimize again
+		
+	i += 1
+
+	print(des)
+	print(policy)
 
 # Load up sim variables locally
 A = sim.A

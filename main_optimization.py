@@ -10,7 +10,7 @@ import numpy as np
 from classes import simulator, evolution, desired_states_extractor
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-import parameters
+from simulators import parameters
 
 def save_policy(sim,policy,pr_actions):
 	'''Save the policy in the correct format for use in Swarmulator'''

@@ -21,30 +21,33 @@ class verification():
 		self.desired = np.argwhere(np.array(self.des)>0.1).flatten()
 		self.static_undesired = np.setdiff1d(self.static,self.desired)
 
-	def _check_to_all(self, G, set1, set2):
+	def _check_to_all(self, G, set1, set2, find_all=True):
 		'''Checks that in graph G, all nodes in set1 have a directed path to all nodes in set2'''
-		counterexampleflag = False
+		counterexample_flag = False
 		for s1 in set1:
 			for s2 in set2:
 				if nx.has_path(G,s1,s2) is False:
-					print("Counterexample found for path %i to %i"%(s1, s2))
-					counterexampleflag = True
-		if counterexampleflag: return False
+					# print("Counterexample found for path %i to %i"%(s1, s2))
+					print("(%i,%i); "%(s1, s2),end = '')
+					counterexample_flag = True
+					if find_all is False: break
+		if counterexample_flag: return False
+		print("")
 		return True
 
 	def _check_to_any(self, G, set1, set2):
 		'''Checks that in graph G, all nodes in set1 have a directed path to at least one node in set2'''
-		counterexampleflag = False
+		counterexample_flag = False
 		for s1 in set1:
-			foundflag = False
+			any_flag = False
 			for s2 in set2:
 				if nx.has_path(G,s1,s2) is True: 
-					foundflag = True
-					break
-			if foundflag is False:
+					any_flag = True
+					break # Connection found
+			if any_flag is False:
 				print("Counterexample found for node %i"%(s1))
-				counterexampleflag = True
-		if counterexampleflag: return False
+				counterexample_flag = True
+		if counterexample_flag: return False
 		return True
 
 	def _condition_1_strong(self):
