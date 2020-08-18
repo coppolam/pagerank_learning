@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 from simulators import swarmulator
-from classes import pagerank_optimization as opt
+from classes import pagerank_evolve as opt
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 
@@ -69,7 +69,7 @@ class simulator:
 		self.log = data['log'].astype(float)
 		if verbose: print("Loaded %s (from %s)" % (file,datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
-	def load_update(self,file,discount=1.0,verbose=True):
+	def load_update(self,file,discount=1.0,verbose=False):
 		'''Load the model from a swarmulator log file on top of the existing one'''
 		data = np.load(file)
 		Am = data['A'].astype(float)
@@ -80,8 +80,10 @@ class simulator:
 
 	def optimize(self, p0, des, debug=True):
 		'''Optimize  the policy based on the desired states'''
-		policy = opt.main(p0, des, self.A, self.E)
-		
+		# policy = opt.main(p0, des, self.A, self.E)
+		o = opt.pagerank_evolve(des,self.A,self.E)
+		policy = o.main(p0)
+		print(policy)
 		# For analysis/debug purposes, show states that have not been visited
 		if debug is True:
 			temp = self.H + self.E

@@ -53,7 +53,7 @@ des = dse.get_des(dim=pr_states)
 # Initial policy to optimize from
 policy = np.random.rand(pr_states,pr_actions)
 
-# Load model
+# # Load model
 filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
 v = []
 for j, filename in enumerate(sorted(filelist_training)):
@@ -63,16 +63,12 @@ for j, filename in enumerate(sorted(filelist_training)):
 # Optimize
 policy = sim.optimize(policy, des)
 
-print(des)
-print(policy)
-
 # Perform additional iterations, if you want (not done by default)
 i = 0
 while i < args.iterations:
 	print("\nIteration %i\n"%i)
-	policy_filename = save_policy(sim, policy, pr_actions)
-
 	# Run simulation
+	policy_filename = save_policy(sim, policy, pr_actions)
 	sim.run(time_limit=args.t, robots=args.n, environment="square20", policy=policy_filename, 
 		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
 
@@ -84,9 +80,8 @@ while i < args.iterations:
 	des = dse.run(logfile+".npz", load=False, verbose=False) # Update desired states 
 	sim.load_update(logfile+".npz",discount=1.0) # Update model
 	policy = sim.optimize(policy, des) # Optimize again
-		
+	
 	i += 1
-
 	print(des)
 	print(policy)
 	
@@ -109,6 +104,8 @@ if args.log:
 else:
 	# Benchmark final controller and save the results
 	print("\n\nBenchmarking\n")
+	policy = matop.normalize_rows(policy)
+	print(policy)
 	f = sim.benchmark(controller, agent, policy, fitness, robots=args.n, runs=args.runs, 
 			environment=args.environment, time_limit=args.t, make=True, pr_states=pr_states, pr_actions=pr_actions)
 	fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i_id%i.pkl"%(controller,controller,args.t,args.n,args.runs,args.id))

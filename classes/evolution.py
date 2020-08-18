@@ -18,7 +18,7 @@ class evolution:
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMax)
 
-	def setup(self, fitness_function_handle, constraint=None, GENOME_LENGTH=20, POPULATION_SIZE = 100, P_CROSSOVER = 0.5, P_MUTATION = 0.2):
+	def setup(self, fitness_function_handle, constraint=None, GENOME_LENGTH=20, POPULATION_SIZE=100, P_CROSSOVER=0.5, P_MUTATION=0.2):
 		'''Set up the parameters'''
 		# Set the main variables
 		self.GENOME_LENGTH = GENOME_LENGTH
@@ -32,8 +32,9 @@ class evolution:
 		self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attr_float, self.GENOME_LENGTH)
 		self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 		self.toolbox.register("evaluate", fitness_function_handle)
-		self.toolbox.register("mate", tools.cxUniform, indpb=0.2) # Mating method
-		self.toolbox.register("mutate", tools.mutUniformInt, low=0.0, up=1.0, indpb=0.05) # Mutation method
+		self.toolbox.register("mate", tools.cxUniform, indpb=0.1) # Mating method
+		# self.toolbox.register("mutate", tools.mutUniformInt, low=0.0, up=1.0, indpb=0.05) # Mutation method (binary)
+		self.toolbox.register("mutate", tools.mutPolynomialBounded, eta=0.1, low=0.0, up=1.0, indpb=0.1) # Mutation method
 		self.toolbox.register("select", tools.selTournament, tournsize=3) # Selection method
 		if constraint is not None: self.toolbox.decorate("evaluate", tools.DeltaPenalty(constraint,0,self.distance))
 		self.stats = [] # Initialize stats vector
@@ -51,12 +52,14 @@ class evolution:
 
 	def disp_stats(self,iteration=0):
 		'''Print the current stats'''
-		print(">> gen = %i, mu = %.2f, std = %.2f, max = %.2f, min = %.2f" % 
-		(self.stats[iteration]['g'],
-		self.stats[iteration]['mu'],
-		self.stats[iteration]['std'],
-		self.stats[iteration]['max'],
-		self.stats[iteration]['min']))
+		p = "\r >> gen = %i, mu = %.2f, std = %.2f, max = %.2f, min = %.2f" % (
+			self.stats[iteration]['g'],
+			self.stats[iteration]['mu'],
+			self.stats[iteration]['std'],
+			self.stats[iteration]['max'],
+			self.stats[iteration]['min'])
+		sys.stdout.write(p)
+		sys.stdout.flush()
 
 	def plot_evolution(self,figurename=None):
 		'''Plot the evolution outcome'''
@@ -128,7 +131,7 @@ class evolution:
 
 		# Display outcome
 		if verbose: 
-			print('{:=^40}'.format(' End of evolution '))
+			print('\n{:=^40}'.format(' End of evolution '))
 			print("Best individual is %s, %s" % (self.best_ind, self.best_ind.fitness.values))
 
 		return pop

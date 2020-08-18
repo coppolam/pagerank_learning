@@ -58,7 +58,7 @@ def optimize(pol0, des, alpha, A, E):
 	ll = 0.0 # Lower limit
 	ul = 1.0 # Upper limit
 	bounds = list(zip(ll*np.ones(pol0.size),ul*np.ones(pol0.size))) # Bind values
-	return scipy.optimize.minimize(objective_function, pol0, bounds=bounds, args=(des, alpha, A, E))
+	return scipy.optimize.minimize(objective_function, pol0, tol=0.01,bounds=bounds, args=(des, alpha, A, E))
 
 def main(pol0, des, A, E):
 	'''Main function to optimize the policy'''

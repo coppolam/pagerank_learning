@@ -5,7 +5,7 @@ Optimize a behavior based on the PageRank function
 """
 import torch
 
-class neuralnetwork:
+class simplenetwork:
 	def __init__(self,D_in,lr=1e-5):
 		'''Initialization function. Set here the hyperparameters'''
 		self.network = self.initialize(D_in, 200, 1)

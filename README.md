@@ -43,7 +43,7 @@ Use these scripts to create the figures used in the paper
 #### Classes
  - ```conditions.py```: import and use the "get" function to get the conditions needed to run each study case properly
 
- - ```neuralnetwork.py```: a higher level PyTorch class that sets up and runs a feedforward neural network. Change this class if you wish to change the parameters of a neural network
+ - ```simplenetwork.py```: a higher level PyTorch class that sets up and runs a feedforward neural network. Change this class if you wish to change the parameters of a neural network
 
  - ```pagerank_optimization.py```: given a transition model and a set of desired observations, the "main" function in this class will optimize a policy and return the optimized policy according to Equation 6 the paper.
 

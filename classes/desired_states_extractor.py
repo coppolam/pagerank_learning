@@ -6,7 +6,7 @@ Optimize a behavior based on the PageRank function
 import torch, os
 import numpy as np
 from tqdm import tqdm
-from classes import neuralnetwork, evolution, simulator
+from classes import simplenetwork, evolution, simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
 
@@ -21,7 +21,7 @@ class desired_states_extractor:
 		# Create an empty network if it does not exist
 		if self.network is None:
 			print("Model does not exist, generating the NN")
-			self.network = neuralnetwork.neuralnetwork(x.shape[1])
+			self.network = simplenetwork.simplenetwork(x.shape[1])
 
 		# Train the network to relate x to y
 		loss_history = []
@@ -65,11 +65,12 @@ class desired_states_extractor:
 		
 	def _fitness(self,individual):
 		'''Fitness function'''
+		# individual = matop.normalize_rows(individual,axis=0)
 		in_tensor = torch.tensor([individual]).float() # Set up tensor
 		f = self.network.network(in_tensor).item() # Get estimated fitness
 		return f,
 
-	def get_des(self,dim=None,plot=False,popsize=1000,gens=100):
+	def get_des(self,dim=None,plot=False,popsize=100,gens=100):
 		'''Runs an evolutionary optimization to extract the states that maximize the fitness''' 
 		# Initialize evolution
 		e = evolution.evolution()
@@ -77,7 +78,6 @@ class desired_states_extractor:
 		# Set correct dimensions
 		if dim is None: d = self.dim
 		else: d = dim
-		
 		
 		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=popsize) # Set up evolution parameters
 		e.evolve(verbose=True, generations=gens) # Evolve

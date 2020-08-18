@@ -20,7 +20,7 @@ class verification():
 		# Extract observation sets
 		self.static = np.argwhere(np.array(np.sum(policy,axis=1))<0.001).flatten() 
 		self.active = np.argwhere(np.array(np.sum(policy,axis=1))>0.001).flatten() 
-		self.desired = np.argwhere(np.array(self.des)>0.1).flatten()
+		self.desired = np.argwhere(np.array(self.des)>0.01).flatten()
 		self.static_undesired = np.setdiff1d(self.static,self.desired)
 
 	def _check_to_all(self, G, set1, set2, find_all=True):
