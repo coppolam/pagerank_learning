@@ -5,11 +5,11 @@ Learn the model
 """
 
 import matplotlib, os, argparse
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 import numpy as np
 from classes import simulator
 from tools import matrixOperations as matop
-import matplotlib.pyplot as plt
 from tools import prettyplot as pp
 
 sim = simulator.simulator()
@@ -45,9 +45,10 @@ if __name__ == "__main__":
 	folder = "figures/model/"
 
 	plt = pp.setup()
-	for d in data: plt.plot(d)
+	for d in data:
+		plt.plot(abs(d-d[-1])) # Residual
 	plt.xlabel("Simulation")
-	plt.ylabel("Probability")
+	plt.ylabel("Residual")
 	plt = pp.adjust(plt)
 
 	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))

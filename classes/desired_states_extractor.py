@@ -39,7 +39,7 @@ class desired_states_extractor:
 			in_tensor = torch.tensor([element]).float()
 			y_pred = np.append(y_pred,network.network(in_tensor).item())
 		error = y_pred - y
-		corr = np.corrcoef(y_pred,y)
+		corr = np.correlate(y_pred,y)
 		return error, corr, y_pred
 
 	def load_model(self,modelsfile,modelnumber=-1):

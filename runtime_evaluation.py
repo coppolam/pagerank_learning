@@ -13,6 +13,7 @@ import argparse
 from simulators import swarmulator
 matplotlib.rc('text', usetex=True)
 sim = swarmulator.swarmulator(verbose=False)
+from tools import prettyplot as pp
 	
 def wall_clock_test(n,m):
 	'''Test the wall clock time of single runs'''
@@ -56,41 +57,50 @@ def load(filename):
 	return t, t_batch
 
 def plot_evaluationtime(filename,figurename=None):
-	plt.clf()
+	plt = pp.setup(h=8)
 	t, t_batch = load(filename)
 	tmean = t.mean(axis=1)
-	batchsize = 5
+	batchsize = t_batch.shape[1]
 	alpha = 0.2
-	tmean_batch = t_batch.mean(axis=1)/batchsize
-	plt.plot(range(1,t.shape[0]+1),tmean,color='blue',label="Single")
-	plt.plot(range(1,t_batch.shape[0]+1),tmean_batch,color='orange',label="Batch (5)")
+	tmean_batch = t_batch.mean(axis=1)
+	plt.plot(range(1,t.shape[0]+1),tmean,linestyle='solid',color='blue',label="Single")
+	plt.plot(range(1,t_batch.shape[0]+1),tmean_batch/batchsize,linestyle='dotted',color='orange',label="Batch (%i), individual"%batchsize)
+	plt.plot(range(1,t_batch.shape[0]+1),tmean_batch,linestyle='dashed',color='red',label="Batch (%i), cumulative"%batchsize)
 	plt.fill_between(range(1, len(tmean)+1),
-		t.min(axis=1),
-		t.max(axis=1),
+		t.min(axis=1), t.max(axis=1),
 		color='blue', alpha=alpha)
 	plt.fill_between(range(1, len(tmean)+1),
-		t_batch.min(axis=1)/batchsize,
-		t_batch.max(axis=1)/batchsize,
+		t_batch.min(axis=1)/batchsize, t_batch.max(axis=1)/batchsize,
 		color='orange', alpha=alpha)
+	plt.fill_between(range(1, len(tmean)+1),
+		t_batch.min(axis=1), t_batch.max(axis=1),
+		color='red', alpha=alpha)
 	plt.xlabel("Number of robots")
 	plt.ylabel("Wall-clock time [s]")
 	plt.legend(loc="upper left")
+	plt.xlim([0,50])
+	plt = pp.adjust(plt);
 	plt.savefig(figurename) if figurename is not None else plt.show()
 
 def plot_realtimefactor(filename,tl,figurename=None):
-	plt.clf()
+	plt = pp.setup(h=8)
 	t, t_batch = load(filename)
-	tmean = t.mean(axis=1)/tl
-	batchsize = 5
+	batchsize = t_batch.shape[1]
 	alpha = 0.2
-	tmean_batch = (t_batch.mean(axis=1)/batchsize)/tl
-	plt.plot(range(1,t.shape[0]+1),1/tmean,color='blue',label="Single")
-	plt.plot(range(1,t_batch.shape[0]+1),1/tmean_batch,color='orange',label="Batch (5)")
-	plt.fill_between(range(1, len(tmean)+1), 1/tmean.min(axis=0), 1/tmean.max(axis=0), color='blue', alpha=alpha)
-	plt.fill_between(range(1, len(tmean)+1), 1/t_batch.min(axis=1), 1/t_batch.max(axis=1),color='orange', alpha=alpha)
+	tmean = t.mean(axis=1)/tl
+	tmean_batch = t_batch.mean(axis=1)/tl
+	tmean_batch_adj = t_batch.mean(axis=1)/tl/batchsize
+	plt.plot(range(1,t.shape[0]+1),1/tmean,linestyle='solid',color='blue',label="Single")
+	plt.plot(range(1,t_batch.shape[0]+1),1/tmean_batch,linestyle='dotted',color='orange',label="Batch (%i), individual"%batchsize)
+	plt.plot(range(1,t_batch.shape[0]+1),1/tmean_batch_adj,linestyle='dashed',color='red',label="Batch (%i), cumulative"%batchsize)
+	plt.fill_between(range(1, len(tmean)+1), 1/(t.min(axis=1)/tl), 1/(t.max(axis=1)/tl), color='blue', alpha=alpha)
+	plt.fill_between(range(1, len(tmean)+1), 1/(t_batch.min(axis=1)/tl), 1/(t_batch.max(axis=1)/tl),color='orange', alpha=alpha)
+	plt.fill_between(range(1, len(tmean)+1), 1/(t_batch.min(axis=1)/tl/batchsize), 1/(t_batch.max(axis=1)/tl/batchsize),color='red', alpha=alpha)
 	plt.xlabel("Number of robots")
 	plt.ylabel("Real time factor")
-	plt.legend(loc="upper left")
+	plt.legend(loc="upper right")
+	plt.xlim([0,50])
+	plt = pp.adjust(plt);
 	plt.savefig(figurename) if figurename is not None else plt.show()
 
 if __name__ == "__main__":
@@ -98,29 +108,32 @@ if __name__ == "__main__":
 	# Input argument parser
 	parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 	parser.add_argument('-plot', type=str, help="plot file", default=None)
-	parser.add_argument('-tl', type=int, help="time limit", default=None)
+	parser.add_argument('-tl', type=int, help="time limit", default=200)
+	parser.add_argument('-rtfactor', type=int, help="real time factor", default=300)
+	parser.add_argument('-n', type=int, help="time limit", default=50)
+	parser.add_argument('-reruns', type=int, help="time limit", default=5)
+	parser.add_argument('-batch', type=int, help="time limit", default=5)
+	
 	args = parser.parse_args()
 
 	if args.plot is None:
 		# Primary input parameters -- Test parameters
-		n = 3 # Max number of robots
-		m = 5 # Re-runs to average out
-		batch = 5 # Number of batch runs
-		rtfactor = 100 # Desired realtime factor (0 = #nosleep)
-		tl = 200 # Length of simulation
+		n = args.n # Max number of robots
+		m = args.reruns # Re-runs to average out
+		batch = args.batch # Number of batch runs
 
 		# Folder where data is saved
 		folder = "data/time/"
 		directory = os.path.dirname(folder)
 		if not os.path.exists(directory): os.makedirs(directory)
-		filename = (folder+"time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,rtfactor,tl))
+		filename = (folder+"time_n%i_m%i_b%i_rt%i_tl%i" % (n,m,batch,args.rtfactor,args.tl))
 		
 		# Secondary input parameters -- Swarmulator configuration
 		sim.runtime_setting("simulation_updatefreq", str("20"))
-		sim.runtime_setting("environment", "square20")
+		sim.runtime_setting("environment", "square")
 		sim.runtime_setting("animation_updatefreq", str("25"))
-		sim.runtime_setting("simulation_realtimefactor", str(rtfactor))
-		sim.runtime_setting("time_limit", str(tl))
+		sim.runtime_setting("simulation_realtimefactor", str(args.rtfactor))
+		sim.runtime_setting("time_limit", str(args.tl))
 
 		# Run
 		t, t_batch = run(n,m,batch,filename)
