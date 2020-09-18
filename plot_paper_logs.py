@@ -20,9 +20,9 @@ def transpose_list(data):
 
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
-parser.add_argument('controller', type=str, help="(str) controller", default=None)
-parser.add_argument('folder', type=str, help="(str) path to logs folder", default=None)
-parser.add_argument('-format', type=str, help="(str) plot format, default=pdf", default="pdf")
+parser.add_argument('controller', type=str, help="(str) controller")
+parser.add_argument('folder', type=str, help="(str) path to logs folder")
+parser.add_argument('-format', type=str, default="pdf")
 args = parser.parse_args()
 
 # Swarmulator API (to extract the log files)
@@ -34,7 +34,8 @@ fv = [] # Fitness vectors
 filelist = [f for f in os.listdir(args.folder) if f.startswith('sample_log')] # Log file list
 for file in filelist:
 	# Load the data from a log file, column=5 is the fitness
-	t,f = s.load_column(file=args.folder+file,column=5,colname="Fitness [-]", show=False, plot=plt)
+	t,f = s.load_column(file=args.folder+file,
+		column=5,colname="Fitness [-]", show=False, plot=plt)
 	tv.append(t)
 	fv.append(f)
 
@@ -62,7 +63,8 @@ plt.ylabel("Fitness [-]")
 fname = "fitness_logs_%s.%s"%(args.controller,args.format)
 if fname is not None:
 	folder = "figures/fitness_logs/"
-	if not os.path.exists(os.path.dirname(folder)): os.makedirs(os.path.dirname(folder))
+	if not os.path.exists(os.path.dirname(folder)): 
+		os.makedirs(os.path.dirname(folder))
 	filename_raw = os.path.splitext(os.path.basename(fname))[0]
 	plt.savefig(folder+"%s.%s"%(filename_raw,args.format))
 else:

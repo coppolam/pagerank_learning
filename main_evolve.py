@@ -39,7 +39,6 @@ def fitnessfunction(individual):
 	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
 	
 if __name__=="__main__":
-
 	####################################################################		
 	# Initialize
 

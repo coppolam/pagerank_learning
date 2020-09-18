@@ -49,8 +49,8 @@ class verification():
 		for s1 in set1:
 			for s2 in set2:
 				if nx.has_path(G,s1,s2) is False:
-					print("Counterexample found for path \
-							(%i,%i); "%(s1, s2),end = '')
+					print("Counterexample found for path (%i,%i)\n"%\
+							(s1, s2),end = '')
 					counterexample_flag = True
 
 					# Find all counterexamples? 
@@ -137,21 +137,21 @@ class verification():
 
 		if verbose: self.disp()
 		
-		if verbose: print("Checking Proposition 1 (strong)")
+		if verbose: print("\nChecking Proposition 1 (strong)")
 		c.append(self._condition_1_strong())
 
-		if verbose: print("Checking Proposition 1 (weak)")
+		if verbose: print("\nChecking Proposition 1 (weak)")
 		c.append(self._condition_1_weak())
 		
-		if verbose: print("Checking Proposition 2, Condition 1")
+		if verbose: print("\nChecking Proposition 2, Condition 1")
 		c.append(self._condition_2())
 		
-		if verbose: print("Checking Proposition 2, Condition 2 (strong)")
+		if verbose: print("\nChecking Proposition 2, Condition 2 (strong)")
 		c.append(self._condition_3_strong())
 		
-		if verbose: print("Checking Proposition 2, Condition 2 (weak)")
+		if verbose: print("\nChecking Proposition 2, Condition 2 (weak)")
 		c.append(self._condition_3_weak())
 		
-		print("Result:", c)
+		print("\nResult:", c)
 
 		return all(c)
