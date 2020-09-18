@@ -114,7 +114,7 @@ class swarmulator:
 
 		# Wait for fitness from the pipe
 		f = self._get_fitness(pipe)
-
+		
 		return float(f)
 
 	def load(self,file=None):

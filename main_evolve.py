@@ -83,7 +83,7 @@ if __name__=="__main__":
 								parameters.get(args.controller)
 
 	# Set up path to filename to save the evolution
-	folder = "data/%s/" % (controller)
+	folder = "data/%s/evolution/" % (controller)
 	directory = os.path.dirname(folder)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
@@ -94,18 +94,8 @@ if __name__=="__main__":
 	e.setup(fitnessfunction, 
 		GENOME_LENGTH=pr_states*pr_actions, 
 		POPULATION_SIZE=args.pop)
-	
-	# Swarmulator API set up
-	sim = simulator()
-	sim.make(controller=controller, agent=agent, 
-		clean=True, animation=False, logger=False, verbose=False)
-	sim.sim.runtime_setting("time_limit", str(args.t))
-	sim.sim.runtime_setting("simulation_realtimefactor", str("300"))
-	sim.sim.runtime_setting("environment", args.environment)
-	sim.sim.runtime_setting("fitness", fitness)
-
 	####################################################################
-
+	
 
 	####################################################################
 	# Plot file from file args.plot if indicated
@@ -115,21 +105,36 @@ if __name__=="__main__":
 		print(e.get_best())
 		exit()
 	####################################################################
-	
 
+	
 	####################################################################
 	# Evolve or evaluate
-	#
+	# Swarmulator API set up
+	sim = simulator()
+	sim.sim.runtime_setting("time_limit", str(args.t))
+	sim.sim.runtime_setting("simulation_realtimefactor", str("300"))
+	sim.sim.runtime_setting("environment", args.environment)
+	sim.sim.runtime_setting("fitness", fitness)
+	sim.sim.runtime_setting("pr_states", str(0))
+	sim.sim.runtime_setting("pr_actions", str(0))
+
 	# if -evaluate <path_to_evolution_savefile>
 	# Evaluate the performance of the best individual from the evolution file
 	if args.evaluate is not None:
+		sim.make(controller=controller, agent=agent, 
+			clean=True, animation=False, logger=True, verbose=False)
+
 		# Load the evolution parameters
 		e.load(args.evaluate)
 		individual = e.get_best()
 
-		# Evaluate
-		f = fitnessfunction(individual)
-		
+		# Evaluate and save the log
+		runs = args.reruns
+		args.reruns = 1
+		for i in range(runs):
+			f = fitnessfunction(individual)
+			sim.save_log(filename_ext="%s/evolution/evo_log_%i"%(controller,i))
+
 		# Save evaluation data
 		fh.save_pkl(f,"data/%s/benchmark_evolution_%s_t%i_r%i_runs%i.pkl"
 			%(controller,controller,args.t,args.nmax,args.reruns))
@@ -137,6 +142,9 @@ if __name__=="__main__":
 	# if -resume <path_to_evolution_savefile>
 	# Resume evolution from file args.resume
 	elif args.resume is not None:
+		sim.make(controller=controller, agent=agent, 
+			clean=True, animation=False, logger=False, verbose=False)
+
 		# Load the evolution from the file
 		e.load(args.resume)
 
@@ -151,6 +159,9 @@ if __name__=="__main__":
 
 	# Otherwise, just run normally and start a new evolution from scratch
 	else:
+		sim.make(controller=controller, agent=agent, 
+			clean=True, animation=False, logger=True, verbose=False)
+
 		p = e.evolve(generations=args.generations, 
 			checkpoint=filename, 
 			verbose=True)
