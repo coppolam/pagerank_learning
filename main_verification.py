@@ -2,34 +2,19 @@ import numpy as np
 import argparse
 import matplotlib
 import matplotlib.pyplot as plt
+	import os
 import networkx as nx
 
-from simulators import parameters
+import parameters
+
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 from tools import prettyplot as pp
+
 from classes import pagerank_optimization as propt
 from classes import simulator, evolution, desired_states_extractor, conditions
+
 import plot_paper_model as l
-
-def save_policy(sim, policy, pr_actions):
-	'''Save the policy in the correct format for use in Swarmulator'''
-	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) # Resize pol
-
-	# Normalize rows if needed
-	if pr_actions > 1:
-		policy = matop.normalize_rows(policy)
-
-	# Save the policy so it can be used by the simulator
-	policy_filename = "conf/policies/policy_learnloop.txt"
-	policy_file = sim.sim.path + "/" + policy_filename
-	if policy.shape[1] == 1:
-		fh.save_to_txt(policy.T, policy_file)
-	else:
-		fh.save_to_txt(policy, policy_file)
-
-	# Return the filename
-	return policy_filename
 
 # Argument parser
 parser = argparse.ArgumentParser(
@@ -77,7 +62,7 @@ policy = sim.optimize(policy, des)
 i = 0
 while i < args.iterations:
 	print("\nIteration %i\n"%i)
-	policy_filename = save_policy(sim, policy, pr_actions)
+	policy_filename = sim.save_policy(sim, policy, pr_actions)
 
 	# Run simulation
 	sim.run(time_limit=args.t, robots=args.n, environment="square20", policy=policy_filename, 
@@ -126,7 +111,6 @@ if args.plot:
 	f1 = propt.pagerankfitness(pr1, des)
 
 	# Make a folder to store the figures
-	import os
 	folder = "figures/pagerank"
 	if not os.path.exists(os.path.dirname(folder)):
 		os.makedirs(os.path.dirname(folder))

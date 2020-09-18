@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import time, os
 from tqdm import tqdm
 import argparse
-from simulators import swarmulator
+from tools import swarmulator
 matplotlib.rc('text', usetex=True)
 sim = swarmulator.swarmulator(verbose=False)
 from tools import prettyplot as pp

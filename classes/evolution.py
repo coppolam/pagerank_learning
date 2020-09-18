@@ -9,17 +9,30 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
 from deap import base, creator, tools
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+np.set_printoptions(suppress=True)
+np.set_printoptions(precision=2)
 
 class evolution:
-	'''Wrapper around the DEAP package to run an evolutionary process with just a few commands'''
+	'''
+	Wrapper around the DEAP package to run an 
+	evolutionary process with just a few commands
+	'''
 
 	def __init__(self):
-		'''Itilize the DEAP wrapper'''
-		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-		creator.create("Individual", list, fitness=creator.FitnessMax)
-
-	def setup(self, fitness_function_handle, constraint=None, GENOME_LENGTH=20, POPULATION_SIZE=100, P_CROSSOVER=0.5, P_MUTATION=0.2):
+		'''Itialize the DEAP wrapper'''
+		pass
+	
+	def setup(self, fitness_function_handle, 
+		constraint=None,
+		GENOME_LENGTH=20,
+		POPULATION_SIZE=100, 
+		P_CROSSOVER=0.5, 
+		P_MUTATION=0.2):
 		'''Set up the parameters'''
+		
 		# Set the main variables
 		self.GENOME_LENGTH = GENOME_LENGTH
 		self.POPULATION_SIZE = POPULATION_SIZE
@@ -28,20 +41,52 @@ class evolution:
 
 		# Set the lower level parameters
 		self.toolbox = base.Toolbox()
-		self.toolbox.register("attr_float", random.random)
-		self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attr_float, self.GENOME_LENGTH)
-		self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
-		self.toolbox.register("evaluate", fitness_function_handle)
-		self.toolbox.register("mate", tools.cxUniform, indpb=0.1) # Mating method
+		
+		self.toolbox.register("attr_float", 
+			random.random)
+		
+		self.toolbox.register("individual", 
+			tools.initRepeat, 
+			creator.Individual, 
+			self.toolbox.attr_float, 
+			self.GENOME_LENGTH)
+		
+		self.toolbox.register("population", 
+			tools.initRepeat, 
+			list, 
+			self.toolbox.individual)
+
+		self.toolbox.register("evaluate", 
+			fitness_function_handle)
+
+		self.toolbox.register("mate", 
+			tools.cxUniform, indpb=0.1)
+
+		self.toolbox.register("mutate", 
+			tools.mutPolynomialBounded, 
+			eta=0.1, 
+			low=0.0, 
+			up=1.0, 
+			indpb=0.1)
+		# Binary mutation:
 		# self.toolbox.register("mutate", tools.mutUniformInt, low=0.0, up=1.0, indpb=0.05) # Mutation method (binary)
-		self.toolbox.register("mutate", tools.mutPolynomialBounded, eta=0.1, low=0.0, up=1.0, indpb=0.1) # Mutation method
-		self.toolbox.register("select", tools.selTournament, tournsize=3) # Selection method
-		if constraint is not None: self.toolbox.decorate("evaluate", tools.DeltaPenalty(constraint,0,self.distance))
+
+		self.toolbox.register("select", 
+			tools.selTournament, 
+			tournsize=3)
+
+		if constraint is not None:
+				self.toolbox.decorate("evaluate", 
+					tools.DeltaPenalty(constraint,0,self.distance))
+		
 		self.stats = [] # Initialize stats vector
 	
 	def store_stats(self, population, iteration=0):
 		'''Store the current stats and return a dict'''
-		fitnesses = [ individual.fitness.values[0] for individual in population ]
+		# Gather the fitnesses in a population
+		fitnesses = [individual.fitness.values[0] for individual in population]
+
+		# Store the main values
 		return {
 			'g': iteration,
 			'mu': np.mean(fitnesses),
@@ -51,37 +96,62 @@ class evolution:
 		}
 
 	def disp_stats(self,iteration=0):
-		'''Print the current stats'''
+		'''Print the current stats to the terminal'''
+
+		# String to print
 		p = "\r >> gen = %i, mu = %.2f, std = %.2f, max = %.2f, min = %.2f" % (
 			self.stats[iteration]['g'],
 			self.stats[iteration]['mu'],
 			self.stats[iteration]['std'],
 			self.stats[iteration]['max'],
 			self.stats[iteration]['min'])
+
+		# Sys write + flush
 		sys.stdout.write(p)
 		sys.stdout.flush()
 
 	def plot_evolution(self,figurename=None):
 		'''Plot the evolution outcome'''
+		
+		# Set up latex
 		plt.rc('text', usetex=True)
 		plt.rc('font', family='serif')
 		plt.figure(figsize=(6,3))
-		plt.plot(range(1, len(self.stats)+1), [ s['mu'] for s in self.stats ])
-		plt.xlabel('Iterations')
-		plt.ylabel('Fitness')
 		plt.gcf().subplots_adjust(bottom=0.15)
+		
+		# Plot
+		plt.plot(range(1, len(self.stats)+1), 
+			[ s['mu'] for s in self.stats ])
 		plt.fill_between(range(1, len(self.stats)+1),
 					[ s['mu']-s['std'] for s in self.stats ],
 					[ s['mu']+s['std'] for s in self.stats ],
-					color='gray', alpha=0.2)
+					color='gray',
+					alpha=0.2)
+		plt.xlabel('Iterations')
+		plt.ylabel('Fitness')
 		plt.xlim(0,len(self.stats))
-		if figurename is not None: plt.savefig(figurename)
-		else: plt.show()
+
+		# Save if a figurename was given, else just show it
+		if figurename is not None:
+			plt.savefig(figurename)
+		else:
+			plt.show()
 
 	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
-		'''Run the evolution. Use checkpoint="filename.pkl" to save the status to a file after each generation, just in case.'''
-		random.seed() # Use random seed
-		pop = population if population is not None else self.toolbox.population(n=self.POPULATION_SIZE)
+		'''
+		Run the evolution. Use checkpoint="filename.pkl" to 
+		save the status to a file after each generation, 
+		just in case.
+		'''
+		
+		# Set up a random seed
+		random.seed() 
+
+		# Initialize the population (if not given)
+		pop = population if population is not None \
+			else self.toolbox.population(n=self.POPULATION_SIZE)
+		
+		# Inform the user of what's happening
 		if verbose: print('{:=^40}'.format(' Start of evolution '))
 			
 		# Evaluate the initial population
@@ -89,12 +159,12 @@ class evolution:
 		for ind, fit in zip(pop, fitnesses):
 			ind.fitness.values = fit
 
-		# Evolve!
+		# Start the evoution
 		g = len(self.stats) # Number of generations
-		gmax = len(self.stats) + generations
-		# for g in tqdm(range(generations)):
+		gmax = len(self.stats) + generations # Max number to reach
 		while g < gmax:
-			# Offspring
+				
+			# Determine offspring
 			offspring = self.toolbox.select(pop, len(pop))
 			offspring = list(map(self.toolbox.clone, offspring))
 			for child1, child2 in zip(offspring[::2], offspring[1::2]):
@@ -113,12 +183,20 @@ class evolution:
 			for ind, fit in zip(invalid_ind, fitnesses):
 				ind.fitness.values = fit
 			
-			pop[:] = offspring # Replace population
-			self.stats.append(self.store_stats(pop, g)) # Store stats
+			# Replace population
+			pop[:] = offspring
+
+			# Store stats
+			self.stats.append(self.store_stats(pop, g)) 
+
+			# Print to terminal
 			if verbose: self.disp_stats(g)
 			
-			if checkpoint is not None: self.save(checkpoint, pop=pop, gen=g, stats=self.stats)
+			# Store progress
+			if checkpoint is not None:
+				self.save(checkpoint, pop=pop, gen=g, stats=self.stats)
 
+			# Move to next generation
 			g += 1
 
 		# Store oucomes
@@ -138,23 +216,39 @@ class evolution:
 
 	def save(self,filename,pop=None,gen=None,stats=None):
 		'''Save the current status in a pkl file'''
+		
+		# Population
 		p = self.pop if pop is None else pop
+		
+		# Generation
 		g = self.g if gen is None else gen
+		
+		# Statistics
 		s = self.stats if stats is None else stats
+		
+		# Store in a dict file and save as pkl
 		cp = dict(population=p, generation=g, stats=s)
 		with open(filename+".pkl", "wb") as cp_file:
 			pickle.dump(cp, cp_file)
 
 	def load(self,filename):
 		'''Load the status from a pkl file'''
+		# Load a pkl file with the same structure as in the save() function
 		with open(filename, "rb") as cp_file:
 			cp = pickle.load(cp_file)
+		
+		# Unpack
 		self.stats = cp["stats"]
 		self.g = cp["generation"]
 		self.pop = cp["population"]
+
+		# Return the population
 		return self.pop
 
 	def get_best(self,pop=None):
 		'''Returns the fittest element of a population'''
+		# Get population
 		p = self.pop if pop is None else pop
+
+		# Return the best
 		return tools.selBest(p,1)[0]

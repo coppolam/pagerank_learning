@@ -9,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True) # Allow Latex text
 
+from tools import swarmulator
 from tools import prettyplot as pp
 from tools import fileHandler as fh
 from classes import evolution
@@ -25,7 +26,6 @@ parser.add_argument('-format', type=str, help="(str) plot format, default=pdf", 
 args = parser.parse_args()
 
 # Swarmulator API (to extract the log files)
-from simulators import swarmulator
 s = swarmulator.swarmulator(verbose=False)
 
 # Get all data

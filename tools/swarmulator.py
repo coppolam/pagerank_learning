@@ -3,13 +3,13 @@
 Python API for swarmulator
 @author: Mario Coppola, 2020
 """
+
 import os, subprocess, threading, time, random, glob
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import concurrent.futures
-from tools import fileHandler as fh
-from tools import prettyplot as pp
+from . import fileHandler as fh
+from . import prettyplot as pp
 
 class swarmulator:
 	''' Lower level Python API for Swarmulator.
@@ -218,17 +218,19 @@ class swarmulator:
 		'''Assigns a value to a runtime setting of conf/parameters.xml'''
 
 		# Set up an xmlstarlet command to change the value
-		s = "xmlstarlet edit -L -u \"/parameters/" 
-		+ setting + "\" -v \""
-		+ value + "\" " 
-		+ self.path + "/conf/parameters.xml"
+		s = "xmlstarlet edit -L -u \"/parameters/" \
+			+ setting + "\" -v \"" \
+			+ value + "\" "  \
+			+ self.path + "/conf/parameters.xml"
 
 		# Call the subprocess
 		subprocess.call(s, shell=True)
 
 		# Print
 		if self.verbose:
-			print("Runtime setting \"" + setting + "\" has been set to \"" + value + "\"")
+			print("Runtime setting \"" + \
+					setting + "\" has been set to \"" \
+					+ value + "\"")
 
 	def get_runtime_setting(self, setting):
 		'''Returns the value of a runtime parameter currently specified in swarmulator conf/parameters.xml'''

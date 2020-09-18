@@ -13,7 +13,12 @@ class net(torch.nn.Module):
         self.layers = layers
 
     def forward(self,x):
+        # Run input layer
         x = self.relu(self.fc_in(x))
+
+        # Run middle layers
         for i in range(self.layers):
             x = self.relu(self.fc_mid(x))
+
+        # Output layer
         return self.fc_out(x)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 def get(c):
-	"""
+	'''
 	Loads the desired parameters used throughout this paper for different tasks.
 
 	The tasks are called according to their controller name in swarmulator.
@@ -11,7 +11,7 @@ def get(c):
 	Study Case C2 = "pfsm_exploration_mod"
 
 	@author: Mario Coppola, 2020
-	"""
+	'''
 	
 	# Study Case A
 	if c == "aggregation":

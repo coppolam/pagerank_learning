@@ -8,30 +8,16 @@ Then evaluate it and save the results.
 
 import pickle, os, argparse
 import numpy as np
-from classes import simulator, evolution, desired_states_extractor
+import parameters
+
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-from simulators import parameters
+from classes.desired_states_extractor import desired_states_extractor as dse
+from classes.simulator import simulator as sim
+from classes.evolution import evolution as evo
 
-def save_policy(sim, policy, pr_actions):
-	'''Save the policy in the correct format for use in Swarmulator'''
-	# Resize pol
-	policy = np.reshape(policy,(policy.size//pr_actions,pr_actions)) 
-	
-	# Normalize rows if more than one column
-	if pr_actions > 1:
-		policy = matop.normalize_rows(policy)
-	
-	# Policy filename
-	policy_filename = "conf/policies/policy_learnloop.txt"
-	policy_file = sim.sim.path + "/" + policy_filename
-	
-	if policy.shape[1] == 1:
-		fh.save_to_txt(policy.T, policy_file)
-	else:
-		fh.save_to_txt(policy, policy_file)
-	
-	return policy_filename
+np.set_printoptions(suppress=True)
+np.set_printoptions(precision=2)
 
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
@@ -60,24 +46,18 @@ parser.add_argument('-log', action='store_true',
 args = parser.parse_args()
 
 # Simulation parameters
-fitness, controller, agent, pr_states, pr_actions = parameters.get(args.controller)
+fitness, controller, agent, pr_states, pr_actions = \
+		parameters.get(args.controller)
 
 # Load and build the simulator
-sim = simulator.simulator(savefolder="data/%s/learnloop_%i/"%(controller,args.id))
-sim.make(controller, agent, animation=args.animate, verbose=False)
-
-# Get the desired states using the trained feed-forward network
-dse = desired_states_extractor.desired_states_extractor()
-dse.load_model("data/%s/models.pkl"%controller,modelnumber=499) # 499 to use the last model
-des = dse.get_des(dim=pr_states)
-
-# Initial policy to optimize from
-policy = np.random.rand(pr_states,pr_actions)
+sim = sim(savefolder="data/%s/learnloop_%i/"%(controller,args.id))
 
 # Load the transition models
-filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
-v = []
+filelist_training = [f for f in os.listdir(args.folder_training) \
+										if f.endswith('.npz')]
+
 # Iterate over each log to build the model
+v = []
 for j, filename in enumerate(sorted(filelist_training)):
 	# The first time, set up the model, then just update it
 	if j == 0:
@@ -86,96 +66,60 @@ for j, filename in enumerate(sorted(filelist_training)):
 		sim.load_update(args.folder_training+filename)
 
 # Optimize the policy
-policy = sim.optimize(policy, des)
+## Settings for re-iterations
+settings = {"time_limit":args.t,
+	"robots":args.n,
+	"environment":"square20",
+	"policy_filename":"conf/policies/temp.txt", 
+	"pr_states":pr_states,
+	"pr_actions":pr_actions,
+	"run_id":args.id,
+	"fitness":fitness,
+	"controller":controller,
+	"agent":agent}
 
-# Perform additional iterations on the policy (not done by default)
-i = 0
-while i < args.iterations:
-	print("\nIteration %i\n"%i)
-	# Run simulation
-	policy_filename = save_policy(sim, policy, pr_actions)
-	sim.run(time_limit=args.t, robots=args.n, environment="square20", policy=policy_filename, 
-		pr_states=pr_states, pr_actions=pr_actions, run_id=args.id, fitness=fitness)
+## Optimize
+### Initial policy to optimize from
+policy = np.random.rand(pr_states,pr_actions)
+### Optimization
+policy = sim.optimize(policy, iterations=args.iterations, settings=settings)
 
-	# Save data
-	logname = "%s_%s_t%i_r%i_id%s_%i"%(controller, agent, args.t, args.n, sim.run_id, i)
-	logfile = sim.save_learning_data(filename_ext=logname)
-
-	# Optimization
-	des = dse.run(logfile+".npz", load=False, verbose=False) # Update desired states 
-	sim.load_update(logfile+".npz",discount=1.0) # Update model
-	policy = sim.optimize(policy, des) # Optimize again
-	
-	i += 1
-	print(des)
-	print(policy)
-	
 # Evaluate the result
+
 ## This is done either visually or by benchmarking 
 ## with many simulations (default=benchmark)
 ## depending on the input arguments
 ## use -observe True to just run the result with the animation turned on
 ## If not set, the solution will be evaluated 100 times
+
 if args.observe:
-	# Run simulation with animation=on so that you can see what's happening in a sample run
-	policy_filename = save_policy(sim, policy, pr_actions)
+	# Run simulation with animation=ON so that you 
+	# can see what's happening in a sample run	
+	## Build
+	sim.make(controller, agent, animation=True, verbose=False, logger=False)
 	
-	# Build
-	sim.make(controller, agent, 
-		animation=True, 
-		verbose=False)
-	
-	# Run
-	sim.run(time_limit=0, 
-		robots=args.n, 
-		environment=args.environment, 
-		policy=policy_filename, 
-		pr_states=pr_states, 
-		pr_actions=pr_actions, 
-		run_id=args.id, 
-		fitness=fitness)
+	## Run
+	settings["time_limit"] = 0 # Infinite time
+	settings["policy_filename"] = sim.save_policy(policy, pr_actions)
+	sim.run(**settings)
 
 elif args.log:
-    	
-	# Set up policy
-	policy_filename = save_policy(sim, policy, pr_actions)
-	
 	# Build the simulator with the desired settings
-	sim.make(controller, agent, 
-		animation=False, 
-		verbose=False, 
-		logger=True)
-		
-	# Run it
-	sim.run(time_limit=args.t, 
-		robots=args.n, 
-		environment=args.environment, 
-		policy=policy_filename, 
-		pr_states=pr_states, 
-		pr_actions=pr_actions, 
-		run_id=args.id, 
-		fitness=fitness)
+	sim.make(controller, agent, animation=False, verbose=False, logger=True)
+
+	## Run
+	settings["policy_filename"] = sim.save_policy(policy, pr_actions)	
+	sim.run(**settings)
 
 	# Save the log files
 	sim.save_log(filename_ext="sample_log")
 
 else:
-	
 	# Set up policy
 	policy = matop.normalize_rows(policy)
 	
 	# Run a benchmark
-	f = sim.benchmark(controller, 
-			agent, 
-			policy, 
-			fitness, 
-			make=True, 
-			robots=args.n, 
-			runs=args.runs, 
-			environment=args.environment, 
-			time_limit=args.t, 
-			pr_states=pr_states, 
-			pr_actions=pr_actions)
+	f = sim.benchmark(policy, make=True, **settings)
 	
 	# Save all received fitnesses
 	fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i_id%i.pkl"

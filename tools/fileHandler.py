@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Collection of functions to handle files, load them, save them, ect.
+Collection of functions to handle files, 
+load them, save them, ect.
 
 @author: Mario Coppola, 2020
 """
 
-import numpy as np
-import os, time
+import os
+import time
 import glob
 import pickle
+import numpy as np
 
 def load_matrix(file):
 	'''Loads a matrix from a file and returns the matrix'''
@@ -28,7 +30,8 @@ def read_matrix(folder, name, file_format=".csv"):
 
 def make_folder(folder):
 	'''Generates a folder if it doesn not exist'''
-	# Try to make a main folder (if it fails then the directory exists!)
+	# Try to make a main folder 
+	# (if it fails then the directory exists!)
 	try:
 		os.mkdir(folder)
 	except:

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""
+'''
 Optimize a behavior based on the PageRank function
+
 @author: Mario Coppola, 2020
-"""
+'''
+
 import numpy as np
 from tools import matrixOperations as matop
 from classes import evolution
@@ -13,6 +15,9 @@ class pagerank_evolve:
 	def __init__(self,des,A,E):
 		'''Initializer'''
 		
+    	# Initialize the evolution API
+		self.e = evolution.evolution()
+
 		# Calculate estimated alpha using ratio of H to E for each row
 		## Solve for alpha as follows
 		## Use: r = H/E = alpha/(1-alpha)
@@ -35,35 +40,39 @@ class pagerank_evolve:
 		# Set desired states
 		self.des = des
 
-	def reshape_policy(self,A, pol):
+	def reshape_policy(self, A, policy):
 		'''Reshape the stochastic policy to the correct dimensions'''
 
 		# Get the number of columns and the policy as a numpy array
 		cols = A.shape[0]
-		pol = np.array(pol)
+		policy = np.array(policy)
 
 		# Resize policy
-		pol = np.reshape(pol,(pol.size//cols,cols))
+		policy = np.reshape(policy,(policy.size//cols,cols))
 		
 		# If more than 1 column, normalize rows
 		if cols > 1:
-			pol = matop.normalize_rows(pol)
+			policy = matop.normalize_rows(policy)
 
-		return pol
+		return policy
 		
 	def update_H(self, A, policy):
-		'''Update the H matrix for the chosen policy
+		'''
+		Update the H matrix for the chosen policy
 		
-			Update H matrix
-			Matrix H1 holds the cumulative probability of the transition happening for a current policy
-			This is the probability of the action being taken times the 
-			probability of the state transition caused by the action, and then the sum of that
-			For example:
-			H[0,0] = P((e00 and a00) or (e00 and a1) or ... or (e00 and aN))
-					= P(e00|a0)*P(a0) +  P(e00|a1)*P(a1) + ... + P(e00|aN)*P(aN))
-			where e00 is a state transition from state 0 to state 0
-			and a0... aN are the actions 0 to N
-			In essence H[0,0] = P(e00), given that the actions are independent at the local level
+		Update H matrix
+		Matrix H1 holds the cumulative probability of the transition 
+		happening for a current policy.
+		This is the probability of the action being taken times the 
+		probability of the state transition caused by the action, 
+		and then the sum of that.
+		For example:
+		H[0,0] = P((e00 and a00) or (e00 and a1) or ... or (e00 and aN))
+				= P(e00|a0)*P(a0) +  P(e00|a1)*P(a1) + ... + P(e00|aN)*P(aN))
+		where e00 is a state transition from state 0 to state 0
+		and a0... aN are the actions 0 to N
+		In essence H[0,0] = P(e00), given that the actions 
+		are independent at the local level.
 		'''
 		# Ensure policy has the correct dimensions
 		policy = self.reshape_policy(A, policy)
@@ -81,9 +90,9 @@ class pagerank_evolve:
 		return H
 
 	def pagerank_fitness(self,pr,des):
-		'''Get the PageRank fitness.
-
-			The fitness is the weighted average over the desired states
+		'''
+		Get the PageRank fitness.
+		The fitness is the weighted average over the desired states
 		'''
 		return np.average(pr,axis=1,weights=des)/pr.mean()
 
@@ -107,33 +116,20 @@ class pagerank_evolve:
 	def _optimize(self, policy):
 		'''Run the optimization'''
 
-    	# Initialize the evolution API
-		e = evolution.evolution()
-
 		# Set up the parameters
-		e.setup(self._fitness, GENOME_LENGTH=policy.size, POPULATION_SIZE=20)
+		self.e.setup(self._fitness, 
+			GENOME_LENGTH=policy.size, POPULATION_SIZE=20)
 
 		# Run the evolution
-		e.evolve(verbose=True, generations=500, population=None)
+		self.e.evolve(verbose=True, generations=500, population=None)
 
-		# e.plot_evolution()
-		return e.get_best()
+		return self.e.get_best()
 
-	def main(self, policy0):
+	def run(self, policy0):
 		'''Get a policy and optimize it according to the PageRank scheme'''
 
 		# Optimize using pagerank fitness
 		policy = self._optimize(policy0)
 
-		# Reformat output
-		
-		## Resize the policy to be #states x #actions
-		cols = policy0.shape[1]
-		policy = np.reshape(policy,(len(policy)//cols,cols))
-		
-		## Normalize rows
-		if cols > 1:
-			policy = matop.normalize_rows(policy)
-		
-		# Return the optimized policy
-		return policy
+		# Format and return the optimized policy
+		return self.reshape_policy(self.A, policy)

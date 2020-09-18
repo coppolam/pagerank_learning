@@ -8,7 +8,7 @@ The generated data is used for the comparison in Figure 6 of the paper.
 
 import pickle, argparse
 import numpy as np
-from simulators import parameters
+import parameters
 from classes import simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
