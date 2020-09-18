@@ -8,9 +8,6 @@ from tools import swarmulator
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
 
-np.set_printoptions(suppress=True)
-np.set_printoptions(precision=2)
-
 class simulator:
 	''' 
 	Higher level API to interact with simulator
@@ -42,7 +39,7 @@ class simulator:
 		self.sim = swarmulator.swarmulator(folder,verbose=False)
 		
 	def make(self, controller, agent, 
-		clean=True, animation=False, logger=True, verbose=True):
+				clean=True, animation=False, logger=True, verbose=True):
 		''' Build simulator with the desired settings'''
 		# Build (if already built, you can skip this)
 		self.sim.make(controller=controller, 
@@ -101,12 +98,10 @@ class simulator:
 		# Read the A matrices
 		A = []
 		for i in range(len(glob.glob(
-					self.logs_folder+"A_"+self.sim.run_id+"_*")
-				)):
-			A.append(fh.read_matrix(
-						self.logs_folder,"A_"+self.sim.run_id+"_"+str(i)
-					))
-
+						self.logs_folder+"A_"+self.sim.run_id+"_*"))):
+						A.append(fh.read_matrix(
+						self.logs_folder,"A_"+self.sim.run_id+"_"+str(i)))
+		
 		# Read the E matrix
 		E = fh.read_matrix(self.logs_folder,"E_"+self.sim.run_id)
 
@@ -176,8 +171,29 @@ class simulator:
 				% (file,
 				datetime.datetime.fromtimestamp(os.path.getmtime(file))))
 
+	def save_optimization_data(self,policy,des,filename_ext=None):
+		# Load up sim variables locally
+		A = self.A
+		E = self.E
+		H0 = np.sum(A, axis=0)
+		with np.errstate(divide='ignore',invalid='ignore'):
+			r = H0.sum(axis=1) / E.sum(axis=1)
+			r = np.nan_to_num(r) # Remove NaN Just in case
+		alpha = r / (1 + r)
+
+		# Get optimized policy
+		o = opt.pagerank_evolve(des,self.A,self.E)
+		H1 = o.update_H(A, policy)
+		del o
+
+		# Save 
+		save_filename = self.savefolder+filename_ext
+		np.savez(save_filename, H0=H0, H1=H1, A=A, E=E, 
+									policy=policy, alpha=alpha, des=des)
+
 	def optimize(self, p0, iterations=0, settings=None,debug=True):
 		'''Optimize the policy based on the desired states'''
+		i = 0
 		
 		# Get the desired states using the trained feed-forward network
 		dse = desired_states_extractor.desired_states_extractor()
@@ -185,23 +201,15 @@ class simulator:
 					settings["controller"], modelnumber=499)
 		des = dse.get_des(dim=settings["pr_states"])
 
-		# Initialize and run optimizer
+		# Initialize and run the optimizer
 		o = opt.pagerank_evolve(des,self.A,self.E)
-		policy = o.run(p0)
+		policy = o.run(p0)		
+		del o
 
-		# For analysis/debug purposes, show states that have not been visited
-		if debug is True:
-			temp = self.H + self.E
-			empty_cols = np.where(~temp.any(axis=0))[0]
-			empty_rows = np.where(~temp.any(axis=1))[0]
-			empty_states = np.intersect1d(empty_cols,empty_rows,
-													assume_unique=True)
-			print("\nUnknown states: \t" + str(empty_states))
-			print("\nPolicy\n",policy)
-		
+		# Save 
+		self.save_optimization_data(policy,des,"optimization_%i"%i)
 
 		# Perform additional iterations on the policy (not done by default)
-		i = 0
 		while i < iterations:
 			
 			# Build the sim if it's the first time
@@ -234,8 +242,10 @@ class simulator:
 			## Re-optimize policy
 			o = opt.pagerank_evolve(des,self.A,self.E)
 			policy = o.run(p0)
+			del o
 
-			## Next
+			## Save and next
+			save_optimization_data(policy,des,"optimization_%i")
 			i += 1
 
 		return policy

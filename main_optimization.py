@@ -19,6 +19,9 @@ from classes.evolution import evolution as evo
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
 
+####################################################################
+# Initialize
+
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 parser.add_argument('controller', type=str, 
@@ -56,7 +59,13 @@ sim = sim(savefolder="data/%s/learnloop_%i/"%(controller,args.id))
 filelist_training = [f for f in os.listdir(args.folder_training) \
 										if f.endswith('.npz')]
 
-# Iterate over each log to build the model
+####################################################################
+
+
+####################################################################
+# Policy optimization
+
+# First we iterate over each log to build the transition model
 v = []
 for j, filename in enumerate(sorted(filelist_training)):
 	# The first time, set up the model, then just update it
@@ -65,7 +74,8 @@ for j, filename in enumerate(sorted(filelist_training)):
 	else:
 		sim.load_update(args.folder_training+filename)
 
-# Optimize the policy
+# Now we optimize the policy
+
 ## Settings for re-iterations
 settings = {"time_limit":args.t,
 	"robots":args.n,
@@ -78,13 +88,16 @@ settings = {"time_limit":args.t,
 	"controller":controller,
 	"agent":agent}
 
-## Optimize
-### Initial policy to optimize from
+## Initial policy to optimize from
 policy = np.random.rand(pr_states,pr_actions)
-### Optimization
-policy = sim.optimize(policy, iterations=args.iterations, settings=settings)
 
-# Evaluate the result
+## Optimization
+policy = sim.optimize(policy, iterations=args.iterations, settings=settings)
+####################################################################
+
+
+####################################################################
+# Evaluate the results
 
 ## This is done either visually or by benchmarking 
 ## with many simulations (default=benchmark)
@@ -114,13 +127,12 @@ elif args.log:
 	# Save the log files
 	sim.save_log(filename_ext="sample_log")
 
-else:
-	# Set up policy
-	policy = matop.normalize_rows(policy)
-	
+else:	
 	# Run a benchmark
 	f = sim.benchmark(policy, make=True, **settings)
 	
 	# Save all received fitnesses
 	fh.save_pkl(f,"data/%s/benchmark_optimized_%s_t%i_r%i_runs%i_id%i.pkl"
 		%(controller,controller,args.t,args.n,args.runs,args.id))
+
+####################################################################

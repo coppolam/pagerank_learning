@@ -17,62 +17,98 @@ import numpy as np
 from classes import simulator, desired_states_extractor
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-import torch 
 
+####################################################################
+# Initialize
 # Input arguments
-parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
-parser.add_argument('folder_training', type=str, help="(str) Training data folder", default=None)
-parser.add_argument('folder_validation', type=str, help="(str) Validation data folder", default=None)
-parser.add_argument('savefolder', type=str, help="(str) Save folder", default=None)
-parser.add_argument('-id',  type=int, help="Model ID (for save/load)", default=1)
-parser.add_argument('-train', action='store_true', help="(bool) Train flag to true")
-parser.add_argument('-validate', action='store_true', help="(bool) Validate flag to true (checks all models)")
-parser.add_argument('-evaluate', action='store_true', help="(bool) Evaluate flag to true (checks last model only)")
+parser = argparse.ArgumentParser(description=
+	'Simulate a task to gather the data for optimization'
+)
+parser.add_argument('folder_train', type=str, 
+	help="(str) Training data folder", default=None)
+parser.add_argument('folder_test', type=str, 
+	help="(str) Validation data folder", default=None)
+parser.add_argument('savefolder', type=str, 
+	help="(str) Save folder", default=None)
+parser.add_argument('-id',  type=int, 
+	help="Model ID (for save/load)", default=1)
+parser.add_argument('-train', action='store_true', 
+	help="(bool) Train flag to true")
+parser.add_argument('-validate', action='store_true', 
+	help="(bool) Validate flag to true (checks all models)")
+parser.add_argument('-evaluate', action='store_true', 
+	help="(bool) Evaluate flag to true (checks last model only)")
+
 args = parser.parse_args()
 
-#Initialize desired states extractor
-dse = desired_states_extractor.desired_states_extractor()
+# Load files
+folder_train = args.folder_train
+folder_test = args.folder_test
+save_folder = args.savefolder
+files_train = [f for f in os.listdir(folder_train) if f.endswith('.npz')]
+files_test = [f for f in os.listdir(folder_test+"/") if f.endswith('.npz')]
 
-# Train the network (or else load the model)
-nets = []
-filelist_training = [f for f in os.listdir(args.folder_training) if f.endswith('.npz')]
+# Initialize desired states extractor
+dse = desired_states_extractor.desired_states_extractor()
+####################################################################
+
+
+####################################################################
+# if -train
+# Else try to load pre-trained sets in a file called "models.pkl"
 if args.train:
+	nets = []
 	i = 0
-	for filename in tqdm(sorted(filelist_training)):
-		model = dse.train(args.folder_training+filename)
+	for filename in tqdm(sorted(files_train)):
+		model = dse.train(folder_train + filename)
 		nets.append(copy.deepcopy(model))
 		i += 1
-	fh.save_pkl(nets,"%s/models.pkl"%(args.savefolder))
+	fh.save_pkl(nets,"%s/models.pkl"%(save_folder))
 else:
-	nets = fh.load_pkl("%s/models.pkl"%(args.savefolder))
+	nets = fh.load_pkl("%s/models.pkl"%(save_folder))
+####################################################################
 
-# Validate against validation set
-filelist_validation = [f for f in os.listdir(args.folder_validation+"/") if f.endswith('.npz')]
 
-# Crosscheck the correlation of the last model against validation set
-if args.evaluate:
-	model = nets[-1]
-	e = []
-	for filename in sorted(filelist_validation):
-		_, s, f = dse.extract_states(args.folder_validation+"/"+filename, pkl=True)
-		_, corr, _ = dse.evaluate_model(model[0], s, f)
-		e.append(np.mean(corr))
-	print(np.mean(e)) # visualize
-	print(model[0].optimizer)
-	print(model[0].network)
-
+####################################################################
+# If -validate
 # Crosscheck all models against all validation files
-v = []
 if args.validate:
+	v = []
 	for model in tqdm(nets):
 		e = []
-		for filename in sorted(filelist_validation):
-			_, s, f = dse.extract_states(args.folder_validation+"/"+filename, pkl=True)
+		for filename in sorted(files_test):
+			_, s, f = dse.extract_states(folder_test+"/"+filename, pkl=True)
 			_, corr, _ = dse.evaluate_model(model[0], s, f)
 			e.append(np.mean(corr))
 		v.append(e)
-		print(np.mean(e)) # visualize
+		print(np.mean(e)) # Display progress
 
-# Save to file
-vname = os.path.basename(os.path.dirname(args.folder_validation))
-fh.save_pkl(v,"%s/validation_%s_id%i.pkl"%(args.savefolder,vname,args.id))
+	# Save to file
+	vname = os.path.basename(os.path.dirname(folder_test))
+	fh.save_pkl(v,"%s/validation_%s_id%i.pkl"%(save_folder,vname,args.id))
+####################################################################
+
+
+####################################################################
+# If -evaluate
+# Crosscheck the correlation of the last model against validation set
+# This is mainly for debugging purposes on the last model
+if args.evaluate:
+    # Get the most recent network
+	model = nets[-1]
+
+	# Evaluate the correlation for the most recent network
+	# to the validation dataset
+	e = []
+	for filename in sorted(files_test):
+		_, s, f = dse.extract_states(
+						args.folder_validation+"/"+filename,
+						pkl=True)
+		_, corr, _ = dse.evaluate_model(model[0], s, f)
+		e.append(np.mean(corr))
+	
+	# Display some data
+	print(np.mean(e)) # Mean error
+	print(model[0].optimizer) # Optimizer parameters
+	print(model[0].network) # Network parameters
+####################################################################

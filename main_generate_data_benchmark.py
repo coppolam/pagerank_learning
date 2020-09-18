@@ -15,11 +15,16 @@ from tools import fileHandler as fh
 
 # Input argument parser
 parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
-parser.add_argument('controller', type=str, help="(str) Controller to use during evaluation")
-parser.add_argument('-t', type=int, help="(int) Simulation time during benchmark, default = 200s", default=200)
-parser.add_argument('-n', type=int, help="(int) Size of swarm, default = 30", default=30)
-parser.add_argument('-runs', type=int, help="(int) Evaluation runs per policy, default = 100", default=100)
-parser.add_argument('-iterations', type=int, help="(int) Evaluated random policies, default = 100", default=100)
+parser.add_argument('controller', type=str, 
+	help="(str) Controller to use during evaluation")
+parser.add_argument('-t', type=int, default=200,
+	help="(int) Simulation time during benchmark, default = 200s")
+parser.add_argument('-n', type=int, default=30, 
+	help="(int) Size of swarm, default = 30")
+parser.add_argument('-runs', type=int, default=100,
+	help="(int) Evaluation runs per policy, default = 100")
+parser.add_argument('-iterations', type=int, default=100,
+	help="(int) Evaluated random policies, default = 100")
 args = parser.parse_args()
 
 # Simulation parameters

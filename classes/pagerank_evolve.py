@@ -132,4 +132,4 @@ class pagerank_evolve:
 		policy = self._optimize(policy0)
 
 		# Format and return the optimized policy
-		return self.reshape_policy(self.A, policy)
+		return np.array(self.reshape_policy(self.A, policy))
