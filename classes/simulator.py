@@ -203,7 +203,7 @@ class simulator:
 
 		# Initialize and run the optimizer
 		o = opt.pagerank_evolve(des,self.A,self.E)
-		policy = o.run(p0)		
+		policy = o.run(p0,generations=100)
 		del o
 
 		# Save 
@@ -296,7 +296,10 @@ class simulator:
 		self.save_id = self.savefolder + self.run_id
 
 		# Run it
-		self.sim.run(robots,run_id=self.run_id)
+		f = self.sim.run(robots,run_id=self.run_id)
+
+		# Return fitness
+		return f
 
 	def benchmark(self, policy, controller, agent, fitness, robots=30, 
 		time_limit=1000, realtimefactor=300, environment="square20", 

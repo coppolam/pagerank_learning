@@ -137,7 +137,8 @@ class evolution:
 		else:
 			plt.show()
 
-	def evolve(self, generations=100, verbose=False, population=None, checkpoint=None):
+	def evolve(self, generations=100, 
+				verbose=False, population=None, checkpoint=None):
 		'''
 		Run the evolution. Use checkpoint="filename.pkl" to 
 		save the status to a file after each generation, 
@@ -152,7 +153,8 @@ class evolution:
 			else self.toolbox.population(n=self.POPULATION_SIZE)
 		
 		# Inform the user of what's happening
-		if verbose: print('{:=^40}'.format(' Start of evolution '))
+		if verbose:
+			print('{:=^40}'.format(' Start of evolution '))
 			
 		# Evaluate the initial population
 		fitnesses = list(map(self.toolbox.evaluate, pop))
@@ -168,13 +170,15 @@ class evolution:
 			offspring = self.toolbox.select(pop, len(pop))
 			offspring = list(map(self.toolbox.clone, offspring))
 			for child1, child2 in zip(offspring[::2], offspring[1::2]):
-				if random.random() < self.P_CROSSOVER: self.toolbox.mate(child1, child2)
+				if random.random() < self.P_CROSSOVER: 
+					self.toolbox.mate(child1, child2)
 				del child1.fitness.values
 				del child2.fitness.values
 
 			# Mutate
 			for mutant in offspring:
-				if random.random() < self.P_MUTATION: self.toolbox.mutate(mutant)
+				if random.random() < self.P_MUTATION: 
+					self.toolbox.mutate(mutant)
 				del mutant.fitness.values
 		
 			# Evaluate the individuals with an invalid fitness
@@ -205,7 +209,8 @@ class evolution:
 		self.g = g
 
 		# Save to checkpoint file
-		if checkpoint is not None: self.save(checkpoint)
+		if checkpoint is not None:
+			self.save(checkpoint)
 
 		# Display outcome
 		if verbose: 

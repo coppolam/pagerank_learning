@@ -51,7 +51,7 @@ if __name__=="__main__":
 
 
 	####################################################################
-	# Run
+	# Run the data generation
 
 	for i in tqdm(range(args.runs)):	
 		# Generate a random policy
@@ -64,7 +64,7 @@ if __name__=="__main__":
 		sim.run(time_limit=args.t, 
 			robots=np.random.randint(1,args.n), 
 			environment=args.environment, 
-			policy=policy_filename, 
+			policy_filename=policy_filename, 
 			pr_states=pr_states, 
 			pr_actions=pr_actions, 
 			run_id=args.id, 
@@ -73,6 +73,6 @@ if __name__=="__main__":
 		# Save files
 		filename_ext = "%s_t%i_r%i_id%s_%i" % \
 			(args.controller, args.t, args.n, sim.run_id, i)
-		learning_file = sim.save_learning_data(filename_ext=filename_ext)
+		sim.save_learning_data(filename_ext=filename_ext)
 	
 	####################################################################

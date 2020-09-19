@@ -66,7 +66,6 @@ if __name__ == "__main__":
 	# Policy optimization
 
 	# First we iterate over each log to build the transition model
-	v = []
 	for j, filename in enumerate(sorted(filelist_training)):
 		# The first time, set up the model, then just update it
 		if j == 0:

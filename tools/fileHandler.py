@@ -74,3 +74,14 @@ def load_pkl(name):
 	with open(name, "rb") as file:
 		data = pickle.load(file)
 	return data
+
+def clear_folder(_dir,_type="npz"):
+	'''
+	Clears all files in a folder for a specified format
+	
+	By default it will clear ALL files. Specify type=<format> to
+	indicate the file format.
+	'''
+	files = [ f for f in os.listdir(_dir) if f.endswith("."+_type) ]
+	for f in files:
+		os.remove(os.path.join(_dir,f))

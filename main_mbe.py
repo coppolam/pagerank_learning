@@ -16,6 +16,7 @@ from classes.simulator import simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
 from tools import swarmulator
+from classes import mbe
 
 def fitnessfunction(individual):
 	'''
@@ -23,21 +24,35 @@ def fitnessfunction(individual):
 	performance of the individuals
 	'''
 	# Save a temp policy file for the individual
-	sim.save_policy(np.array(individual),pr_actions)
+	policy_filename = sim.save_policy(np.array(individual),pr_actions)
+	random_id = np.random.randint(100000)
 
 	# Run simulator in batches
-	f = []
+	flist = []
 	for i in range(args.reruns):
 		if args.nmin < args.nmax:
 			# Random number of robots within bounds
 			robots = np.random.randint(args.nmin,args.nmax)
 		else:
 			robots = args.nmin
-		f = np.append(f,sim.sim.run(robots)) # Simulate
-	
-	print(f) # Just to keep track
-	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
-	
+
+		f = sim.run(time_limit=args.t, 
+			robots=robots, 
+			environment=args.environment, 
+			policy_filename=policy_filename, 
+			pr_states=pr_states, 
+			pr_actions=pr_actions, 
+			run_id=args.id, 
+			fitness=fitness)
+
+		# Save the data
+		sim.save_learning_data(filename_ext="evo_temp_%i_%i"%(i,random_id))
+		
+		flist = np.append(flist,f)
+
+	print(flist) # Just to keep track
+	return flist.mean(), # Fitness = average
+
 if __name__=="__main__":
 	####################################################################		
 	# Initialize
@@ -82,6 +97,12 @@ if __name__=="__main__":
 	fitness, controller, agent, pr_states, pr_actions = \
 								parameters.get(args.controller)
 
+	## Settings for model based estimator
+	settings = {"controller": controller, 
+				"pr_states": pr_states,
+				"pr_actions": pr_actions,
+				"policy_filename":"conf/policies/temp.txt"}
+	
 	# Set up path to filename to save the evolution
 	folder = "data/%s/evolution/" % (controller)
 	directory = os.path.dirname(folder)
@@ -90,10 +111,11 @@ if __name__=="__main__":
 	filename = folder + "evolution_%s_t%i_%i" % (controller, args.t, args.id)
 
 	# Evolution API setup
-	e = evolution.evolution()
+	e = mbe.mbe("data/evo_temp/")
 	e.setup(fitnessfunction, 
 		GENOME_LENGTH=pr_states*pr_actions, 
 		POPULATION_SIZE=args.pop)
+
 	####################################################################
 	
 
@@ -110,14 +132,8 @@ if __name__=="__main__":
 	####################################################################
 	# Evolve or evaluate
 	# Swarmulator API set up
-	sim = simulator()
-	sim.sim.runtime_setting("time_limit", str(args.t))
-	sim.sim.runtime_setting("simulation_realtimefactor", str("300"))
-	sim.sim.runtime_setting("environment", args.environment)
-	sim.sim.runtime_setting("fitness", fitness)
-	sim.sim.runtime_setting("pr_states", str(0))
-	sim.sim.runtime_setting("pr_actions", str(0))
-
+	sim = simulator(savefolder="data/evo_temp/")
+	
 	# if -evaluate <path_to_evolution_savefile>
 	# Evaluate the performance of the best individual from the evolution file
 	if args.evaluate is not None:
@@ -143,7 +159,7 @@ if __name__=="__main__":
 	# Resume evolution from file args.resume
 	elif args.resume is not None:
 		sim.make(controller=controller, agent=agent, 
-			clean=True, animation=False, logger=False, verbose=False)
+			clean=True, animation=False, logger=True, verbose=False)
 
 		# Load the evolution from the file
 		e.load(args.resume)
@@ -152,19 +168,21 @@ if __name__=="__main__":
 		p = e.evolve(generations=args.generations, 
 			checkpoint=filename, 
 			population=e.pop,
-			verbose=True)
+			verbose=True,
+			settings=settings)
 
 		# Save the evolution
 		e.save(filename)
 
 	# Otherwise, just run normally and start a new evolution from scratch
 	else:
-		sim.make(controller=controller, agent=agent, 
-			clean=True, animation=False, logger=False, verbose=False)
+		# sim.make(controller=controller, agent=agent, 
+		# 	clean=True, animation=False, logger=True, verbose=False)
 
 		p = e.evolve(generations=args.generations, 
 			checkpoint=filename, 
-			verbose=True)
+			verbose=True,
+			settings=settings)
 
 		# Save the evolution
 		e.save(filename)
