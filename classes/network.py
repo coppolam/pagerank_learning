@@ -52,6 +52,3 @@ class net:
 	def get(self):
 		'''Returns the current network'''
 		return self.network
-
-	def predict(self,x):
-		return self.network(x)

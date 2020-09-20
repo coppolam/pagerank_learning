@@ -9,6 +9,7 @@ import numpy as np
 from . import network, evolution, simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
+from . import simplenetwork
 
 class desired_states_extractor:
 	'''Trains a micro-macro link and extracted the desired observation set'''
@@ -119,7 +120,7 @@ class desired_states_extractor:
 		in_tensor = torch.tensor([individual]).float()
 
 		# Get estimated fitness from network
-		f = self.network.predict(in_tensor).item()
+		f = self.network.network(in_tensor).item()
 
 		# Return as tuple (required by DEAP)
 		return f,

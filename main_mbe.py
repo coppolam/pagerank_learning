@@ -182,7 +182,8 @@ if __name__=="__main__":
 		p = e.evolve(generations=args.generations, 
 			checkpoint=filename, 
 			verbose=True,
-			settings=settings)
+			settings=settings,
+			pretrained=False)
 
 		# Save the evolution
 		e.save(filename)

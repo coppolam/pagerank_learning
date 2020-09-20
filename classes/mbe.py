@@ -42,7 +42,6 @@ class mbe(evolution.evolution):
 		self.temp_folder = model_temp_folder
 		self.clear_model_data()
 
-
 	def evolve(self, generations=100, 
 				verbose=False, 
 				population=None, 
