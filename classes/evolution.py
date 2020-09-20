@@ -121,14 +121,23 @@ class evolution:
 		
 		# Plot
 		plt.plot(range(1, len(self.stats)+1), 
-			[ s['mu'] for s in self.stats ])
+			[ s['mu'] for s in self.stats ],
+			label="Mean")
+		plt.fill_between(range(1, len(self.stats)+1),
+					[ s['min'] for s in self.stats ],
+					[ s['max'] for s in self.stats ],
+					color='green',
+					alpha=0.2,
+					label="Min Max")
 		plt.fill_between(range(1, len(self.stats)+1),
 					[ s['mu']-s['std'] for s in self.stats ],
 					[ s['mu']+s['std'] for s in self.stats ],
 					color='gray',
-					alpha=0.2)
+					alpha=0.5,
+					label="Std")
 		plt.xlabel('Iterations')
 		plt.ylabel('Fitness')
+		plt.legend()
 		plt.xlim(0,len(self.stats))
 
 		# Save if a figurename was given, else just show it
