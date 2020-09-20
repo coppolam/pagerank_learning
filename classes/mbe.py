@@ -15,6 +15,7 @@ from . import evolution
 from . import simulator
 from tools import fileHandler as fh
 import os
+from . import desired_states_extractor
 
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
@@ -33,14 +34,21 @@ class mbe(evolution.evolution):
 
 		# Set up the simulator API which includes the model-based optimization
 		self.sim = simulator.simulator()
+
+		# Desired states neural network model
+		self.dse = desired_states_extractor.desired_states_extractor()
 		
 		# Set up a temp folder used to store the logs during the evolution
 		self.temp_folder = model_temp_folder
 		self.clear_model_data()
 
+
 	def evolve(self, generations=100, 
-				verbose=False, population=None, checkpoint=None,
-				settings=None):
+				verbose=False, 
+				population=None, 
+				checkpoint=None,
+				settings=None,
+				pretrained=False):
 		'''
 		Run the evolution. Use checkpoint="filename.pkl" to 
 		save the status to a file after each generation, 
@@ -113,8 +121,19 @@ class mbe(evolution.evolution):
 			## Initial policy to optimize from a random point
 			p = np.random.rand(settings["pr_states"],settings["pr_actions"])
 
+			## Train the feedforward model with new data
+			if pretrained is False:
+				for f in files:
+					self.dse.train("data/evo_temp/"+f,
+									load_pkl=False, store_pkl=False)
+				model = self.dse.network
+			else:
+				model = self.dse.load_model("data/%s/models.pkl"%
+										settings["controller"],modelnumber=499)
+
 			## Model-based optimization
-			p = list(self.sim.optimize(p, settings=settings).flatten())
+			p = list(self.sim.optimize(p, 
+							settings=settings, model=model).flatten())
 
 			## Evaluate model-based solution
 			### Create an individual

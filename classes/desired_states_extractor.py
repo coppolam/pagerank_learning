@@ -6,7 +6,7 @@ Optimize a behavior based on the PageRank function
 
 import torch, os
 import numpy as np
-from . import simplenetwork, evolution, simulator
+from . import network, evolution, simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
 
@@ -26,7 +26,8 @@ class desired_states_extractor:
 		# Create an empty network if it does not exist
 		if self.network is None:
 			print("Network model does not exist, generating the NN")
-			self.network = simplenetwork.simplenetwork(x.shape[1])
+			self.network = network.net(n_inputs=x.shape[1],n_outputs=1,
+											layers=3, layer_size=30)
 
 		# Iterate over all data
 		loss_history = []
@@ -62,32 +63,43 @@ class desired_states_extractor:
 		# Return tuple
 		return error, corr, y_pred
 
-	def load_model(self,modelsfile,modelnumber=-1):
+	def load_model(self, modelsfile, modelnumber=-1):
 		'''Load the latest model from the trained pkl file
 		
 		default modelnumber = -1, which is the last (assumed newest) 
 								  model in the list
+
+		It then returns the model
 		'''
 		# Load the file with all the models
 		m = fh.load_pkl(modelsfile)
 
 		# Set the desired model
 		# (default=highest on the list, assumed newest)
-		self.network = m[modelnumber][0] 
+		self.network = m[modelnumber][0]
 
-	def extract_states(self,file,pkl=False):
+		return self.network
+
+	def extract_states(self, file, load_pkl=False, store_pkl=True):
 		'''Extract the inputs needed to maximize output'''
 		
 		# If a pkl file does not exist, then we still need to do some dirty
 		# work and load everything from the log files.
 		# We will also store the pkl version to save time in future runs.
-		if pkl is False or os.path.exists(file+".pkl") is False:
-			sim = simulator.simulator()
-			sim.load(file)
-			time, local_states, fitness = sim.extract()
-			s = matop.normalize_rows(local_states)
-			fh.save_pkl([time,s,fitness],file+".pkl")
-		# If it exists, we are in luck, we can just use the processed
+		if load_pkl is False or os.path.exists(file+".pkl") is False:
+    		# Pre-process data
+			sim = simulator.simulator() # Environment
+			sim.load(file) # Load npz log file
+			time, local_states, fitness = sim.extract() # Pre-process data
+			s = matop.normalize_rows(local_states) # Normalize rows
+
+			# Save a pkl file with the pre-processed data
+			# so that we can be faster later
+			# if we want to reuse the same logfile
+			if store_pkl:
+				fh.save_pkl([time,s,fitness],file+".pkl")
+
+		# If the pkl file exists, we are in luck, we can just use the processed
 		# log files directly.
 		else:
 			data = fh.load_pkl(file+".pkl")
@@ -107,7 +119,7 @@ class desired_states_extractor:
 		in_tensor = torch.tensor([individual]).float()
 
 		# Get estimated fitness from network
-		f = self.network.network(in_tensor).item()
+		f = self.network.predict(in_tensor).item()
 
 		# Return as tuple (required by DEAP)
 		return f,
@@ -141,22 +153,24 @@ class desired_states_extractor:
 		
 		return des
 
-	def train(self, file, load=True, verbose=False, replay=1):
+	def train(self, file, load_pkl=True, store_pkl= True, 
+				verbose=False, replay=1):
 		'''
 		Trains a model based on an npz simulation log file
 		
 		Use replay to re-iterate over the same data
 		'''
 
-		# Extract t=time, s=local observations,f=global fitness
-		t, s, f = self.extract_states(file, pkl=load)
+		# Extract t = time, o = local observations, f = global fitness
+		t, o, f = self.extract_states(file, 
+							load_pkl=load_pkl, store_pkl=store_pkl)
 
 		# Optimize to get the desired observation set
 		if verbose: print("Training the NN model")
 		
 		# Train the feedforward model
 		for i in range(replay):	
-			model = self.train_model(s, f)
+			model = self.train_model(o, f)
 		
 		return model
 
@@ -172,7 +186,6 @@ class desired_states_extractor:
 		# Train the model
 		self.train(file,replay=replay)
 
-		
 		# Get the desired states from the trained network
 		if verbose:
 			print("Optimizing for desired observations")

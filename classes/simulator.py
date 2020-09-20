@@ -191,14 +191,17 @@ class simulator:
 		np.savez(save_filename, H0=H0, H1=H1, A=A, E=E, 
 									policy=policy, alpha=alpha, des=des)
 
-	def optimize(self, p0, iterations=0, settings=None,debug=True):
+	def optimize(self, p0, iterations=0, model=None, settings=None,debug=True):
 		'''Optimize the policy based on the desired states'''
 		i = 0
 		
 		# Get the desired states using the trained feed-forward network
 		dse = desired_states_extractor.desired_states_extractor()
-		dse.load_model("data/%s/models.pkl"%\
-					settings["controller"], modelnumber=499)
+		if model is None:
+			dse.load_model("data/%s/models.pkl"%\
+						settings["controller"], modelnumber=499)
+		else:
+			dse.network = model
 		des = dse.get_des(dim=settings["pr_states"])
 
 		# Initialize and run the optimizer

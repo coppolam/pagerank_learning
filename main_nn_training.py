@@ -18,6 +18,7 @@ from tools import fileHandler as fh
 from tools import matrixOperations as matop
 
 if __name__=="__main__":
+
 	####################################################################
 	# Initialize
 	# Input arguments

@@ -176,8 +176,8 @@ if __name__=="__main__":
 
 	# Otherwise, just run normally and start a new evolution from scratch
 	else:
-		sim.make(controller=controller, agent=agent, 
-			clean=True, animation=True, logger=True, verbose=False)
+		# sim.make(controller=controller, agent=agent, 
+		# 	clean=True, animation=False, logger=True, verbose=False)
 
 		p = e.evolve(generations=args.generations, 
 			checkpoint=filename, 
