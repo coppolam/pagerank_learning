@@ -191,25 +191,30 @@ class simulator:
 		np.savez(save_filename, H0=H0, H1=H1, A=A, E=E, 
 									policy=policy, alpha=alpha, des=des)
 
-	def optimize(self, p0, iterations=0, model=None, settings=None,debug=True):
+	def optimize(self, p0, iterations=0, model=None, settings=None, debug=True):
 		'''Optimize the policy based on the desired states'''
 		i = 0
 		
 		# Get the desired states using the trained feed-forward network
 		dse = desired_states_extractor.desired_states_extractor()
-		if model is None:
-			dse.load_model("data/%s/models.pkl"%\
-						settings["controller"], modelnumber=499)
-		else:
+		
+		## Load a neural network model if needed
+		## If a model is not specified, try to load it
+		if model is not None:
 			dse.network = model
+		else:
+			dse.load_model("data/%s/models.pkl"%\
+						settings["controller"], modelnumber=499)			
+		
+		## Get desired states
 		des = dse.get_des(dim=settings["pr_states"])
 
 		# Initialize and run the optimizer
 		o = opt.pagerank_evolve(des,self.A,self.E)
-		policy = o.run(p0,generations=100)
+		policy = o.run(p0,generations=500,plot=debug)
 		del o
 
-		# Save 
+		# Save
 		self.save_optimization_data(policy,des,"optimization_%i"%i)
 
 		# Perform additional iterations on the policy (not done by default)

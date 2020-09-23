@@ -3,22 +3,22 @@
 Simulate the aggregation and optimize the behavior
 @author: Mario Coppola, 2020
 """
-import random, sys, pickle, matplotlib
+import random, sys, pickle, os
 import numpy as np
 from tqdm import tqdm
+
+import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.rc('text', usetex=True)
-from deap import base, creator, tools
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
-from . import evolution
-from . import simulator
-from tools import fileHandler as fh
-import os
-from . import desired_states_extractor
-
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
+
+from deap import base, creator, tools
+
+from . import evolution
+from . import simulator
+from . import desired_states_extractor
+from tools import fileHandler as fh
 
 class mbe(evolution.evolution):
 	'''
@@ -41,6 +41,53 @@ class mbe(evolution.evolution):
 		# Set up a temp folder used to store the logs during the evolution
 		self.temp_folder = model_temp_folder
 		self.clear_model_data()
+	
+	def store_stats(self, population, iteration=0,
+						transition_model=None,nn=None):
+		'''
+		Store the current stats and return a dict.
+		In this subclass, also store the transition model and the NN model
+		'''
+		# Gather the fitnesses in a population
+		fitnesses = [individual.fitness.values[0] for individual in population]
+
+		# Store the main values
+		return {
+			'g': iteration,
+			'mu': np.mean(fitnesses),
+			'std': np.std(fitnesses),
+			'max': np.max(fitnesses),
+			'min': np.min(fitnesses),
+			'transition_model': transition_model,
+			'nn_model':nn
+		}
+
+	def _mate(self,pop):
+		'''Mate the population and generate offspring'''
+		offspring = self.toolbox.select(pop, len(pop))
+		offspring = list(map(self.toolbox.clone, offspring))
+		for child1, child2 in zip(offspring[::2], offspring[1::2]):
+			if random.random() < self.P_CROSSOVER: 
+				self.toolbox.mate(child1, child2)
+			del child1.fitness.values
+			del child2.fitness.values
+		return offspring
+
+	def _mutate(self,offspring):
+		'''Mutate the offspring'''
+		for mutant in offspring:
+			if random.random() < self.P_MUTATION: 
+				self.toolbox.mutate(mutant)
+			del mutant.fitness.values
+		return offspring
+	
+	def _evaluate(self,offspring):
+		'''Evaluate the offspring with unknown fitness'''
+		invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+		fitnesses = map(self.toolbox.evaluate, invalid_ind)
+		for ind, fit in zip(invalid_ind, fitnesses):
+			ind.fitness.values = fit
+		return offspring
 
 	def evolve(self, generations=100, 
 				verbose=False, 
@@ -61,50 +108,63 @@ class mbe(evolution.evolution):
 		pop = population if population is not None \
 			else self.toolbox.population(n=self.POPULATION_SIZE)
 		
+		g = len(self.stats) # Number of generations
+		gmax = len(self.stats) + generations # Max number to reach
+
+		# If it's the first generation, evaluate the initial population
+		if g is 0:
+			# Evaluate the initial population
+			fitnesses = list(map(self.toolbox.evaluate, pop))
+			for ind, fit in zip(pop, fitnesses):
+				ind.fitness.values = fit
+
 		# Inform the user of what's happening
 		if verbose:
 			print('{:=^40}'.format(' Start of evolution '))
 			
-		# Evaluate the initial population
-		fitnesses = list(map(self.toolbox.evaluate, pop))
-		for ind, fit in zip(pop, fitnesses):
-			ind.fitness.values = fit
-
 		# Start the evoution
-		g = len(self.stats) # Number of generations
-		gmax = len(self.stats) + generations # Max number to reach
 		while g < gmax:
-				
-			# Determine offspring
-			offspring = self.toolbox.select(pop, len(pop))
-			offspring = list(map(self.toolbox.clone, offspring))
-			for child1, child2 in zip(offspring[::2], offspring[1::2]):
-				if random.random() < self.P_CROSSOVER: 
-					self.toolbox.mate(child1, child2)
-				del child1.fitness.values
-				del child2.fitness.values
+    			
+    		# Create the next generation: 1) mate, 2) mutate, 3) evaluate
+			offspring = self._mate(pop)
+			offspring = self._mutate(offspring)
+			offspring = self._evaluate(offspring)
 
-			# Mutate
-			for mutant in offspring:
-				if random.random() < self.P_MUTATION: 
-					self.toolbox.mutate(mutant)
-				del mutant.fitness.values
+			# Determine offspring
+			# offspring = self.toolbox.select(pop, len(pop))
+			# offspring = list(map(self.toolbox.clone, offspring))
+			# for child1, child2 in zip(offspring[::2], offspring[1::2]):
+			# 	if random.random() < self.P_CROSSOVER: 
+			# 		self.toolbox.mate(child1, child2)
+			# 	del child1.fitness.values
+			# 	del child2.fitness.values
+
+			# # Mutate
+			# for mutant in offspring:
+			# 	if random.random() < self.P_MUTATION: 
+			# 		self.toolbox.mutate(mutant)
+			# 	del mutant.fitness.values
 		
-			# Evaluate the individuals with an invalid fitness
-			invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-			fitnesses = map(self.toolbox.evaluate, invalid_ind)
-			for ind, fit in zip(invalid_ind, fitnesses):
-				ind.fitness.values = fit
+			# # Evaluate the individuals with an invalid fitness
+			# invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+			# fitnesses = map(self.toolbox.evaluate, invalid_ind)
+			# for ind, fit in zip(invalid_ind, fitnesses):
+			# 	ind.fitness.values = fit
 			
 			# Replace population
 			pop[:] = offspring
 
 			#################################################################
+			# Model-based section.
+			# We use the data from the population to extract 2 models:
+			# 1) A model of the transitions
+			# 2) A function relating global fitness to local states
+			
 			# Load log files from evolution
 			files = [f for f in os.listdir(self.temp_folder) \
 												if f.endswith('.npz')]
 
-			# Update transition model
+			# 1) Transition model
 			# The very first time, initialize the model, then just update it
 			for j, f in enumerate(files):
 				if g is 0 and j is 0:
@@ -112,11 +172,11 @@ class mbe(evolution.evolution):
 					self.sim.load(self.temp_folder + f, verbose=False)
 				else:
 					# From now on, we just update
-					self.sim.load_update(self.temp_folder + f)
+					self.sim.load_update(self.temp_folder + f, verbose=False)
 
 			self.sim.disp()
 
-			# Now we optimize the policy
+			# 2) Neural network function
 			## Initial policy to optimize from a random point
 			p = np.random.rand(settings["pr_states"],settings["pr_actions"])
 
@@ -130,9 +190,9 @@ class mbe(evolution.evolution):
 				model = self.dse.load_model("data/%s/models.pkl"%
 										settings["controller"],modelnumber=499)
 
-			## Model-based optimization
+			## Use the models to do model-based optimization
 			p = list(self.sim.optimize(p, 
-							settings=settings, model=model).flatten())
+							settings=settings, model=model, debug=False).flatten())
 
 			## Evaluate model-based solution
 			### Create an individual
@@ -149,14 +209,14 @@ class mbe(evolution.evolution):
 
 			## Clear temp folder
 			self.clear_model_data()
-
 			#################################################################
 
 			# Store stats
-			self.stats.append(self.store_stats(pop, g)) 
+			self.stats.append(self.store_stats(pop, g, self.sim, model)) 
 
 			# Print to terminal
-			if verbose: self.disp_stats(g)
+			if verbose:
+				self.disp_stats(g)
 			
 			# Store progress
 			if checkpoint is not None:

@@ -30,8 +30,9 @@ class evolution:
 		GENOME_LENGTH=20,
 		POPULATION_SIZE=100, 
 		P_CROSSOVER=0.5, 
-		P_MUTATION=0.2):
-		'''Set up the parameters'''
+		P_MUTATION=0.2,
+		vartype="float"):
+		'''Set up the standard parameters'''
 		
 		# Set the main variables
 		self.GENOME_LENGTH = GENOME_LENGTH
@@ -42,15 +43,36 @@ class evolution:
 		# Set the lower level parameters
 		self.toolbox = base.Toolbox()
 		
-		self.toolbox.register("attr_float", 
-			random.random)
-		
-		self.toolbox.register("individual", 
-			tools.initRepeat, 
-			creator.Individual, 
-			self.toolbox.attr_float, 
-			self.GENOME_LENGTH)
-		
+		# Boolean or float evolution
+		if vartype=="boolean":
+			self.toolbox.register("attr_bool",
+							random.randint, 0, 1)   			
+			self.toolbox.register("individual", 
+							tools.initRepeat,
+							creator.Individual, 
+							self.toolbox.attr_bool,
+							GENOME_LENGTH)
+			self.toolbox.register("mutate", 
+							tools.mutUniformInt, 
+							low=0,
+							up=1,
+							indpb=0.05)
+		elif vartype=="float":
+			self.toolbox.register("attr_float", 
+							random.random)
+			self.toolbox.register("individual", 
+							tools.initRepeat, 
+							creator.Individual, 
+							self.toolbox.attr_float, 
+							self.GENOME_LENGTH)
+			
+			self.toolbox.register("mutate", 
+							tools.mutPolynomialBounded, 
+							eta=0.1, 
+							low=0.0, 
+							up=1.0,
+							indpb=0.1)
+
 		self.toolbox.register("population", 
 			tools.initRepeat, 
 			list, 
@@ -61,16 +83,7 @@ class evolution:
 
 		self.toolbox.register("mate", 
 			tools.cxUniform, indpb=0.1)
-
-		self.toolbox.register("mutate", 
-			tools.mutPolynomialBounded, 
-			eta=0.1, 
-			low=0.0, 
-			up=1.0, 
-			indpb=0.1)
-		# Binary mutation:
-		# self.toolbox.register("mutate", tools.mutUniformInt, low=0.0, up=1.0, indpb=0.05) # Mutation method (binary)
-
+		
 		self.toolbox.register("select", 
 			tools.selTournament, 
 			tournsize=3)
@@ -78,7 +91,7 @@ class evolution:
 		if constraint is not None:
 				self.toolbox.decorate("evaluate", 
 					tools.DeltaPenalty(constraint,0,self.distance))
-		
+	
 		self.stats = [] # Initialize stats vector
 	
 	def store_stats(self, population, iteration=0):

@@ -20,10 +20,27 @@ def round_to_multiple(a, mult, floor=True):
 	# Return the rounded one
 	return a * mult
 
-def normalize_rows(mat,axis=1):
+def normalize_rows(mat):
 	'''Normalizies the rows of a matrix'''
 
 	# Get the sum of the rows
+	## If the input is 2D, then we take row wise sums
+	## Otherwise we sum all elements
+	if isinstance(mat,list):
+		if isinstance(mat[0],list):
+			axis = 1
+		else:
+			axis = 0
+	elif isinstance(mat,np.ndarray):
+		if mat.ndim == 2:
+			axis = 1
+		else:
+			axis = 0
+	else:
+		print("Warning: normalize_rows unrecognized type. \
+				Expected list or numpy array.")
+		axis = 1
+
 	row_sums = np.sum(mat, axis=axis)
 
 	# If any of the matrices has elements larger than 0

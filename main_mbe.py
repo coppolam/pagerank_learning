@@ -11,12 +11,11 @@ import numpy as np
 
 import parameters
 
-from classes import evolution
 from classes.simulator import simulator
+from classes import mbe
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
 from tools import swarmulator
-from classes import mbe
 
 def fitnessfunction(individual):
 	'''
@@ -73,7 +72,7 @@ if __name__=="__main__":
 	parser.add_argument('-nmin', type=int, default=10,
 		help="Minimum number of robots simulated, default = 10")
 	parser.add_argument('-nmax', type=int, default=20,
-		help="Maximum number of robots simulated, default = 20")
+		help="Maximum number of robots simulated, default = 30")
 	parser.add_argument('-reruns', type=int, default=5,
 		help="Number of policy re-evaluations, default = 5")
 	parser.add_argument('-plot', type=str, default=None,
@@ -176,8 +175,8 @@ if __name__=="__main__":
 
 	# Otherwise, just run normally and start a new evolution from scratch
 	else:
-		# sim.make(controller=controller, agent=agent, 
-		# 	clean=True, animation=False, logger=True, verbose=False)
+		sim.make(controller=controller, agent=agent, 
+			clean=True, animation=False, logger=True, verbose=False)
 
 		p = e.evolve(generations=args.generations, 
 			checkpoint=filename, 

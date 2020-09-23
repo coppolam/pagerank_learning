@@ -113,7 +113,7 @@ class pagerank_evolve:
 		
 		return f
 
-	def _optimize(self, policy, generations=500):
+	def _optimize(self, policy, generations=500, plot=False):
 		'''Run the optimization'''
 
 		# Set up the parameters
@@ -122,14 +122,18 @@ class pagerank_evolve:
 
 		# Run the evolution
 		self.e.evolve(verbose=True, generations=generations, population=None)
+		
+		# Plot
+		# if plot:
+		# 	self.e.plot_evolution()
 
 		return self.e.get_best()
 
-	def run(self, policy0, generations=500):
+	def run(self, policy0, generations=500, plot=False):
 		'''Get a policy and optimize it according to the PageRank scheme'''
 
 		# Optimize using pagerank fitness
-		policy = self._optimize(policy0,generations=generations)
+		policy = self._optimize(policy0,generations=generations, plot=plot)
 
 		# Format and return the optimized policy
 		return np.array(self.reshape_policy(self.A, policy))

@@ -10,6 +10,7 @@ from . import network, evolution, simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
 from . import simplenetwork
+from deap import tools, creator
 
 class desired_states_extractor:
 	'''Trains a micro-macro link and extracted the desired observation set'''
@@ -27,17 +28,20 @@ class desired_states_extractor:
 		# Create an empty network if it does not exist
 		if self.network is None:
 			print("Network model does not exist, generating the NN")
-			self.network = network.net(n_inputs=x.shape[1],n_outputs=1,
-											layers=3, layer_size=30)
+			self.network = network.net(n_inputs=x.shape[1],
+										n_outputs=1,
+										layers=3,
+										layer_size=30)
 
-		# Iterate over all data
+		# Train over all data
+		## TODO: Add variable batch sizes
 		loss_history = []
 		for i, element in enumerate(y):
 			# Set up tensors
 			in_tensor = torch.tensor([x[i]]).float()
 			out_tensor = torch.tensor([[element]]).float()
 			
-			# Run forward and backward steps
+			# Run training steps
 			_,loss = self.network.run(in_tensor,out_tensor)
 
 			# Store loss
@@ -50,6 +54,7 @@ class desired_states_extractor:
 
 		# Set up a prediction list
 		y_pred = []
+
 		# Iterate over all test data
 		for element in x:
 			in_tensor = torch.tensor([element]).float()
@@ -58,10 +63,10 @@ class desired_states_extractor:
 		# Get the error vector
 		error = y_pred - y
 
-		# Get the covariance
-		corr = np.corrcoef(y_pred,y)
+		# Get the Pearson correlation, [-1, 1]
+		corr = np.corrcoef(y_pred, y)
 		
-		# Return tuple
+		# Return tuple with outputs
 		return error, corr, y_pred
 
 	def load_model(self, modelsfile, modelnumber=-1):
@@ -73,10 +78,13 @@ class desired_states_extractor:
 		It then returns the model
 		'''
 		# Load the file with all the models
-		m = fh.load_pkl(modelsfile)
+		try:
+			m = fh.load_pkl(modelsfile)
+		except:
+			print("Model not specified!")
 
 		# Set the desired model
-		# (default=highest on the list, assumed newest)
+		# (default=-1, highest on the list, assumed newest)
 		self.network = m[modelnumber][0]
 
 		return self.network
@@ -90,7 +98,7 @@ class desired_states_extractor:
 		if load_pkl is False or os.path.exists(file+".pkl") is False:
     		# Pre-process data
 			sim = simulator.simulator() # Environment
-			sim.load(file) # Load npz log file
+			sim.load(file,verbose=False) # Load npz log file
 			time, local_states, fitness = sim.extract() # Pre-process data
 			s = matop.normalize_rows(local_states) # Normalize rows
 
@@ -100,8 +108,8 @@ class desired_states_extractor:
 			if store_pkl:
 				fh.save_pkl([time,s,fitness],file+".pkl")
 
-		# If the pkl file exists, we are in luck, we can just use the processed
-		# log files directly.
+		# If the pkl file exists, we are in luck, we can just 
+		# use the processed log files directly.
 		else:
 			data = fh.load_pkl(file+".pkl")
 			time = data[0]
@@ -111,6 +119,7 @@ class desired_states_extractor:
 		# Set dimensions of state vector
 		self.dim = s.shape[1]
 
+		# Return tuple with data
 		return time, s, fitness
 		
 	def _fitness(self,individual):
@@ -119,13 +128,10 @@ class desired_states_extractor:
 		# Set up tensor
 		in_tensor = torch.tensor([individual]).float()
 
-		# Get estimated fitness from network
-		f = self.network.network(in_tensor).item()
+		# Return estimated fitness from network
+		return self.network.network(in_tensor).item(),
 
-		# Return as tuple (required by DEAP)
-		return f,
-
-	def get_des(self,dim=None,plot=False,popsize=100,gens=100):
+	def get_des(self, dim=None, popsize=100, gens=100, debug=False):
 		'''
 		Runs an evolutionary optimization to extract 
 		the states that maximize the fitness
@@ -140,8 +146,9 @@ class desired_states_extractor:
 		else:
 			d = dim
 		
-		# Set up evolution parameters
-		e.setup(self._fitness, GENOME_LENGTH=d, POPULATION_SIZE=popsize) 
+		# Set up boolean evolution
+		e.setup(self._fitness, GENOME_LENGTH=d, 
+				POPULATION_SIZE=popsize,vartype="boolean")
 
 		# Evolve
 		e.evolve(verbose=True, generations=gens)
@@ -150,7 +157,8 @@ class desired_states_extractor:
 		des = e.get_best()
 
 		# Show a plot of the evolution, if plot=True
-		if plot: e.plot_evolution()
+		if debug:
+			e.plot_evolution()
 		
 		return des
 
@@ -175,7 +183,7 @@ class desired_states_extractor:
 		
 		return model
 
-	def run(self,file,load=True,verbose=False, replay=1):
+	def run(self, file, load=True, replay=1, verbose=False):
 		'''
 		Run the whole process with one function: 
 		1) Train, 
@@ -185,15 +193,15 @@ class desired_states_extractor:
 		'''
 
 		# Train the model
-		self.train(file,replay=replay)
+		self.train(file, replay=replay)
 
 		# Get the desired states from the trained network
 		if verbose:
 			print("Optimizing for desired observations")
-		des = self.get_des()
+		
+		des = self.get_des(plot=verbose)
 		
 		if verbose:
 			print("Desired observations: " + str(des))
 		
 		return des
-
