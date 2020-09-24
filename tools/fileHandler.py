@@ -12,11 +12,12 @@ import glob
 import pickle
 import numpy as np
 
-def load_matrix(file):
+def load_matrix(file,delimiter=",",skiprows=0):
 	'''Loads a matrix from a file and returns the matrix'''
 	try:
 		matrix = np.loadtxt(open(file, "rb"), 
-			delimiter=", \t", skiprows=1)
+			delimiter=delimiter, skiprows=skiprows)
+		print(matrix)
 		return matrix
 	except:
 		raise ValueError("Matrix " + file + 
