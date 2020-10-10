@@ -12,13 +12,14 @@
             "console": "integratedTerminal",
             // "args": ["data/forage_particle_oriented/loop_1/forage_particle_oriented_t500_r30_id1_0.npz","-evaluation","data/forage_particle_oriented/loop_1/forage_particle_oriented_t500_r30_id1_2.npz"]
             // "args" : ["data/pfsm_exploration_particle_oriented/pfsm_exploration_particle_oriented_t10000_r40_id2.npz", "pfsm_exploration", "particle_oriented"]
-            "args": ["pfsm_exploration","-pop","1","-reruns","1"]
+            // "args": ["forage","-pop","1","-reruns","1"]
             // "args": ["forage","-iterations","50","-id","10","-t 100"]
-            // "args": ["data/aggregation/loop_1/","data/aggregation/loop_1/aggregation_t200_r30_id1_1.npz"]
+            // "args": ["data/pfsm_explorationaggregation/loop_1/","data/aggregation/loop_1/aggregation_t200_r30_id1_1.npz"]
             // "args": ["data/aggregation/training_data_1/"]
             // "args": ["-plot","data/time/time_n50_m5_b5_rt300_tl200.npz"]
-            // "args" : ["data/aggregation/training_data_1_1/","data/aggregation/validation_data_1_1","data/aggregation","-evaluate"]
-            // "args" : ["forage","data/forage/learnloop_1/"]
+            // "args" : ["data/aggregation/training_data_1_1/","data/aggregation/validation_data_1_1/","valid/","-train"]
+            // "args" : ["aggregation","data/aggregation/training_data_1_1/"]
+            // "args" : ["../swarmulator/logs/log_1.txt"]
         }
     ]
 }

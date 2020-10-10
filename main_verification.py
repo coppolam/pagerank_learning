@@ -1,8 +1,7 @@
 import numpy as np
-import argparse
+import argparse, os, sys
 import matplotlib
 import matplotlib.pyplot as plt
-import os
 import networkx as nx
 
 import parameters
@@ -14,7 +13,7 @@ from tools import prettyplot as pp
 from classes import pagerank_evolve as propt
 from classes import simulator, evolution, desired_states_extractor, verification
 
-if __name__ == "__main__":	
+def main(args):
 	####################################################################
 	# Initialize
 
@@ -32,7 +31,7 @@ if __name__ == "__main__":
 		help="(bool) Animate flag to true")
 	parser.add_argument('-verbose', action='store_true', 
 		help="(bool) Animate flag to true")
-	args = parser.parse_args()
+	args = parser.parse_args(args)
 
 	# Load parameters
 	fitness, controller, agent, pr_states, pr_actions = \
@@ -53,10 +52,6 @@ if __name__ == "__main__":
 	policy = data["policy"]
 	des = data["des"]
 	alpha = data["alpha"]
-	
-	# Check conditions on last file
-	c = verification.verification(H0,H1,E,policy,des)
-	c.verify()
 	####################################################################
 
 
@@ -76,10 +71,14 @@ if __name__ == "__main__":
 		prE = matop.pagerank(E)
 		pr0 = matop.pagerank(G0)
 		pr1 = matop.pagerank(G1)
+		
+		## Initialize pagerank optimizer for evaluation
+		## Using dummy inputs, since init not needed
+		p = propt.pagerank_evolve(des,np.array([H0,H1]),E) 
 
 		## Get original fitness and new fitness
-		f0 = propt.pagerank_fitness(pr0, des)
-		f1 = propt.pagerank_fitness(pr1, des)
+		f0 = p.pagerank_fitness(pr0, des)
+		f1 = p.pagerank_fitness(pr1, des)
 
 		# Make a folder to store the figures
 		folder = "figures/pagerank"
@@ -102,7 +101,8 @@ if __name__ == "__main__":
 		plt.legend()
 		plt.savefig("%s/pagerank_original_%s.%s" \
 			%(folder,controller,args.format))
-
+		plt.close()
+		
 		# Figure: Diff plot of pagerank values
 		plt = pp.setup()
 		c = ["blue","green"]
@@ -126,10 +126,16 @@ if __name__ == "__main__":
 					]
 		plt.legend(custom_lines,['Transitional', 'Desired'])
 		plt.savefig("%s/pagerank_diff_%s.%s"%(folder,controller,args.format))
+		plt.close()
+		return
 	####################################################################
 
 
 	####################################################################
+	# Check conditions on last file
+	c = verification.verification(H0,H1,E,policy,des)
+	c.verify()
+
 	# if -verbose
 	# Display relevant results to terminal
 	if args.verbose:
@@ -143,3 +149,6 @@ if __name__ == "__main__":
 		print("Original fitness =", f0[0])
 		print("New fitness =", f1[0])
 	####################################################################
+
+if __name__ == "__main__":	
+	main(sys.argv[1:])

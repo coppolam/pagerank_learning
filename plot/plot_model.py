@@ -4,7 +4,7 @@ Learn the model
 @author: Mario Coppola, 2020
 """
 
-import os, argparse
+import os, argparse, sys
 import matplotlib.pyplot as plt
 import numpy as np
 from classes import simulator
@@ -47,7 +47,7 @@ def learn_model(sim, f):
 	
 	return sim.A
 
-if __name__ == "__main__":
+def main(args):
     # Parse arguments
 	
 	## Load parser
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 		help="(str) Training data folder")
 	
 	## Parse
-	args = parser.parse_args()
+	args = parser.parse_args(args)
 
 	# Load data
 	data = evaluate_model_values(args.folder_training)
@@ -87,3 +87,7 @@ if __name__ == "__main__":
 
 	# Save the figure
 	plt.savefig(folder+"model_%s_%s.%s"%(args.controller,vname,args.format))
+	plt.close()
+	
+if __name__ == "__main__":
+	main(sys.argv[1:])

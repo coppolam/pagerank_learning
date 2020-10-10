@@ -37,7 +37,9 @@ class net:
 	def __init__(self,n_inputs,n_outputs,layers,layer_size,lr=1e-5):
 		'''Initialization function. Set here the hyperparameters'''
 		# Define network
-		self.network = ffnetwork(n_inputs,n_outputs,layer_size=30,layers=3)
+		self.network = ffnetwork(n_inputs,n_outputs,
+						layer_size=layer_size,
+						layers=layers)
 
 		# MSE Loss function, to recreate desired outputs values
 		self.loss_fn = torch.nn.MSELoss()

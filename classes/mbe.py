@@ -130,27 +130,6 @@ class mbe(evolution.evolution):
 			offspring = self._mutate(offspring)
 			offspring = self._evaluate(offspring)
 
-			# Determine offspring
-			# offspring = self.toolbox.select(pop, len(pop))
-			# offspring = list(map(self.toolbox.clone, offspring))
-			# for child1, child2 in zip(offspring[::2], offspring[1::2]):
-			# 	if random.random() < self.P_CROSSOVER: 
-			# 		self.toolbox.mate(child1, child2)
-			# 	del child1.fitness.values
-			# 	del child2.fitness.values
-
-			# # Mutate
-			# for mutant in offspring:
-			# 	if random.random() < self.P_MUTATION: 
-			# 		self.toolbox.mutate(mutant)
-			# 	del mutant.fitness.values
-		
-			# # Evaluate the individuals with an invalid fitness
-			# invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-			# fitnesses = map(self.toolbox.evaluate, invalid_ind)
-			# for ind, fit in zip(invalid_ind, fitnesses):
-			# 	ind.fitness.values = fit
-			
 			# Replace population
 			pop[:] = offspring
 
@@ -173,8 +152,6 @@ class mbe(evolution.evolution):
 				else:
 					# From now on, we just update
 					self.sim.load_update(self.temp_folder + f, verbose=False)
-
-			self.sim.disp()
 
 			# 2) Neural network function
 			## Initial policy to optimize from a random point
@@ -243,3 +220,45 @@ class mbe(evolution.evolution):
 
 	def clear_model_data(self):
 		fh.clear_folder(self.temp_folder)
+
+	def save(self,filename,pop=None,gen=None,stats=None,sim=None,dse=None):
+		'''Save the current status in a pkl file'''
+		
+		# Population
+		p = self.pop if pop is None else pop
+		
+		# Generation
+		g = self.g if gen is None else gen
+		
+		# Statistics
+		s = self.stats if stats is None else stats
+		
+		# Transition model
+		m = self.sim if sim is None else sim
+
+		# NN model
+		d = self.dse if dse is None else dse
+		
+		# Store in a dict file and save as pkl
+		cp = dict(population=p, generation=g, stats=s, sim=m, dse=d)
+		with open(filename+".pkl", "wb") as cp_file:
+			pickle.dump(cp, cp_file)
+
+	def load(self,filename):
+		'''Load the status from a pkl file'''
+		# Load a pkl file with the same structure as in the save() function
+		with open(filename, "rb") as cp_file:
+			cp = pickle.load(cp_file)
+		
+		# Unpack
+		self.stats = cp["stats"]
+		self.g = cp["generation"]
+		self.pop = cp["population"]
+		self.sim = cp["sim"]
+		self.dse = cp["dse"]
+
+		print("Loaded")
+		self.sim.disp()
+		print(self.dse.network)
+		# Return the population
+		return self.pop

@@ -32,13 +32,19 @@ if __name__=="__main__":
 	parser.add_argument('savefolder', type=str, 
 		help="(str) Save folder", default=None)
 	parser.add_argument('-id',  type=int, 
-		help="Model ID (for save/load)", default=1)
+		help="Model ID (for save/load)", default=np.random.randint(0,10000))
 	parser.add_argument('-train', action='store_true', 
 		help="(bool) Train flag to true")
 	parser.add_argument('-validate', action='store_true', 
 		help="(bool) Validate flag to true (checks all models)")
 	parser.add_argument('-evaluate', action='store_true', 
 		help="(bool) Evaluate flag to true (checks last model only)")
+	parser.add_argument('-layer_size', type=int, 
+		help="Nodes in hidden layers", default=100)
+	parser.add_argument('-layers', type=int, 
+		help="Number of hiddent layers", default=3)
+	parser.add_argument('-lr', type=float, 
+		help="Number of hiddent layers", default=1e-5)
 
 	args = parser.parse_args()
 
@@ -46,6 +52,11 @@ if __name__=="__main__":
 	folder_train = args.folder_train
 	folder_test = args.folder_test
 	save_folder = args.savefolder
+
+	# Make the save_folder if it does not exist
+	if not os.path.exists(os.path.dirname(save_folder)):
+		os.makedirs(os.path.dirname(save_folder))
+
 	files_train = [f for f in os.listdir(folder_train) if f.endswith('.npz')]
 	files_test = [f for f in os.listdir(folder_test+"/") if f.endswith('.npz')]
 
@@ -61,7 +72,11 @@ if __name__=="__main__":
 		nets = []
 		i = 0
 		for filename in tqdm(sorted(files_train)):
-			model = dse.train(folder_train + filename)
+			model = dse.train(folder_train + filename, 
+						layer_size=args.layer_size,
+						layers=args.layers,
+						lr=args.lr)
+			print(model[0].network)
 			nets.append(copy.deepcopy(model))
 			i += 1
 		fh.save_pkl(nets,"%s/models.pkl"%(save_folder))
@@ -78,9 +93,9 @@ if __name__=="__main__":
 		for model in tqdm(nets):
 			e = []
 			for filename in sorted(files_test):
-				_, s, f = dse.extract_states(folder_test+"/"+filename, pkl=True)
+				_, s, f = dse.extract_states(folder_test+"/"+filename, load_pkl=True)
 				_, corr, _ = dse.evaluate_model(model[0], s, f)
-				e.append(np.mean(corr))
+				e.append(corr)
 			v.append(e)
 			print(np.mean(e)) # Display progress
 
@@ -103,10 +118,10 @@ if __name__=="__main__":
 		e = []
 		for filename in sorted(files_test):
 			_, s, f = dse.extract_states(
-							args.folder_validation+"/"+filename,
-							pkl=True)
+							args.folder_test+"/"+filename,
+							load_pkl=True)
 			_, corr, _ = dse.evaluate_model(model[0], s, f)
-			e.append(np.mean(corr))
+			e.append(corr)
 		
 		# Display some data
 		print(np.mean(e)) # Mean error

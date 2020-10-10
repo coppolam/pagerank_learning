@@ -81,6 +81,7 @@ def plot_evaluationtime(filename,figurename=None):
 	plt.xlim([0,50])
 	plt = pp.adjust(plt);
 	plt.savefig(figurename) if figurename is not None else plt.show()
+	plt.close()
 
 def plot_realtimefactor(filename,tl,figurename=None):
 	plt = pp.setup(h=8)
@@ -102,7 +103,8 @@ def plot_realtimefactor(filename,tl,figurename=None):
 	plt.xlim([0,50])
 	plt = pp.adjust(plt);
 	plt.savefig(figurename) if figurename is not None else plt.show()
-
+	plt.close()
+	
 if __name__ == "__main__":
     
 	# Input argument parser

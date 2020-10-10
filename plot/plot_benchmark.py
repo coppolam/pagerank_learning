@@ -4,7 +4,7 @@ Plot the benchmark results against the optimized ones
 @author: Mario Coppola, 2020
 """
 
-import argparse, os
+import argparse, os, sys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -43,36 +43,43 @@ def benchmark(benchmarkfile,om=None,om_2=None,em=None,filename=None,fileformat="
 			os.makedirs(os.path.dirname(folder))
 		filename_raw = os.path.splitext(os.path.basename(filename))[0]
 		plt.savefig(folder+"%s.%s"%(filename_raw,fileformat))
+		plt.close()
 	else:
 		plt.show()
+		plt.close()
 
-if __name__ == "__main__":
+def main(args):
 	parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 	parser.add_argument('controller', type=str, help="(str) Benchmark fitness logs")
 	parser.add_argument('-format', type=str, help="(str) Controller", default="pdf")
-	args = parser.parse_args()	
+	args = parser.parse_args(args)	
 	
 	filename = []
 	name = []
 	om_2 = None
+	pref = "data/" + args.controller + "/benchmark_"
 	if args.controller == "aggregation":
-		bm = "data/aggregation/benchmark_random_aggregation_t200_r30_runs100_1.pkl"
-		om = "data/aggregation/benchmark_optimized_aggregation_t200_r30_runs100_1.pkl"
-		em = "data/aggregation/benchmark_evolution_aggregation_t200_r30_runs100.pkl"
+		bm = pref + "random_aggregation_t200_r30_runs100_1.pkl"
+		om = pref + "optimized_aggregation_t200_r30_runs100_1.pkl"
+		em = pref + "evolution_aggregation_t200_r30_runs100_1.pkl"
 	elif args.controller == "pfsm_exploration":
-		bm = "data/pfsm_exploration/benchmark_random_pfsm_exploration_t200_r30_runs100_1.pkl"
-		om = "data/pfsm_exploration/benchmark_optimized_pfsm_exploration_t200_r30_runs100_1.pkl"
-		em = "data/pfsm_exploration/benchmark_evolution_pfsm_exploration_t200_r30_runs100.pkl"
+		bm = pref + "random_pfsm_exploration_t200_r30_runs100_1.pkl"
+		om = pref + "optimized_pfsm_exploration_t200_r30_runs100_1.pkl"
+		em = pref + "evolution_pfsm_exploration_t200_r30_runs100_1.pkl"
 	elif args.controller == "pfsm_exploration_mod":
-		bm = "data/pfsm_exploration_mod/benchmark_random_pfsm_exploration_mod_t200_r30_runs100_1.pkl"
-		om = "data/pfsm_exploration_mod/benchmark_optimized_pfsm_exploration_mod_t200_r30_runs100_it10.pkl"
-		em = "data/pfsm_exploration_mod/benchmark_evolution_pfsm_exploration_mod_t200_r30_runs100.pkl"
+		bm = pref + "random_pfsm_exploration_mod_t200_r30_runs100_1.pkl"
+		om = pref + "optimized_pfsm_exploration_mod_t200_r30_runs100_1.pkl"
+		em = pref + "evolution_pfsm_exploration_mod_t200_r30_runs100_1.pkl"
 	elif args.controller == "forage":
-		bm = "data/forage/benchmark_random_forage_t500_r20_runs100_1.pkl"
-		om = "data/forage/benchmark_optimized_forage_t500_r20_runs100_1.pkl"
-		em = "data/forage/benchmark_evolution_forage_t500_r20_runs100.pkl"
+		bm = pref + "random_forage_t500_r20_runs100_1.pkl"
+		om = pref + "optimized_forage_t500_r20_runs100_1.pkl"
+		em = pref + "evolution_forage_t500_r20_runs100_1.pkl"
 	else:
 		print("\n\n\nNot a valid\n\n\n")
 
 	f = "benchmark_%s.%s"%(args.controller,args.format)
-	benchmark(bm,om=om,om_2=om_2, em=em,filename=f)
+	benchmark(bm, om=om, om_2=om_2, em=em, filename=f)
+
+if __name__ == "__main__":
+	main(sys.args[1:])
+	

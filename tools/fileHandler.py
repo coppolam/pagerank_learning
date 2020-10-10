@@ -17,7 +17,6 @@ def load_matrix(file,delimiter=",",skiprows=0):
 	try:
 		matrix = np.loadtxt(open(file, "rb"), 
 			delimiter=delimiter, skiprows=skiprows)
-		print(matrix)
 		return matrix
 	except:
 		raise ValueError("Matrix " + file + 

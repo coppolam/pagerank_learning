@@ -6,10 +6,10 @@ Python API for swarmulator
 
 import os, subprocess, threading, time, random, glob
 import numpy as np
-import matplotlib.pyplot as plt
-import concurrent.futures
-from . import fileHandler as fh
-from . import prettyplot as pp
+import matplotlib.pyplot as plt # Plotting
+import concurrent.futures # Needed for batch runs
+from . import fileHandler as fh # Used to load/save files
+from . import prettyplot as pp # Makes plots a little prettier
 
 class swarmulator:
 	''' Lower level Python API for Swarmulator.
@@ -31,8 +31,8 @@ class swarmulator:
 		# Clear all current pipes
 		self._clear_pipes()
 
-	def make(self, controller=None, agent=None, animation=False, 
-					logger=False, verbose=False, speed=True, clean=False):
+	def make(self, controller=None, agent=None, speed=True, animation=False, 
+					logger=False, verbose=False, clean=False):
 		'''Build swarmulator'''
 
 		# Set the build parameters
@@ -40,8 +40,8 @@ class swarmulator:
 		ani = " ANIMATION=ON" if animation else ""
 		log = " LOG=ON" if logger else ""
 		vrb = " VERBOSE=ON" if verbose else ""
-		ctrl = " CONTROLLER="+controller if controller else ""
-		agnt = " AGENT="+agent if controller else ""
+		ctrl = " CONTROLLER=" + controller if controller else ""
+		agnt = " AGENT=" + agent if controller else ""
 
 		# Clean previous build
 		if clean:
@@ -54,12 +54,20 @@ class swarmulator:
 
 		print("# Done")
 
-	def _get_log(self,log,file):
-		if log is None:
-			if file is None:
-				log = self.load()
-			else:
-				log = self.load(file)
+	def _get_log(self,file):
+		'''
+		Takes in a txt file logged from swarmulator and loads it.
+		If no argument is given it uses the most recent log in the folder.
+		'''
+		if file is None:
+			# Load the most recent file
+			log = self.load()
+		else:
+			# Load the specified file
+			log = self.load(file)
+
+		# Return the log (numpy array)
+		return log
 
 	def _clear_pipes(self,folder="/tmp/"):
 		'''Clear all current swarmulaotor FIFO pipes'''
@@ -78,12 +86,15 @@ class swarmulator:
 		'''Launches an instance of a swarmulator simulation'''
 		
 		# Set up and launch the command
-		cmd = "cd " + self.path + " && ./swarmulator " + str(n) + " " + str(run_id) + " &"
+		cmd = "cd " + self.path \
+					+ " && ./swarmulator " \
+					+ str(n) + " " + str(run_id) + " &"
 		subprocess.call(cmd, shell=True)
 
+		# Write some info to the terminal
 		if self.verbose:
-    			print("Launched instance of swarmulator with %s robots and pipe ID %s" 
-				% (n,run_id))
+			print("Launched instance of swarmulator with %s robots \
+					and pipe ID %s" % (n,run_id))
 
 	def _get_fitness(self,pipe):
 		'''Awaits to receive the fitness from a run'''
@@ -95,10 +106,12 @@ class swarmulator:
 		# Get fitness from pipe
 		f = open(pipe).read()
 		
+		# Write some info to the terminal
 		if self.verbose:
 			print("Received fitness %s from pipe %s" % (str(f),pipe))
 
-		return f
+		# Return the received value, ensure float
+		return float(f)
 
 	def run(self, n, run_id=None):
 		'''Runs swarmulator. If run_id is not specified, it will assign a random id'''
@@ -106,7 +119,8 @@ class swarmulator:
 		# Give a random ID if not specified
 		self.run_id = random.randrange(10000000000) if run_id is None else run_id
 
-		# Set up a pipe object for the fitness to be communicated back to the API
+		# Set up a pipe object for the fitness to be communicated 
+		# back to the API
 		pipe = "/tmp/swarmulator_" + str(self.run_id)
 
 		# Launch
@@ -115,6 +129,7 @@ class swarmulator:
 		# Wait for fitness from the pipe
 		f = self._get_fitness(pipe)
 		
+		# Return the received value, ensure float
 		return float(f)
 
 	def load(self,file=None):
@@ -134,7 +149,7 @@ class swarmulator:
 		elif '.npz' in file:
 			log = np.load(file)["log"].astype(float)
 
-		# Something wrong
+		# Something wrong, exit
 		else:
 			raise ValueError("File format unknown!")
 			return -1
@@ -144,8 +159,8 @@ class swarmulator:
 	def plot_log(self, log=None, file=None, time_column=0, 
 						id_column=1, x_column=2, y_column=3, show=True):
 		'''Visualizes the log of a swarmulator run'''
-
-		log = self._get_log(log,file)
+		if log is None:
+			log = self._get_log(file)
 
 		# Extract the number of robots
 		robots = int(log[:,id_column].max())
@@ -160,39 +175,40 @@ class swarmulator:
 			ax.plot(d[:,time_column],d[:,x_column],d[:,y_column])
 		
 		# Do some formatting, these values work quite well
-		ax.set_xlabel("Time [s]")
-		ax.set_ylabel("N [m]")
-		ax.set_zlabel("E [m]")
-		ax.xaxis.labelpad=20
-		ax.yaxis.labelpad=20
-		ax.zaxis.labelpad=20
-		ax.set_zlim([-20,20])
-		ax.set_ylim([-20,20])
-		ax.set_xlim([0,200])
+		ax.set_xlabel("Time [s]") # Depth axis 3d plot
+		ax.set_ylabel("N [m]") # Vertical axis 3d plot
+		ax.set_zlabel("E [m]") # Horizontal axis 3d plot
+
+		# Some pretty formatting that should work for many logs
+		ax.xaxis.labelpad = pad
+		ax.yaxis.labelpad = pad
+		ax.zaxis.labelpad = pad
 		ax.view_init(elev=36., azim=-38.)
 
-		# Show the plot
+		# Show the plot if desired
 		if show is True:
 			plt.show()
 
+		# Return the plot object
 		return plt
 
-	def load_column(self, log=None, file=None, time_column=0, id_column=1, column=2, 
-						colname="parameter [-]", show=True, plot=None):
+	def load_column(self, log=None, file=None, time_column=0, id_column=1, column=2):
 		'''Visualizes the log of a swarmulator run'''
 
-		log = self._get_log(log,file)
+		if log is None:
+			log = self._get_log(file)
 
 		# Use the first robot as reference
 		d = log[np.where(log[:,id_column] == 1)]
 
-		# Return tuple
+		# Return tuple with data
 		return d[:,time_column], d[:,column]
 
 	def plot_log_column(self, log=None, file=None, time_column=0, id_column=1, column=2, colname="parameter [-]", show=True, plot=None):
 		'''Visualizes the log of a swarmulator run'''
 
-		log = self._get_log(log,file)
+		if log is None:
+			log = self._get_log(file)
 
 		# Initialize a new plot
 		if plot is None:
@@ -233,12 +249,15 @@ class swarmulator:
 					+ value + "\"")
 
 	def get_runtime_setting(self, setting):
-		'''Returns the value of a runtime parameter currently specified in swarmulator conf/parameters.xml'''
+		'''
+		Returns the value of a runtime parameter currently 
+		specified in swarmulator conf/parameters.xml
+		'''
 
 		# Set up an xmlstarlet command to get a value
-		s =  "xmlstarlet sel -t -v \"parameters/"
-		+ setting + "\" "
-		+ self.path + "/conf/parameters.xml"
+		s = "xmlstarlet sel -t -v \"parameters/" \
+			+ setting + "\" " \
+			+ self.path + "/conf/parameters.xml"
 		
 		# Run the xmlstarlet call
 		value = subprocess.getoutput(s)
@@ -250,7 +269,10 @@ class swarmulator:
 		return value;
 	
 	def batch_run(self,n,runs):
-		'''Runs a batch of parallel simulations in parallel. By being different processes, the simulations can run unobstructed.'''
+		'''
+		Runs a batch of parallel simulations in parallel. 
+		By being different processes, the simulations can run unobstructed.
+		'''
 
 		# Clear all the pipes for good housekeeping
 		self._clear_pipes()
@@ -264,7 +286,8 @@ class swarmulator:
 		
 		# Tell the user in case they are batching with only one runs
 		if runs == 1:
-			print("INFO: Running simulator.batch_run but only using 1 run. Consider just using swarmulator.run instead")
+			print("INFO: Running simulator.batch_run but only using 1 run.\
+					Consider just using \"swarmulator.run\" instead")
 		
 		# Set up a fitness vector to store all outputs
 		fitness_vector = np.zeros(runs)
@@ -276,4 +299,5 @@ class swarmulator:
 				out[c] = float(f)
 				c += 1
 
+		# Return array with fitness values
 		return fitness_vector

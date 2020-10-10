@@ -156,8 +156,10 @@ class evolution:
 		# Save if a figurename was given, else just show it
 		if figurename is not None:
 			plt.savefig(figurename)
+			plt.close()
 		else:
 			plt.show()
+			plt.close()
 
 	def evolve(self, generations=100, 
 				verbose=False, population=None, checkpoint=None):

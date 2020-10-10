@@ -19,7 +19,7 @@ class desired_states_extractor:
 		'''Initialize with an empty network'''
 		self.network = None
 
-	def train_model(self,x,y):
+	def train_model(self, x, y, layers=3, layer_size=30, lr=1e-5):
 		'''
 		Generate and/or train model using stochastic gradient descent.
 		Train inputs x to match output y.
@@ -30,8 +30,9 @@ class desired_states_extractor:
 			print("Network model does not exist, generating the NN")
 			self.network = network.net(n_inputs=x.shape[1],
 										n_outputs=1,
-										layers=3,
-										layer_size=30)
+										layers=layers,
+										layer_size=layer_size,
+										lr=lr)
 
 		# Train over all data
 		## TODO: Add variable batch sizes
@@ -65,9 +66,15 @@ class desired_states_extractor:
 
 		# Get the Pearson correlation, [-1, 1]
 		corr = np.corrcoef(y_pred, y)
+
+		# If the values are exactly the same throughout and constant, 
+		# then we have a nan problem, but this is actually good correlation
+		# for our purposes.
+		if np.isnan(corr[0][1]):
+			corr[0][1] = 1.
 		
 		# Return tuple with outputs
-		return error, corr, y_pred
+		return error, corr[0][1], y_pred
 
 	def load_model(self, modelsfile, modelnumber=-1):
 		'''Load the latest model from the trained pkl file
@@ -125,6 +132,9 @@ class desired_states_extractor:
 	def _fitness(self,individual):
 		'''Fitness function for the evolution'''
 
+		# Normalize
+		# individual = matop.normalize_rows(individual)
+
 		# Set up tensor
 		in_tensor = torch.tensor([individual]).float()
 
@@ -163,7 +173,8 @@ class desired_states_extractor:
 		return des
 
 	def train(self, file, load_pkl=True, store_pkl= True, 
-				verbose=False, replay=1):
+				verbose=False, replay=1,
+				layers=3, layer_size=30, lr=1e-5):
 		'''
 		Trains a model based on an npz simulation log file
 		
@@ -172,14 +183,19 @@ class desired_states_extractor:
 
 		# Extract t = time, o = local observations, f = global fitness
 		t, o, f = self.extract_states(file, 
-							load_pkl=load_pkl, store_pkl=store_pkl)
+							load_pkl=load_pkl,
+							store_pkl=store_pkl)
 
 		# Optimize to get the desired observation set
-		if verbose: print("Training the NN model")
+		if verbose:
+			print("Training the NN model")
 		
 		# Train the feedforward model
 		for i in range(replay):	
-			model = self.train_model(o, f)
+			model = self.train_model(o, f,
+			layers=layers,
+			layer_size=layer_size,
+			lr=lr)
 		
 		return model
 
@@ -199,7 +215,7 @@ class desired_states_extractor:
 		if verbose:
 			print("Optimizing for desired observations")
 		
-		des = self.get_des(plot=verbose)
+		des = self.get_des(plot=verbose, popsize=500)
 		
 		if verbose:
 			print("Desired observations: " + str(des))

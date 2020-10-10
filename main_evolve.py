@@ -6,7 +6,7 @@ Perform evolution for a given behavior
 @author: Mario Coppola, 2020
 """
 
-import random, argparse, os
+import random, argparse, os, sys
 import numpy as np
 
 import parameters
@@ -37,8 +37,14 @@ def fitnessfunction(individual):
 	
 	print(f) # Just to keep track
 	return f.mean(), # Fitness = average (note trailing comma to cast to tuple!)
-	
-if __name__=="__main__":
+
+def plot(file):
+	e.load(file)
+	e.plot_evolution()
+	print(e.get_best())
+	exit()
+
+def main(args):
 	####################################################################		
 	# Initialize
 
@@ -76,7 +82,7 @@ if __name__=="__main__":
 		help="If specified, it will evaluate the best result \
 			in an evolution pkl file")
 
-	args = parser.parse_args()
+	args = parser.parse_args(args)
 
 	# Load parameters
 	fitness, controller, agent, pr_states, pr_actions = \
@@ -99,13 +105,9 @@ if __name__=="__main__":
 
 	####################################################################
 	# Plot file from file args.plot if indicated
-	if args.plot is not None:
-		e.load(args.plot)
-		e.plot_evolution()
-		print(e.get_best())
-		exit()
 	####################################################################
-
+	if args.plot is not None:
+    	plot(args.plot)
 	
 	####################################################################
 	# Evolve or evaluate
@@ -115,8 +117,8 @@ if __name__=="__main__":
 	sim.sim.runtime_setting("simulation_realtimefactor", str("300"))
 	sim.sim.runtime_setting("environment", args.environment)
 	sim.sim.runtime_setting("fitness", fitness)
-	sim.sim.runtime_setting("pr_states", str(0))
-	sim.sim.runtime_setting("pr_actions", str(0))
+	sim.sim.runtime_setting("pr_states", str(pr_states))
+	sim.sim.runtime_setting("pr_actions", str(pr_actions))
 
 	# if -evaluate <path_to_evolution_savefile>
 	# Evaluate the performance of the best individual from the evolution file
@@ -129,15 +131,17 @@ if __name__=="__main__":
 		individual = e.get_best()
 
 		# Evaluate and save the log
-		runs = args.reruns
+		import copy
+		runs = copy.deepcopy(args.reruns)
 		args.reruns = 1
+		f = []
 		for i in range(runs):
-			f = fitnessfunction(individual)
+			f.append(fitnessfunction(individual))
 			sim.save_log(filename_ext="%s/evolution/evo_log_%i"%(controller,i))
 
 		# Save evaluation data
-		fh.save_pkl(f,"data/%s/benchmark_evolution_%s_t%i_r%i_runs%i.pkl"
-			%(controller,controller,args.t,args.nmax,args.reruns))
+		fh.save_pkl(f,"data/%s/benchmark_evolution_%s_t%i_r%i_%i_runs%i_%i.pkl"
+			%(controller,controller,args.t,args.nmin,args.nmax,runs,args.id))
 		
 	# if -resume <path_to_evolution_savefile>
 	# Resume evolution from file args.resume
@@ -169,3 +173,6 @@ if __name__=="__main__":
 		# Save the evolution
 		e.save(filename)
 	####################################################################
+
+if __name__=="__main__":
+    main(sys.argv)

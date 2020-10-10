@@ -54,7 +54,7 @@ if __name__ == "__main__":
 			parameters.get(args.controller)
 
 	# Load and build the simulator
-	sim = sim(savefolder="data/%s/learnloop_%i/"%(controller,args.id))
+	sim = sim(savefolder="data/%s/optimization_%i/"%(controller,args.id))
 
 	# Load the transition models
 	filelist_training = [f for f in os.listdir(args.folder_training) \

@@ -307,7 +307,7 @@ class simulator:
 		f = self.sim.run(robots,run_id=self.run_id)
 
 		# Return fitness
-		return f
+		return float(f)
 
 	def benchmark(self, policy, controller, agent, fitness, robots=30, 
 		time_limit=1000, realtimefactor=300, environment="square20", 

@@ -103,14 +103,17 @@ if __name__=="__main__":
 				"policy_filename":"conf/policies/temp.txt"}
 	
 	# Set up path to filename to save the evolution
-	folder = "data/%s/evolution/" % (controller)
+	folder = "data/%s/evolution_mbe/" % (controller)
 	directory = os.path.dirname(folder)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	filename = folder + "evolution_%s_t%i_%i" % (controller, args.t, args.id)
 
 	# Evolution API setup
-	e = mbe.mbe("data/evo_temp/")
+	directory = os.path.dirname("data/evo_temp/")
+	if not os.path.exists("data/evo_temp/"):
+		os.makedirs("data/evo_temp/")
+	e = mbe.mbe("data/evo_temp/")		
 	e.setup(fitnessfunction, 
 		GENOME_LENGTH=pr_states*pr_actions, 
 		POPULATION_SIZE=args.pop)
@@ -148,7 +151,7 @@ if __name__=="__main__":
 		args.reruns = 1
 		for i in range(runs):
 			f = fitnessfunction(individual)
-			sim.save_log(filename_ext="%s/evolution/evo_log_%i"%(controller,i))
+			sim.save_log(filename_ext="%s/evolution_mbe/evo_log_%i"%(controller,i))
 
 		# Save evaluation data
 		fh.save_pkl(f,"data/%s/benchmark_evolution_%s_t%i_r%i_runs%i.pkl"
