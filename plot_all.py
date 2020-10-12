@@ -9,6 +9,7 @@ from plot import plot_benchmark
 from plot import plot_logs
 from plot import plot_evolution
 import main_verification as plot_v
+import main_nn_training as plot_evo
 
 def main(args):
 
@@ -31,7 +32,12 @@ def main(args):
     for c in controllers:
         ## Plot neural network 
         plot_nn.main([c,"-format",args.format])
-        
+
+        plot_evo.main(["data/%s/training_data/"%c,
+                  "data/%s/validation_data_1/"%c,
+                  "data/%s/"%c,
+                  "-evaluate","-plot"])
+
         ## Plot model
         plot_model.main([c,"data/%s/training_data/"%c,"-format",args.format])
         

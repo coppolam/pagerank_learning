@@ -16,9 +16,11 @@ import numpy as np
 from classes import simulator, desired_states_extractor
 from tools import fileHandler as fh
 from tools import matrixOperations as matop
-
-if __name__=="__main__":
-
+import matplotlib
+import matplotlib.pyplot as plt
+from tools import prettyplot as pp
+import sys
+def main(args):
 	####################################################################
 	# Initialize
 	# Input arguments
@@ -39,6 +41,8 @@ if __name__=="__main__":
 		help="(bool) Validate flag to true (checks all models)")
 	parser.add_argument('-evaluate', action='store_true', 
 		help="(bool) Evaluate flag to true (checks last model only)")
+	parser.add_argument('-plot', action='store_true', 
+		help="(bool) Plot all validation sets (checks last model only)")
 	parser.add_argument('-layer_size', type=int, 
 		help="Nodes in hidden layers", default=100)
 	parser.add_argument('-layers', type=int, 
@@ -46,7 +50,7 @@ if __name__=="__main__":
 	parser.add_argument('-lr', type=float, 
 		help="Number of hiddent layers", default=1e-5)
 
-	args = parser.parse_args()
+	args = parser.parse_args(args)
 
 	# Load files
 	folder_train = args.folder_train
@@ -116,15 +120,41 @@ if __name__=="__main__":
 		# Evaluate the correlation for the most recent network
 		# to the validation dataset
 		e = []
-		for filename in sorted(files_test):
-			_, s, f = dse.extract_states(
-							args.folder_test+"/"+filename,
-							load_pkl=True)
-			_, corr, _ = dse.evaluate_model(model[0], s, f)
+		y_pred = []
+		for i, filename in enumerate(sorted(files_test)):
+			t, s, f = dse.extract_states(
+						args.folder_test+"/"+filename,
+						load_pkl=True)
+			_, corr, y_pred_i = dse.evaluate_model(model[0], s, f)
 			e.append(corr)
-		
+			if args.plot:
+				fname = "nn_test_%s_%i.%s"%(os.path.dirname(save_folder),i,"pdf")
+				folder = "figures/nn/"
+				if not os.path.exists(os.path.dirname(folder)):
+					os.makedirs(os.path.dirname(folder))
+				filename_raw = os.path.splitext(os.path.basename(fname))[0]
+				plt = pp.setup()
+				plt.plot(t,f,
+					color="blue",label="Real")
+				plt.plot(t,y_pred_i,
+					color="red",label="Predicted")
+				plt.ylabel("Fitness")
+				plt.xlabel("Time [s]")
+				plt.legend(loc="upper left", ncol=2)
+				plt = pp.adjust(plt)
+				plt.savefig(folder+"%s.%s"%(filename_raw,"pdf"))
+				plt.close()
+
 		# Display some data
-		print(np.mean(e)) # Mean error
-		print(model[0].optimizer) # Optimizer parameters
-		print(model[0].network) # Network parameters
+		if args.plot is False:
+			print(np.mean(e)) # Mean error
+			print(model[0].optimizer) # Optimizer parameters
+			print(model[0].network) # Network parameters
+
+		# Print figure
+
 	####################################################################
+
+
+if __name__=="__main__":
+	main(sys.argv[1:])

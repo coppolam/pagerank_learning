@@ -6,6 +6,7 @@ Simulate the aggregation and optimize the behavior
 import random, sys, pickle, os
 import numpy as np
 from tqdm import tqdm
+import copy
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -169,7 +170,9 @@ class mbe(evolution.evolution):
 
 			## Use the models to do model-based optimization
 			p = list(self.sim.optimize(p, 
-							settings=settings, model=model, debug=False).flatten())
+							settings=settings,
+							model=model, 
+							debug=False).flatten())
 
 			## Evaluate model-based solution
 			### Create an individual
@@ -189,7 +192,11 @@ class mbe(evolution.evolution):
 			#################################################################
 
 			# Store stats
-			self.stats.append(self.store_stats(pop, g, self.sim, model)) 
+			self.stats.append(self.store_stats(
+				pop, 
+				g, 
+				copy.deepcopy(self.sim),
+				copy.deepcopy(model))) 
 
 			# Print to terminal
 			if verbose:

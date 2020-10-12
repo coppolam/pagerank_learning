@@ -45,6 +45,22 @@ def get(c):
 		pr_states = 16
 		pr_actions = 8
 
+	# Study Case A -- online learning
+	elif c == "onlinelearning_aggregation":
+		fitness = "aggregation_clusters"
+		controller = "onlinelearning_aggregation"
+		agent = "particle"
+		pr_states = 8
+		pr_actions = 1
+
+	# Study Case C1 -- online learning
+	elif c == "onlinelearning_pfsm":
+		fitness = "aggregation_clusters"
+		controller = "onlinelearning_pfsm"
+		agent = "particle_oriented"
+		pr_states = 16
+		pr_actions = 8
+
 	else:
 		ValueError("Unknown controller!")
 

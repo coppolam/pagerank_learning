@@ -217,45 +217,6 @@ class simulator:
 		# Save
 		self.save_optimization_data(policy,des,"optimization_%i"%i)
 
-		# Perform additional iterations on the policy (not done by default)
-		while i < iterations:
-			
-			# Build the sim if it's the first time
-			if i == 0: 
-				self.make(settings["controller"], 
-					settings["agent"], 
-					animation=False, verbose=False)
-			
-			print("\nIteration %i\n"%i)
-			
-			## Store temp policy
-			policy_filename = self.save_policy(policy, settings["pr_actions"])
-			
-			## Run a simulation
-			self.run(**settings)
-
-			## Save log data
-			logname = "%s_%s_t%i_r%i_id%s_%i"% \
-					(settings["controller"],
-					settings["agent"],
-					settings["time_limit"],
-					settings["robots"],
-					self.run_id, i)
-			logfile = self.save_learning_data(filename_ext=logname)
-
-			## Re-optimize desired states and update transition model
-			des = dse.run(logfile+".npz", load=False, verbose=False)
-			self.load_update(logfile+".npz",discount=1.0)
-
-			## Re-optimize policy
-			o = opt.pagerank_evolve(des,self.A,self.E)
-			policy = o.run(p0)
-			del o
-
-			## Save and next
-			save_optimization_data(policy,des,"optimization_%i")
-			i += 1
-
 		return policy
 
 	def disp(self):
