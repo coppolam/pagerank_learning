@@ -3,6 +3,7 @@ import argparse, os, sys
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
+import copy
 
 import parameters
 
@@ -46,9 +47,12 @@ def main(args):
 
 	# Unpack last file
 	data = np.load(args.folder+files_train[-1])
-	H0 = data["H0"]
-	H1 = data["H1"]
-	E = data["E"]
+	H0 = data["H0"].astype(float)
+	H1 = data["H1"].astype(float)
+	# Fix rounding errors
+	H0[H0<0.01] = 0.00000
+	H1[H1<0.01] = 0.00000
+	E = matop.normalize_rows(data["E"])
 	policy = data["policy"]
 	des = data["des"]
 	alpha = data["alpha"]
@@ -132,10 +136,6 @@ def main(args):
 
 
 	####################################################################
-	# Check conditions on last file
-	c = verification.verification(H0,H1,E,policy,des)
-	c.verify()
-
 	# if -verbose
 	# Display relevant results to terminal
 	if args.verbose:
@@ -145,9 +145,21 @@ def main(args):
 		print("\nE matrix:\n", E)
 		print("\nalpha vector:\n", alpha)
 		print("\n------- POLICY -------\n", policy)
-		print("\n------- STATS -------\n")
-		print("Original fitness =", f0[0])
-		print("New fitness =", f1[0])
+		# print("\n------- STATS -------\n")
+		# print("Original fitness =", f0[0])
+		# print("New fitness =", f1[0])
+
+	# Check conditions on last file
+	e = 0.00000001
+	H0[H0>e] = 1
+	H1[H1>e] = 1
+	E [E >e] = 1
+	H0 = H0.astype(int)
+	H1 = H1.astype(int)
+	E = E.astype(int)
+	c = verification.verification(H0,H1,E,policy,des)
+	c.verify()
+
 	####################################################################
 
 if __name__ == "__main__":	

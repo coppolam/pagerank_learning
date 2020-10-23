@@ -7,6 +7,7 @@ Verify the behavior of the swarm according to the propositions
 
 import networkx as nx
 import numpy as np
+from tools import graph
 
 class verification():
 	'''Verify the behavior of the swarm according to the propositions'''
@@ -15,9 +16,16 @@ class verification():
 		'''Initialize the verifier'''
 
 		# Make directed graphs from adjacency matrices
-		self.GH0 = nx.from_numpy_matrix(H0,create_using=nx.MultiDiGraph())
-		self.GH = nx.from_numpy_matrix(H1,create_using=nx.MultiDiGraph())
-		self.GE = nx.from_numpy_matrix(E,create_using=nx.MultiDiGraph())
+		H0[H0>0] = 1.
+		H1[H1>0] = 1.
+		E[E>0] = 1.
+		# print(H1)
+		# print(E)
+
+		self.GH0 = nx.from_numpy_matrix(H0.astype(int),create_using=nx.MultiDiGraph())
+		self.GH = nx.from_numpy_matrix(H1.astype(int),create_using=nx.DiGraph())
+		self.GE = nx.from_numpy_matrix(E.astype(int),create_using=nx.MultiDiGraph())
+		# graph.print_graph(self.GH)
 		
 		# Ignore unknown nodes with no information
 		d = list(nx.isolates(self.GH0))
@@ -49,7 +57,7 @@ class verification():
 		for s1 in set1:
 			for s2 in set2:
 				if nx.has_path(G,s1,s2) is False:
-					print("Counterexample found for path (%i,%i)\n"%\
+					print("(%i, %i), \n"%\
 							(s1, s2),end = '')
 					counterexample_flag = True
 
@@ -86,40 +94,53 @@ class verification():
 		# Return False if fail, True if passed
 		return not counterexample_flag
 
-	def _condition_1_strong(self):
+	def _check_edge(self, G, set1, set2):
+		'''
+		Checks that in graph G, all nodes in set1 have a directed 
+		path to at least one node in set2
+		'''
+		# Initialize flag to False
+		counterexample_flag = False
+		
+		for s1 in set1:
+    			
+    		# For a node, find a path to any s2 in set2
+			any_flag = False
+			for s2 in set2:
+				
+				if G.has_edge(s1,s2) is True:		
+					any_flag = True
+					break # Connection found
+			
+			# If you reach here, then no connection was found
+			if any_flag is False:
+				print("Counterexample found for node %i"%(s1))
+				counterexample_flag = True
+		
+		# Return False if fail, True if passed
+		return not counterexample_flag
+
+
+	def _condition_1(self):
 		'''
 		GS1 (H), shows that ALL desired states 
 		can be reached from ALL states
 		'''
 		return self._check_to_all(self.GH,self.GH.nodes,self.desired)
-	
-	def _condition_1_weak(self):
-		'''
-		GS1 (H), hows that ANY desired states 
-		can be reached from ALL states
-		'''
-		return self._check_to_any(self.GH,self.GH.nodes,self.desired)
 
 	def _condition_2(self):
 		'''
 		GS2 (E) shows that ALL static states that are not 
 		desired can become active via the environment
 		'''
-		return self._check_to_any(self.GE,self.static,self.active)
+		return self._check_edge(self.GE,self.static,self.active)
 
-	def _condition_3_strong(self):
-		'''
-		GS1 (H) shows that an active simplicial state 
-		can transition "freely" to any other state
-		'''
-		return self._check_to_all(self.GH,self.active,self.desired)
-
-	def _condition_3_weak(self):
+	def _condition_3(self):
 		'''
 		GS1 (H) shows that an active simplicial state can 
 		transition "freely" to any other state
 		'''
-		return self._check_to_any(self.GH,self.active,self.desired)
+		return self._check_to_all(self.GH,self.active,self.GH.nodes)
 
 	def disp(self):
 		'''
@@ -137,20 +158,14 @@ class verification():
 
 		if verbose: self.disp()
 		
-		if verbose: print("\nChecking Proposition 1 (strong)")
-		c.append(self._condition_1_strong())
+		if verbose: print("\nChecking Proposition 1")
+		c.append(self._condition_1())
 
-		if verbose: print("\nChecking Proposition 1 (weak)")
-		c.append(self._condition_1_weak())
-		
-		if verbose: print("\nChecking Proposition 2, Condition 1")
+		if verbose: print("\nChecking Proposition 2, Condition 2")
 		c.append(self._condition_2())
 		
-		if verbose: print("\nChecking Proposition 2, Condition 2 (strong)")
-		c.append(self._condition_3_strong())
-		
-		if verbose: print("\nChecking Proposition 2, Condition 2 (weak)")
-		c.append(self._condition_3_weak())
+		if verbose: print("\nChecking Proposition 2, Condition 3")
+		c.append(self._condition_3())
 		
 		print("\nResult:", c)
 

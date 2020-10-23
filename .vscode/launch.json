@@ -20,7 +20,7 @@
             // "args" : ["data/aggregation/training_data_1_1/","data/aggregation/validation_data_1_1/","valid/","-train"]
             // "args" : ["aggregation","data/aggregation/training_data_1_1/"]
             // "args" : ["../swarmulator/logs/log_1.txt"]
-            "args" : ["data/aggregation/onlinelearning/"]
+            // "args" : ["aggregation","data/aggregation/optimization_1/"]
         }
     ]
 }

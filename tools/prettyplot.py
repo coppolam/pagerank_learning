@@ -11,8 +11,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 # Set Latex stuff
-matplotlib.rc('text', usetex=True)
-plt.rc('text', usetex=True)
+# matplotlib.rc('text', usetex=True)
+# plt.rc('text', usetex=True)
 
 def setup(w=12,h=6,fs=30,font='serif'):
 	'''
