@@ -26,8 +26,8 @@ def plot_evolution(plt,e,label=None):
 		lw = 1
 
 	# Mean performance
-	l = plt.plot(range(1, len(e.stats)+1), 
-			[ s['max'] for s in e.stats ],
+	l = plt.semilogx(range(1, len(e.stats)+1), 
+			[ s['mu'] for s in e.stats ],
 			color=color,ls=ls,lw=lw)
 
 	# Standard deviation
@@ -64,8 +64,8 @@ def main(args):
 
 	# Plot all evolution files found in the given folder together
 	## Extract all evolution files in the indicated folder
-	filelist = [f for f in os.listdir(args.folder) if 
-					f.startswith('evolution_') and f.endswith('pkl')]
+	filelist = sorted([f for f in os.listdir(args.folder) if 
+					f.startswith('evolution_') and f.endswith('pkl')])
 
 	# filelist = [f for f in os.listdir(args.folder) if 
 	# 				f.startswith('evolution_') and f.endswith('pkl')]
@@ -87,7 +87,7 @@ def main(args):
 	plt.xlim(0,lim)
 	plt.xlabel('Generation')
 	plt.ylabel('Fitness')
-	plt.legend(li[:2], ['Model-based runs', 'Standard runs'])
+	plt.legend([li[0],li[-1]], ['Model-based runs','Standard runs'])
 	plt = pp.adjust(plt)
 	
 	# Save figure

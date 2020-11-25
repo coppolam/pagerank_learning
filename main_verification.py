@@ -90,7 +90,9 @@ def main(args):
 			os.makedirs(os.path.dirname(folder))
 		
 		#Now let's plot some figures
-
+		import math
+		xint = range(0, math.ceil(pr1[0].size),2)
+		
 		# Figure: Plot pagerank H and E
 		plt = pp.setup()
 		plt.bar(np.array(range(prH0[0].size)),prH0[0],
@@ -102,6 +104,7 @@ def main(args):
 		plt = pp.adjust(plt)
 		plt.xlabel("State")
 		plt.ylabel("PageRank [-]")
+		matplotlib.pyplot.xticks(xint)
 		plt.legend()
 		plt.savefig("%s/pagerank_original_%s.%s" \
 			%(folder,controller,args.format))
@@ -123,6 +126,8 @@ def main(args):
 			plt.ylabel("$\Delta$ PageRank [-]")
 		plt = pp.adjust(plt)
 		plt.xlabel("State [-]")
+		matplotlib.pyplot.xticks(xint)
+		
 		# Custom legend
 		custom_lines = [
 					matplotlib.lines.Line2D([0], [0], color="blue" , lw=20),

@@ -51,23 +51,34 @@ def main(args):
 	# Input argument parser
 	parser = argparse.ArgumentParser(description='Simulate a task to gather the data for optimization')
 	parser.add_argument('controller', type=str, help="(str) path to logs folder")
-	parser.add_argument('folder', type=str, help="(str) path to logs folder")
 	parser.add_argument('-format', type=str, default="pdf")
 	args = parser.parse_args(args)
 
-	tv, fv, f_mean, f_std, nlogs = process_logs(args.folder, "log")
-	
-	# Plot
+	pf = "data/%s/"%args.controller
+	folders = ["onlinelearning_detach_false_shared_false_iter_10_boost_1/"\
+	,"onlinelearning_detach_false_shared_true_iter_10_boost_1/"]
 	plt = pp.setup()
-	plt.plot(tv[0], fv, alpha=0.2)
-	plt.plot(tv[0], f_mean, color="blue")
-	plt.fill_between(tv[0],
-		f_mean-f_std,
-		f_mean+f_std,
-		alpha=0.2,
-		color="blue")
-	
-	# # Axis
+	li = []
+	for i,f in enumerate(folders):
+		tv, fv, f_mean, f_std, nlogs = process_logs(pf+f, "log")
+		
+		if i == 0: c = "red"
+		else: c = "blue"
+		
+		# Plot
+		l = plt.plot(tv[0], fv, alpha=0.2,color="gray")
+		l2 = plt.plot(tv[0], f_mean, color=c)
+		li += l2
+		plt.fill_between(tv[0],
+			f_mean-f_std,
+			f_mean+f_std,
+			alpha=0.2,
+			color=c)
+		
+
+	# Axis
+	# plt.legend()
+	plt.legend([li[0],li[-1]], ['Local model','Shared local model'])
 	plt = pp.adjust(plt)
 	plt.xlabel("Time [s]")
 	plt.ylabel("Fitness [-]")
@@ -81,21 +92,21 @@ def main(args):
 	plt.savefig(folder+"onlinelearning_%s.%s"%(filename_raw,args.format))
 	plt.close()
 	
-	# Show weights analysis
-	# For each experiment
-	for i in range(1,nlogs+1):
-    	# Get all policy files
-		filelist = [f for f in os.listdir(args.folder) 
-						if f.startswith("policy_%i"%i)]
+	# # Show weights analysis
+	# # For each experiment
+	# for i in range(1,nlogs+1):
+    # 	# Get all policy files
+	# 	filelist = [f for f in os.listdir(args.folder) 
+	# 					if f.startswith("policy_%i"%i)]
 
-		# For each agent, load the files
-		l = []
-		for file in filelist:
-			f = np.loadtxt(args.folder+file)
-			l.append(f)
+	# 	# For each agent, load the files
+	# 	l = []
+	# 	for file in filelist:
+	# 		f = np.loadtxt(args.folder+file)
+	# 		l.append(f)
 
-		plt.plot(l[0],marker=".") # move [0]
-		plt.show()
+	# 	plt.plot(l[0],marker=".") # move [0]
+	# 	plt.show()
 
 
 if __name__ == '__main__':

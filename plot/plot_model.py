@@ -72,13 +72,18 @@ def main(args):
 	# Set folder
 	folder = "figures/model/"
 
-	# Plot the residual
+	# Plot the difference to the last estimate to check the convergence
 	plt = pp.setup()
 	for d in data:
-		plt.plot(abs(d-d[-1])) # Residual
-	plt.xlabel("Simulation")
-	plt.ylabel("Residual")
+    
+		# Only plot the ones that showed transitions
+		if d[-1] > 0:
+			plt.plot(d-(d[-1])) # Residual
+	
+	plt.xlabel("Simulation number")
+	plt.ylabel("Difference to final estimate")
 	plt = pp.adjust(plt)
+	plt.ylim((-1,1))
 
 	# Create a directory if it doesn't exist
 	if not os.path.exists(os.path.dirname(folder)): 

@@ -91,6 +91,7 @@ if __name__ == "__main__":
 	policy = np.random.rand(pr_states,pr_actions)
 
 	## Optimization
+	sim.disp()
 	policy = sim.optimize(policy, iterations=args.iterations, settings=settings)
 	####################################################################
 

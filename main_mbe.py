@@ -107,7 +107,7 @@ if __name__=="__main__":
 	directory = os.path.dirname(folder)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	filename = folder + "evolution_%s_t%i_%i" % (controller, args.t, args.id)
+	filename = folder + "evolution_mbe_%s_t%i_%i" % (controller, args.t, args.id)
 
 	# Evolution API setup
 	directory = os.path.dirname("data/evo_temp/")
@@ -154,7 +154,7 @@ if __name__=="__main__":
 			sim.save_log(filename_ext="%s/evolution_mbe/evo_log_%i"%(controller,i))
 
 		# Save evaluation data
-		fh.save_pkl(f,"data/%s/benchmark_evolution_%s_t%i_r%i_runs%i.pkl"
+		fh.save_pkl(f,"data/%s/benchmark_evolution_mbe_%s_t%i_r%i_runs%i.pkl"
 			%(controller,controller,args.t,args.nmax,args.reruns))
 		
 	# if -resume <path_to_evolution_savefile>

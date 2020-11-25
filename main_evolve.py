@@ -93,7 +93,7 @@ def main(args):
 	directory = os.path.dirname(folder)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	filename = folder + "evolution_%s_t%i_%i" % (controller, args.t, args.id)
+	filename = folder + "evolution_standard_%s_t%i_%i" % (controller, args.t, args.id)
 
 	# Evolution API setup
 	e = evolution.evolution()

@@ -174,7 +174,7 @@ class desired_states_extractor:
 
 	def train(self, file, load_pkl=True, store_pkl= True, 
 				verbose=False, replay=1,
-				layers=3, layer_size=30, lr=1e-5):
+				layers=3, layer_size=100, lr=1e-6):
 		'''
 		Trains a model based on an npz simulation log file
 		

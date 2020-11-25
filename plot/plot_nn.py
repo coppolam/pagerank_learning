@@ -29,31 +29,41 @@ def main(args):
 	if args.controller == "aggregation":
 		filenames.append(df+"aggregation_1.pkl")
 		filenames.append(df+"aggregation_2.pkl")
+		filenames.append(df+"aggregation_3.pkl")
 		# Plot names
 		name.append("VS 1")
 		name.append("VS 2")
+		name.append("VS 3")
 	elif args.controller == "pfsm_exploration":
 		# Files where it evaluates against itself
 		filenames.append(df+"pfsm_exploration_1.pkl")
 		filenames.append(df+"pfsm_exploration_2.pkl")
+		filenames.append(df+"pfsm_exploration_3.pkl")
 		# Files where it evaluates against different dynamics
 		filenames.append(df+"pfsm_exploration_mod_1.pkl")
 		filenames.append(df+"pfsm_exploration_mod_2.pkl")
+		filenames.append(df+"pfsm_exploration_mod_3.pkl")
 		name.append("VS 1, Study Case C1")
 		name.append("VS 2, Study Case C1")
+		name.append("VS 3, Study Case C1")
 		name.append("VS 1, Study Case C2")
 		name.append("VS 2, Study Case C2")
+		name.append("VS 3, Study Case C2")
 	elif args.controller == "pfsm_exploration_mod":
 		# Files where it evaluates against itself
 		filenames.append(df+"pfsm_exploration_mod_1.pkl")
 		filenames.append(df+"pfsm_exploration_mod_2.pkl")
+		filenames.append(df+"pfsm_exploration_mod_3.pkl")
 		# Files where it evaluates against different dynamics
 		filenames.append(df+"pfsm_exploration_1.pkl")
 		filenames.append(df+"pfsm_exploration_2.pkl")
+		filenames.append(df+"pfsm_exploration_3.pkl")
 		name.append("VS 1, Study Case C2")
 		name.append("VS 2, Study Case C2")
+		name.append("VS 3, Study Case C2")
 		name.append("VS 1, Study Case C1")
 		name.append("VS 2, Study Case C1")
+		name.append("VS 3, Study Case C1")
 	elif args.controller == "forage":
 		filenames.append(df+"forage_1.pkl")
 		filenames.append(df+"forage_2.pkl")
@@ -76,7 +86,7 @@ def main(args):
 		data.append(process(fh.load_pkl(f)))
 
 	# Plot
-	color = ["blue", "red", "green", "black"]
+	color = ["blue", "red", "green", "black", "magenta", "lime"]
 	plt = pp.setup()
 	for i,d in enumerate(data):
 
