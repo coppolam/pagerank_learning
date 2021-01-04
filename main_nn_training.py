@@ -48,7 +48,7 @@ def main(args):
 	parser.add_argument('-layers', type=int, 
 		help="Number of hiddent layers", default=3)
 	parser.add_argument('-lr', type=float, 
-		help="Number of hiddent layers", default=1e-5)
+		help="Number of hiddent layers", default=1e-6)
 
 	args = parser.parse_args(args)
 

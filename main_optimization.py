@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
 	elif args.log:
 		# Build the simulator with the desired settings
-		sim.make(controller, agent, animation=False, verbose=False, logger=True)
+		sim.make(controller, agent, animation=args.animate, verbose=False, logger=True)
 
 		## Run
 		settings["policy_filename"] = sim.save_policy(policy, pr_actions)	

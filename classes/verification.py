@@ -28,12 +28,13 @@ class verification():
 		# graph.print_graph(self.GH)
 		
 		# Ignore unknown nodes with no information
+		# Get unknown nodes (d) and delete them
 		d = list(nx.isolates(self.GH0))
 		policy = np.delete(policy,d,axis=0)
 		self.GH.remove_nodes_from(d)
 		self.GE.remove_nodes_from(d)
 		self.des = np.delete(des,d)
-
+		
 		# Extract observation sets
 		self.static = np.argwhere(
 			np.array(np.sum(policy,axis=1))<0.001).flatten() 
@@ -41,6 +42,8 @@ class verification():
 			np.array(np.sum(policy,axis=1))>0.001).flatten() 
 		self.desired = np.argwhere(np.array(self.des)>0.01).flatten()
 		self.static_undesired = np.setdiff1d(self.static,self.desired)
+		self.undesired = np.setdiff1d(self.GH.nodes,self.desired)
+		self.active_undesired = np.setdiff1d(self.active,self.desired)
 
 	def _check_to_all(self, G, set1, set2, find_all=True):
 		'''
@@ -126,21 +129,21 @@ class verification():
 		GS1 (H), shows that ALL desired states 
 		can be reached from ALL states
 		'''
-		return self._check_to_all(self.GH,self.GH.nodes,self.desired)
+		return self._check_to_all(self.GH,self.undesired,self.desired)
 
 	def _condition_2(self):
 		'''
 		GS2 (E) shows that ALL static states that are not 
 		desired can become active via the environment
 		'''
-		return self._check_edge(self.GE,self.static,self.active)
+		return self._check_edge(self.GE,self.static_undesired,self.active)
 
 	def _condition_3(self):
 		'''
 		GS1 (H) shows that an active simplicial state can 
 		transition "freely" to any other state
 		'''
-		return self._check_to_all(self.GH,self.active,self.GH.nodes)
+		return self._check_to_all(self.GH,self.active_undesired,self.GH.nodes)
 
 	def disp(self):
 		'''
@@ -161,10 +164,10 @@ class verification():
 		if verbose: print("\nChecking Proposition 1")
 		c.append(self._condition_1())
 
-		if verbose: print("\nChecking Proposition 2, Condition 2")
+		if verbose: print("\nChecking Proposition 2, Condition 1")
 		c.append(self._condition_2())
 		
-		if verbose: print("\nChecking Proposition 2, Condition 3")
+		if verbose: print("\nChecking Proposition 2, Condition 2")
 		c.append(self._condition_3())
 		
 		print("\nResult:", c)

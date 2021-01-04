@@ -141,7 +141,7 @@ class desired_states_extractor:
 		# Return estimated fitness from network
 		return self.network.network(in_tensor).item(),
 
-	def get_des(self, dim=None, popsize=100, gens=100, debug=False):
+	def get_des(self, dim=None, popsize=100, gens=500, debug=False):
 		'''
 		Runs an evolutionary optimization to extract 
 		the states that maximize the fitness

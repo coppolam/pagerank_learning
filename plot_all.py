@@ -31,29 +31,29 @@ def main(args):
     # Make relevant plots for each controller
     for c in controllers:
         ## Plot neural network 
-#        plot_nn.main([c,"-format",args.format])
+        plot_nn.main([c,"-format",args.format])
 
-        # plot_evo.main(["data/%s/training_data/"%c,
-        #          "data/%s/validation_data_1/"%c,
-        #          "data/%s/"%c,
-        #          "-evaluate","-plot"])
+        plot_evo.main(["data/%s/training_data/"%c,
+                 "data/%s/validation_data_1/"%c,
+                 "data/%s/"%c,
+                 "-evaluate","-plot"])
 
         ## Plot model
         plot_model.main([c,"data/%s/training_data/"%c,"-format",args.format])
         
         ## Plot benchmarks
-        # plot_benchmark.main([c,"-format",args.format])
+        plot_benchmark.main([c,"-format",args.format])
         
         ## Plot logs of benchmark sims
-        # plot_logs.main([c,"data/%s/optimization_1/"%c,
-                # "data/%s/evolution/"%c,"-format",args.format])
+        plot_logs.main([c,"data/%s/optimization_1/"%c,
+                "data/%s/evolution/"%c,"-format",args.format])
         
         ## Plot evolutions
-        # plot_evolution.main(["data/%s/"%c])
+        plot_evolution.main(["data/%s/"%c])
 
         ## Plot verification pagerank results
-        # plot_v.main([c,"data/%s/optimization_1/"%c,"-plot",
-                       # "-format",args.format])
+        plot_v.main([c,"data/%s/optimization_1/"%c,"-plot",
+                       "-format",args.format])
     
     print("...done!")
     
