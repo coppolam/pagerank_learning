@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+'''
+Verify the behavior of the swarm according to the propositions.
+And check pagerank scores with/without optimization.
+
+@author: Mario Coppola, 2020
+'''
+
+
 import numpy as np
 import argparse, os, sys
 import matplotlib

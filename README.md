@@ -4,16 +4,15 @@ The data used in the paper is accessible at:
 
 You can download it automatically using the included script ```download_data.sh```.
 
-To generate the data yourself:
-The script ```generate_data.sh``` gives all the necessary commands to generate the data using our methodology for a given controller.
+This repository works with swarmulator branch ```SI_framework```: ```https://github.com/coppolam/SI_framework```
 
-This repository works with the following version of swarmulator:
+Note, the script ```download_simulator.sh``` will also download the appropriate swarmulator branch in zip format.
 
 ### Install Python required packages
 ```sudo pip3 install -r requirements.txt```
 
 ### Main scripts
-These are all the "main" scripts that have been used
+These are all the "main" scripts that have been used to generate/process the data.
 
  - ```main_generate_data_training.py```: generates the training data for a specified study case to then train the micro-macro link and extract the transition model.
 
@@ -31,15 +30,17 @@ These are all the "main" scripts that have been used
 Use these scripts to create the figures used in the paper
 
 #### Make all the figures in one go
- - ```make_all_plots.py```: generates all the plots in the paper, use with supplied data to recreate all figures exactly (see ```download_data.sh``` script in order to easily download the data)
+ - ```plot_all.py```: generates all the plots in the paper, use with supplied data to recreate all figures exactly (see ```download_data.sh``` script in order to easily download the data)
 
- #### Individual figure scripts
- - ```plot_paper_benchmark.py```: recreates figure 6
- - ```plot_paper_evolution.py```: recreates figure 
- - ```plot_paper_logs.py```: recreates figure 7
- - ```plot_paper_model.py```: recreates figure 5
- - ```plot_paper_nn.py```: recreates figure 4
- 
+#### Individual figure scripts (may require additional inputs, see plot_all.py)
+ - ```plot/plot_nn.py```: recreates figures 4
+ - ```plot/plot_model.py```: recreates figure 5
+ - ```main_nn_training.py```: recreases figure 6 (but can also generate data!)
+ - ```plot/plot_benchmark.py```: recreates figure 7 
+ - ```plot/plot_logs.py```: recreates figure 8
+ - ```main_verification.py```: recreates figures 9 and 10 (and also verifies propositions)
+ - ```plot/plot_evolution.py```: recreates figure 11
+ - ```plot/plot_onlinelearning.py```: recreates figure 12
 
 ### Packages
 #### Classes
@@ -59,3 +60,4 @@ Use these scripts to create the figures used in the paper
  - ```fileHandler.py```: Functions to handle files, create folder, delete files, ect.
  - ```matrixOperations.py```: Functions for matrix handling, built on top of numpy
  - ```prettyplot.py```: Functions to help make prettier plots (for papers)
+ - ```fitness_functions.py```: Re-implements fitness functions from swarmulator for post-processing, in case

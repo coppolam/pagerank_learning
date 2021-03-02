@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Simulate the aggregation and optimize the behavior
+Wrapper around the evolution package to run a model based variant
+
 @author: Mario Coppola, 2020
 """
+
 import random, sys, pickle, os
 import numpy as np
 from tqdm import tqdm

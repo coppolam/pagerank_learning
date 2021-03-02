@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Simulate the aggregation and optimize the behavior
+Wrapper around the DEAP package to run an evolutionary process with just a few commands
+
 @author: Mario Coppola, 2020
 """
 import random, sys, pickle, matplotlib

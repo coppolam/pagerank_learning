@@ -1,5 +1,10 @@
-# Script that generates all the plots
-# Useful if you are feeling lazy :)
+#!/usr/bin/env python3
+'''
+Script that generates all the plots
+Useful if you are feeling lazy :)
+
+@author: Mario Coppola, 2020
+'''
 
 import argparse,subprocess,sys
 
@@ -8,8 +13,9 @@ from plot import plot_model
 from plot import plot_benchmark
 from plot import plot_logs
 from plot import plot_evolution
-import main_verification as plot_v
-import main_nn_training as plot_evo
+from plot import plot_onlinelearning
+import main_verification as plot_verification
+import main_nn_training as plot_prediction
 
 def main(args):
 
@@ -30,31 +36,44 @@ def main(args):
  
     # Make relevant plots for each controller
     for c in controllers:
-        ## Plot neural network 
+        # ## Plot neural network prediction performance
+        # ## (Figure 4)
         plot_nn.main([c,"-format",args.format])
 
-        plot_evo.main(["data/%s/training_data/"%c,
+        # ## Plot model convergence
+        # ## (Figure 5)
+        plot_model.main([c,"data/%s/training_data/"%c,"-format",args.format])
+        
+        # ## Plot neural network prediction performance over validation runs 
+        # ##(Figure 6)
+        plot_prediction.main(["data/%s/training_data/"%c,
                  "data/%s/validation_data_1/"%c,
                  "data/%s/"%c,
                  "-evaluate","-plot"])
-
-        ## Plot model
-        plot_model.main([c,"data/%s/training_data/"%c,"-format",args.format])
         
-        ## Plot benchmarks
+        # ## Plot benchmarks
+        # ## (Figure 7)
         plot_benchmark.main([c,"-format",args.format])
         
-        ## Plot logs of benchmark sims
+        # ## Plot logs of benchmark sims
+        # ## (Figure 8)
         plot_logs.main([c,"data/%s/optimization_1/"%c,
                 "data/%s/evolution/"%c,"-format",args.format])
         
-        ## Plot evolutions
-        plot_evolution.main(["data/%s/"%c])
-
-        ## Plot verification pagerank results
-        plot_v.main([c,"data/%s/optimization_1/"%c,"-plot",
+        # ## Plot verification pagerank results
+        # ## (Figure 9 + 10)
+        plot_verification.main([c,"data/%s/optimization_1/"%c,"-plot",
                        "-format",args.format])
     
+        # ## Plot evolutions
+        # ## (Figure 11)
+        plot_evolution.main(["data/%s/"%c])
+
+        ## Plot onlinelearning
+        ## (Figure 12)
+        if c == "aggregation" or c == "pfsm_exploration":
+            plot_onlinelearning.main([c,"-format",args.format])
+
     print("...done!")
     
 

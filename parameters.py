@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+'''
+Loads the appropriate settings for each task
+@author: Mario Coppola, 2020
+'''
 
 def get(c):
 	'''
@@ -21,7 +25,7 @@ def get(c):
 		pr_states = 8
 		pr_actions = 1
 
-	# Study Case B
+	# Study Case C
 	elif c == "forage":
 		fitness = "food"
 		controller = "forage"
@@ -29,7 +33,7 @@ def get(c):
 		pr_states = 30
 		pr_actions = 1
 
-	# Study Case C1
+	# Study Case B1
 	elif c == "pfsm_exploration":
 		fitness = "aggregation_clusters"
 		controller = "pfsm_exploration"
@@ -37,7 +41,7 @@ def get(c):
 		pr_states = 16
 		pr_actions = 8
 
-	# Study Case C2
+	# Study Case B2
 	elif c == "pfsm_exploration_mod":
 		fitness = "aggregation_clusters"
 		controller = "pfsm_exploration_mod"
@@ -53,7 +57,7 @@ def get(c):
 		pr_states = 8
 		pr_actions = 1
 
-	# Study Case C1 -- online learning
+	# Study Case B1 -- online learning
 	elif c == "onlinelearning_pfsm":
 		fitness = "aggregation_clusters"
 		controller = "onlinelearning_pfsm"

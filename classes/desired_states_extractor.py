@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 '''
-Optimize a behavior based on the PageRank function
+Trains a micro-macro link and extracted the desired observation set
+
 @author: Mario Coppola, 2020
 '''
 
@@ -9,7 +10,6 @@ import numpy as np
 from . import network, evolution, simulator
 from tools import matrixOperations as matop
 from tools import fileHandler as fh
-from . import simplenetwork
 from deap import tools, creator
 
 class desired_states_extractor:

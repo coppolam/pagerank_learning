@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-Optimize a behavior based on the PageRank function
+Evolves a new policy based on the PageRank fitness
 
 @author: Mario Coppola, 2020
 '''

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+''' 
+Higher level API to interact with simulator
+Set up to operate with Swarmulator for this particular project
+
+@author: Mario Coppola, 2020
+'''
+
 import datetime, time, subprocess, sys, random, glob, os
 import numpy as np
 from tqdm import tqdm
