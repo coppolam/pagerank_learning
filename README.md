@@ -1,6 +1,5 @@
 
 ### Get the data from the paper
-The data used in the paper is accessible at:
 
 You can download it automatically using the included script ```download_data.sh```.
 
